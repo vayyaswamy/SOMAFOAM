@@ -1,0 +1,112 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    Ni
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+    Nin
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+    Te
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    };
+
+    Phi
+    {
+        solver           BiCGStab;
+        preconditioner   Cholesky;
+        relTol           0;
+        minIter		 1;
+    };
+}
+
+PIMPLE
+{
+    momentumPredictor no;
+    nOuterCorrectors 1;
+    nCorrectors     0;
+    nNonOrthogonalCorrectors 0;
+
+
+    residualControl
+    {
+        Phi
+        {
+                tolerance  1e-6;
+                relTol      0;
+        }
+    N_electron
+    {
+        tolerance 1e-6;
+        relTol  0;
+
+    }
+    N_Arp1
+    {
+        tolerance 1e-6;
+        relTol  0;
+
+    }
+    N_Arm
+    {
+        tolerance 1e-6;
+        relTol  0;
+
+    }
+    Te
+    {
+        tolerance 1e-6 ;
+        relTol 0;
+    }
+     }
+    
+}
+
+relaxationFactors
+{
+    fields
+    {
+	"N.*"	0.7;
+	Te	0.7;
+	Phi	0.7;
+    ".*Final" 1.0;
+    }
+    equations
+    {
+		”.*”           1; 
+    }
+}
+
+/*PIMPLE
+{
+    
+}*/
