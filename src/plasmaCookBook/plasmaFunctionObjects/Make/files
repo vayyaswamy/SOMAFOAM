@@ -1,0 +1,8 @@
+emPlasmaFields/emPlasmaFields.C
+emPlasmaFields/emPlasmaFieldsFunctionObject.C
+
+electricalCharacteristics/electricalCharacteristics.C
+
+specieDynamics/specieDynamics.C
+
+LIB = $(FOAM_LIBBIN)/libplasmaFunctionObjects

@@ -1,0 +1,1 @@
+../memory/autoPtr/autoPtr.H

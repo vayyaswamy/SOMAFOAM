@@ -1,0 +1,1 @@
+../multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModelI.H

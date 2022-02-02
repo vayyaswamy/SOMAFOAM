@@ -1,0 +1,4 @@
+LOCAL_OBJECTS = \
+tecplotWriter.o\
+vtkMesh.o\
+foamToTecplot360.o

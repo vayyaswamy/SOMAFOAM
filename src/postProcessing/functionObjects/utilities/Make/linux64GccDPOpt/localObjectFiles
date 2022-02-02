@@ -1,0 +1,5 @@
+LOCAL_OBJECTS = \
+staticPressure.o\
+staticPressureFunctionObject.o\
+MachNumber.o\
+divFlux.o

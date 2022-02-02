@@ -1,0 +1,1 @@
+../fields/PointPatchFieldTemplates/basic/coupled/CoupledPointPatchField.C

@@ -1,0 +1,8 @@
+staticPressure/staticPressure.C
+staticPressure/staticPressureFunctionObject.C
+
+MachNumber/MachNumber.C
+
+divFlux/divFlux.C
+
+LIB = $(FOAM_LIBBIN)/libutilityFunctionObjects

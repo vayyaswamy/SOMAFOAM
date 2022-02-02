@@ -1,0 +1,3 @@
+OBJECTS = \
+$(OBJECTS_DIR)/systemCall.o\
+$(OBJECTS_DIR)/systemCallFunctionObject.o

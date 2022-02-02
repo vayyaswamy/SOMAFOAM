@@ -1,0 +1,23 @@
+$(OBJECTS_DIR)/dataset.o: dataset.dep
+dataset.dep: dataset.cpp
+dataset.dep: stdafx.h
+dataset.dep: MASTER.h
+dataset.dep: W__BASE.h
+dataset.dep: TranslatedString.h
+dataset.dep: GLOBAL.h
+dataset.dep: TASSERT.h
+dataset.dep: Q_UNICODE.h
+dataset.dep: STRUTIL.h
+dataset.dep: AUXDATA.h
+dataset.dep: ARRLIST.h
+dataset.dep: STRLIST.h
+dataset.dep: TECXXX.h
+dataset.dep: ALLOC.h
+dataset.dep: SET.h
+dataset.dep: DATASET.h
+dataset.dep: FILESTREAM.h
+dataset.dep: DATASET0.h
+$(OBJECTS_DIR)/dataset.o: $(EXE_DEP)
+$(OBJECTS_DIR)/dataset.o:
+	@SOURCE_DIR=.
+	SOURCE=dataset.cpp ; $(cpptoo)

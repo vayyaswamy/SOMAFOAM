@@ -1,0 +1,5 @@
+DEPENDENCIES = \
+emPlasmaFields/emPlasmaFields.dep\
+emPlasmaFields/emPlasmaFieldsFunctionObject.dep\
+electricalCharacteristics/electricalCharacteristics.dep\
+specieDynamics/specieDynamics.dep

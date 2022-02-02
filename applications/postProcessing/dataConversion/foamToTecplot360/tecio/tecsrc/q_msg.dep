@@ -1,0 +1,16 @@
+$(OBJECTS_DIR)/q_msg.o: q_msg.dep
+q_msg.dep: q_msg.cpp
+q_msg.dep: stdafx.h
+q_msg.dep: MASTER.h
+q_msg.dep: W__BASE.h
+q_msg.dep: TranslatedString.h
+q_msg.dep: GLOBAL.h
+q_msg.dep: TASSERT.h
+q_msg.dep: Q_UNICODE.h
+q_msg.dep: ALLOC.h
+q_msg.dep: ARRLIST.h
+q_msg.dep: STRUTIL.h
+$(OBJECTS_DIR)/q_msg.o: $(EXE_DEP)
+$(OBJECTS_DIR)/q_msg.o:
+	@SOURCE_DIR=.
+	SOURCE=q_msg.cpp ; $(cpptoo)

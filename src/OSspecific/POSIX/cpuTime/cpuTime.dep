@@ -1,0 +1,7 @@
+$(OBJECTS_DIR)/cpuTime.o: cpuTime/cpuTime.dep
+cpuTime/cpuTime.dep: cpuTime/cpuTime.C
+cpuTime/cpuTime.dep: cpuTime/cpuTime.H
+$(OBJECTS_DIR)/cpuTime.o: $(EXE_DEP)
+$(OBJECTS_DIR)/cpuTime.o:
+	@SOURCE_DIR=cpuTime
+	SOURCE=cpuTime/cpuTime.C ; $(Ctoo)

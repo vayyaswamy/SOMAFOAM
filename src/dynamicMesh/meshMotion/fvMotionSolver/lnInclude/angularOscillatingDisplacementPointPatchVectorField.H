@@ -1,0 +1,1 @@
+../pointPatchFields/derived/angularOscillatingDisplacement/angularOscillatingDisplacementPointPatchVectorField.H

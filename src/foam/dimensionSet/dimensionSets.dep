@@ -1,0 +1,37 @@
+$(OBJECTS_DIR)/dimensionSets.o: dimensionSet/dimensionSets.dep
+dimensionSet/dimensionSets.dep: dimensionSet/dimensionSets.C
+dimensionSet/dimensionSets.dep: dimensionSet/dimensionSet.H
+dimensionSet/dimensionSets.dep: lnInclude/scalar.H
+dimensionSet/dimensionSets.dep: lnInclude/floatScalar.H
+dimensionSet/dimensionSets.dep: lnInclude/doubleFloat.H
+dimensionSet/dimensionSets.dep: lnInclude/label.H
+dimensionSet/dimensionSets.dep: lnInclude/int.H
+dimensionSet/dimensionSets.dep: lnInclude/word.H
+dimensionSet/dimensionSets.dep: lnInclude/foamString.H
+dimensionSet/dimensionSets.dep: lnInclude/char.H
+dimensionSet/dimensionSets.dep: lnInclude/Hasher.H
+dimensionSet/dimensionSets.dep: lnInclude/foamStringI.H
+dimensionSet/dimensionSets.dep: lnInclude/wordI.H
+dimensionSet/dimensionSets.dep: lnInclude/long.H
+dimensionSet/dimensionSets.dep: lnInclude/longLong.H
+dimensionSet/dimensionSets.dep: lnInclude/pTraits.H
+dimensionSet/dimensionSets.dep: lnInclude/direction.H
+dimensionSet/dimensionSets.dep: lnInclude/products.H
+dimensionSet/dimensionSets.dep: lnInclude/ScalarTemplate.H
+dimensionSet/dimensionSets.dep: lnInclude/doubleScalar.H
+dimensionSet/dimensionSets.dep: lnInclude/longDoubleScalar.H
+dimensionSet/dimensionSets.dep: lnInclude/bool.H
+dimensionSet/dimensionSets.dep: lnInclude/dimensionedScalarFwd.H
+dimensionSet/dimensionSets.dep: lnInclude/className.H
+dimensionSet/dimensionSets.dep: lnInclude/debug.H
+dimensionSet/dimensionSets.dep: lnInclude/debugSwitch.H
+dimensionSet/dimensionSets.dep: lnInclude/controlSwitches.H
+dimensionSet/dimensionSets.dep: lnInclude/safeBool.H
+dimensionSet/dimensionSets.dep: lnInclude/safeBoolI.H
+dimensionSet/dimensionSets.dep: lnInclude/controlSwitchesI.H
+dimensionSet/dimensionSets.dep: lnInclude/controlSwitches.C
+dimensionSet/dimensionSets.dep: dimensionSet/dimensionSets.H
+$(OBJECTS_DIR)/dimensionSets.o: $(EXE_DEP)
+$(OBJECTS_DIR)/dimensionSets.o:
+	@SOURCE_DIR=dimensionSet
+	SOURCE=dimensionSet/dimensionSets.C ; $(Ctoo)

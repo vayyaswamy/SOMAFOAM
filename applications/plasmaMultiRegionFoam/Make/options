@@ -1,0 +1,21 @@
+EXE_INC = \
+    -Iplasma \
+    -Idielectric \
+    -IregionProperties \
+    -IelectroMagneticsControls/emcModels \
+    -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude \
+    -I$(LIB_SRC)/plasmaCookBook/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude 
+
+EXE_LIBS = \
+	-lreactionThermophysicalModels \
+	-lbasicThermophysicalModels \
+	-lchemistryModel \
+	-lfiniteVolume \
+	-lmeshTools \
+	-lspecie \
+	-lplasmaCookBook

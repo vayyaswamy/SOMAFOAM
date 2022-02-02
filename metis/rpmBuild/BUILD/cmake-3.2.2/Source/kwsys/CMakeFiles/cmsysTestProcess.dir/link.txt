@@ -1,0 +1,1 @@
+/usr/bin/gcc  -m64 -fPIC    -m64 CMakeFiles/cmsysTestProcess.dir/testProcess.c.o  -o cmsysTestProcess -rdynamic libcmsys_c.a 

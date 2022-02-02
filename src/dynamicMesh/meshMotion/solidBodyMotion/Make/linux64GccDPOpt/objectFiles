@@ -1,0 +1,13 @@
+OBJECTS = \
+$(OBJECTS_DIR)/solidBodyMotionFunction.o\
+$(OBJECTS_DIR)/newSolidBodyMotionFunction.o\
+$(OBJECTS_DIR)/noMotion.o\
+$(OBJECTS_DIR)/translation.o\
+$(OBJECTS_DIR)/graphMotion.o\
+$(OBJECTS_DIR)/linearOscillation.o\
+$(OBJECTS_DIR)/rotatingOscillation.o\
+$(OBJECTS_DIR)/harmonicOscillation.o\
+$(OBJECTS_DIR)/SDA.o\
+$(OBJECTS_DIR)/SKA.o\
+$(OBJECTS_DIR)/constantVelocity.o\
+$(OBJECTS_DIR)/graphVelocity.o

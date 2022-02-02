@@ -1,0 +1,53 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+ODESolvers  =  ODESolvers
+$(ODESolvers)/ODESolver/ODESolver.C
+$(ODESolvers)/ODESolver/newODESolver.C
+
+$(ODESolvers)/Euler/Euler.C
+$(ODESolvers)/RK/RK.C
+$(ODESolvers)/KRR4/KRR4.C
+$(ODESolvers)/SIBS/SIBS.C
+$(ODESolvers)/SIBS/SIMPR.C
+$(ODESolvers)/SIBS/polyExtrapolate.C
+
+translationODE = translationODE
+$(translationODE)/translationODE.C
+
+sixDOF = sixDOF
+$(sixDOF)/finiteRotation/finiteRotation.C
+$(sixDOF)/sixDOFqODE/sixDOFqODE.C
+$(sixDOF)/sixDOFbodies/sixDOFbodies.C
+
+LIB = $(FOAM_LIBBIN)/libODE

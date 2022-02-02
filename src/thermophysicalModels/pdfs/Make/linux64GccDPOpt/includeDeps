@@ -1,0 +1,7 @@
+include $(pdf)/pdf.dep
+include $(pdf)/newPdf.dep
+include $(uniform)/uniform.dep
+include $(normal)/normal.dep
+include $(general)/general.dep
+include $(exponential)/exponential.dep
+include $(RosinRammler)/RosinRammler.dep

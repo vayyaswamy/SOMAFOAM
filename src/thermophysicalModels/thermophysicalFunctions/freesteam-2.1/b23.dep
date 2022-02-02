@@ -1,0 +1,9 @@
+$(OBJECTS_DIR)/b23.o: freesteam-2.1/b23.dep
+freesteam-2.1/b23.dep: freesteam-2.1/b23.c
+freesteam-2.1/b23.dep: freesteam-2.1/b23.h
+freesteam-2.1/b23.dep: freesteam-2.1/common.h
+freesteam-2.1/b23.dep: freesteam-2.1/config.h
+$(OBJECTS_DIR)/b23.o: $(EXE_DEP)
+$(OBJECTS_DIR)/b23.o:
+	@SOURCE_DIR=freesteam-2.1
+	SOURCE=freesteam-2.1/b23.c ; $(ctoo)

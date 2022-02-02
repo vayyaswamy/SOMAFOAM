@@ -1,0 +1,4 @@
+OBJECTS = \
+$(OBJECTS_DIR)/ggiCheckFunctionObject.o\
+$(OBJECTS_DIR)/meshCheckFunctionObject.o\
+$(OBJECTS_DIR)/mixingPlaneCheckFunctionObject.o

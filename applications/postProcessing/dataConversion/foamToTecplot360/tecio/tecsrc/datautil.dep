@@ -1,0 +1,26 @@
+$(OBJECTS_DIR)/datautil.o: datautil.dep
+datautil.dep: datautil.cpp
+datautil.dep: stdafx.h
+datautil.dep: MASTER.h
+datautil.dep: W__BASE.h
+datautil.dep: TranslatedString.h
+datautil.dep: GLOBAL.h
+datautil.dep: TASSERT.h
+datautil.dep: Q_UNICODE.h
+datautil.dep: SYSTEM.h
+datautil.dep: ALLOC.h
+datautil.dep: TECXXX.h
+datautil.dep: ARRLIST.h
+datautil.dep: SET.h
+datautil.dep: DATASET.h
+datautil.dep: FILESTREAM.h
+datautil.dep: DATAIO.h
+datautil.dep: DATAIO4.h
+datautil.dep: DATAUTIL.h
+datautil.dep: STRLIST.h
+datautil.dep: Q_MSG.h
+datautil.dep: INPUT.h
+$(OBJECTS_DIR)/datautil.o: $(EXE_DEP)
+$(OBJECTS_DIR)/datautil.o:
+	@SOURCE_DIR=.
+	SOURCE=datautil.cpp ; $(cpptoo)

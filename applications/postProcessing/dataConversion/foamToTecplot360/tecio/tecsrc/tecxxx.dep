@@ -1,0 +1,21 @@
+$(OBJECTS_DIR)/tecxxx.o: tecxxx.dep
+tecxxx.dep: tecxxx.cpp
+tecxxx.dep: stdafx.h
+tecxxx.dep: MASTER.h
+tecxxx.dep: W__BASE.h
+tecxxx.dep: TranslatedString.h
+tecxxx.dep: GLOBAL.h
+tecxxx.dep: TASSERT.h
+tecxxx.dep: Q_UNICODE.h
+tecxxx.dep: SYSTEM.h
+tecxxx.dep: FILESTREAM.h
+tecxxx.dep: DATAIO4.h
+tecxxx.dep: DATASET0.h
+tecxxx.dep: TECXXX.h
+tecxxx.dep: DATAUTIL.h
+tecxxx.dep: ALLOC.h
+tecxxx.dep: AUXDATA.h
+$(OBJECTS_DIR)/tecxxx.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tecxxx.o:
+	@SOURCE_DIR=.
+	SOURCE=tecxxx.cpp ; $(cpptoo)

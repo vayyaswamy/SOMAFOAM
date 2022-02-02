@@ -1,0 +1,3 @@
+OBJECTS = \
+$(OBJECTS_DIR)/mirrorFvMesh.o\
+$(OBJECTS_DIR)/mirrorMesh.o

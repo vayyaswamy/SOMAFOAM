@@ -1,0 +1,12 @@
+include solidBodyMotionFunction/solidBodyMotionFunction.dep
+include solidBodyMotionFunction/newSolidBodyMotionFunction.dep
+include noMotion/noMotion.dep
+include translation/translation.dep
+include graphMotion/graphMotion.dep
+include linearOscillation/linearOscillation.dep
+include rotatingOscillation/rotatingOscillation.dep
+include harmonicOscillation/harmonicOscillation.dep
+include SDA/SDA.dep
+include SKA/SKA.dep
+include constantVelocity/constantVelocity.dep
+include graphVelocity/graphVelocity.dep

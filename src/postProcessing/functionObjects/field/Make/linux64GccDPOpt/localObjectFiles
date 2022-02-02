@@ -1,0 +1,18 @@
+LOCAL_OBJECTS = \
+fieldAverage.o\
+fieldAverageItem.o\
+fieldAverageItemIO.o\
+fieldAverageFunctionObject.o\
+fieldMinMax.o\
+fieldMinMaxFunctionObject.o\
+minMaxField.o\
+maxFieldCell.o\
+fieldValue.o\
+faceSource.o\
+faceSourceFunctionObject.o\
+cellSource.o\
+cellSourceFunctionObject.o\
+readFields.o\
+readFieldsFunctionObject.o\
+surfaceInterpolateFieldsFunctionObject.o\
+surfaceInterpolateFields.o

@@ -1,0 +1,1 @@
+../derivedFvPatchFields/wideBandSpecularRadiation/wideBandSpecularRadiationMixedFvPatchScalarField.H

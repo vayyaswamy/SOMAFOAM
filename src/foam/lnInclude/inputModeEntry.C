@@ -1,0 +1,1 @@
+../db/dictionary/functionEntries/inputModeEntry/inputModeEntry.C

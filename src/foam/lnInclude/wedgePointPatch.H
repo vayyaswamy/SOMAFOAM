@@ -1,0 +1,1 @@
+../meshes/pointMesh/pointPatches/constraint/wedge/wedgePointPatch.H

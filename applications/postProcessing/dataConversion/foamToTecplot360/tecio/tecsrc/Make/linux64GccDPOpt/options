@@ -1,0 +1,49 @@
+# 1 "options"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "options"
+
+# 1 "tecioOptions" 1
+
+
+    TECIO_FLAGS = -DMAKEARCHIVE -DLINUX -DLINUX64 -DUSEENUM -DTHREED -U_WIN32 -DENGINE
+
+# 33 "tecioOptions"
+
+TECIO_INC =
+TECIO_LIBS =
+# 2 "options" 2
+
+EXE_INC =     $(TECIO_FLAGS) $(TECIO_INC)
+
+
+LIB_LIBS =     $(TECIO_LIBS)

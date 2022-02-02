@@ -1,0 +1,8 @@
+$(OBJECTS_DIR)/Hasher.o: primitives/hashes/Hasher/Hasher.dep
+primitives/hashes/Hasher/Hasher.dep: primitives/hashes/Hasher/Hasher.C
+primitives/hashes/Hasher/Hasher.dep: primitives/hashes/Hasher/Hasher.H
+primitives/hashes/Hasher/Hasher.dep: primitives/hashes/Hasher/HasherInt.H
+$(OBJECTS_DIR)/Hasher.o: $(EXE_DEP)
+$(OBJECTS_DIR)/Hasher.o:
+	@SOURCE_DIR=primitives/hashes/Hasher
+	SOURCE=primitives/hashes/Hasher/Hasher.C ; $(Ctoo)

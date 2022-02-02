@@ -1,0 +1,18 @@
+$(OBJECTS_DIR)/strlist.o: strlist.dep
+strlist.dep: strlist.cpp
+strlist.dep: stdafx.h
+strlist.dep: MASTER.h
+strlist.dep: W__BASE.h
+strlist.dep: TranslatedString.h
+strlist.dep: GLOBAL.h
+strlist.dep: TASSERT.h
+strlist.dep: Q_UNICODE.h
+strlist.dep: STRUTIL.h
+strlist.dep: ALLOC.h
+strlist.dep: ARRLIST.h
+strlist.dep: STRLIST.h
+strlist.dep: TECXXX.h
+$(OBJECTS_DIR)/strlist.o: $(EXE_DEP)
+$(OBJECTS_DIR)/strlist.o:
+	@SOURCE_DIR=.
+	SOURCE=strlist.cpp ; $(cpptoo)

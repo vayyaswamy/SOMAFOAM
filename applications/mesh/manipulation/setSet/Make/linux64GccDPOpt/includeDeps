@@ -1,0 +1,4 @@
+include writePointSet.dep
+include writeFuns.dep
+include writePatch.dep
+include setSet.dep

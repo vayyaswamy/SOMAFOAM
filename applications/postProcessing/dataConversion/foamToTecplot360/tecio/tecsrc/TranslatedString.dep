@@ -1,0 +1,13 @@
+$(OBJECTS_DIR)/TranslatedString.o: TranslatedString.dep
+TranslatedString.dep: TranslatedString.cpp
+TranslatedString.dep: stdafx.h
+TranslatedString.dep: MASTER.h
+TranslatedString.dep: W__BASE.h
+TranslatedString.dep: TranslatedString.h
+TranslatedString.dep: GLOBAL.h
+TranslatedString.dep: TASSERT.h
+TranslatedString.dep: Q_UNICODE.h
+$(OBJECTS_DIR)/TranslatedString.o: $(EXE_DEP)
+$(OBJECTS_DIR)/TranslatedString.o:
+	@SOURCE_DIR=.
+	SOURCE=TranslatedString.cpp ; $(cpptoo)

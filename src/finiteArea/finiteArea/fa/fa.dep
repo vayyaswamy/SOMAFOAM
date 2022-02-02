@@ -1,0 +1,34 @@
+$(OBJECTS_DIR)/fa.o: finiteArea/fa/fa.dep
+finiteArea/fa/fa.dep: finiteArea/fa/fa.C
+finiteArea/fa/fa.dep: finiteArea/fa/fa.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/className.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/word.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/foamString.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/char.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/Hasher.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/foamStringI.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/wordI.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/debug.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/debugSwitch.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/controlSwitches.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/safeBool.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/safeBoolI.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/scalar.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/floatScalar.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/doubleFloat.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/label.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/int.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/long.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/longLong.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/pTraits.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/direction.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/products.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/ScalarTemplate.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/doubleScalar.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/longDoubleScalar.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/controlSwitchesI.H
+finiteArea/fa/fa.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/controlSwitches.C
+$(OBJECTS_DIR)/fa.o: $(EXE_DEP)
+$(OBJECTS_DIR)/fa.o:
+	@SOURCE_DIR=finiteArea/fa
+	SOURCE=finiteArea/fa/fa.C ; $(Ctoo)

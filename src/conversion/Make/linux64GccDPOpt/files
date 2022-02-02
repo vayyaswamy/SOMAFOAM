@@ -1,0 +1,45 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+meshTables/boundaryRegion.C
+meshTables/cellTable.C
+
+meshReader/meshReader.C
+meshReader/meshReaderAux.C
+meshReader/calcPointCells.C
+meshReader/createPolyCells.C
+meshReader/createPolyBoundary.C
+
+polyDualMesh/polyDualMesh.C
+
+LIB = $(FOAM_LIBBIN)/libconversion

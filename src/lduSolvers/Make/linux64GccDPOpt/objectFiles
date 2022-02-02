@@ -1,0 +1,25 @@
+OBJECTS = \
+$(OBJECTS_DIR)/crAddressing.o\
+$(OBJECTS_DIR)/crMatrix.o\
+$(OBJECTS_DIR)/CholeskyPrecon.o\
+$(OBJECTS_DIR)/ILU0.o\
+$(OBJECTS_DIR)/ILUC0.o\
+$(OBJECTS_DIR)/ILUCp.o\
+$(OBJECTS_DIR)/symGaussSeidelPrecon.o\
+$(OBJECTS_DIR)/amgPrecon.o\
+$(OBJECTS_DIR)/symGaussSeidelSmoother.o\
+$(OBJECTS_DIR)/iluSmoother.o\
+$(OBJECTS_DIR)/cgSolver.o\
+$(OBJECTS_DIR)/bicgSolver.o\
+$(OBJECTS_DIR)/bicgStabSolver.o\
+$(OBJECTS_DIR)/gmresSolver.o\
+$(OBJECTS_DIR)/amgSolver.o\
+$(OBJECTS_DIR)/fpeAmgSolver.o\
+$(OBJECTS_DIR)/mpeAmgSolver.o\
+$(OBJECTS_DIR)/rreAmgSolver.o\
+$(OBJECTS_DIR)/deflationSolver.o\
+$(OBJECTS_DIR)/amgCycle.o\
+$(OBJECTS_DIR)/fineAmgLevel.o\
+$(OBJECTS_DIR)/coarseAmgLevel.o\
+$(OBJECTS_DIR)/amgPolicy.o\
+$(OBJECTS_DIR)/pamgPolicy.o

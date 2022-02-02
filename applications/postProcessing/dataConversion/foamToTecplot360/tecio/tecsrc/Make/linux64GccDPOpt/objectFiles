@@ -1,0 +1,19 @@
+OBJECTS = \
+$(OBJECTS_DIR)/alloc.o\
+$(OBJECTS_DIR)/arrlist.o\
+$(OBJECTS_DIR)/auxdata.o\
+$(OBJECTS_DIR)/dataio4.o\
+$(OBJECTS_DIR)/dataio.o\
+$(OBJECTS_DIR)/dataset0.o\
+$(OBJECTS_DIR)/dataset.o\
+$(OBJECTS_DIR)/datautil.o\
+$(OBJECTS_DIR)/filestream.o\
+$(OBJECTS_DIR)/geom2.o\
+$(OBJECTS_DIR)/q_msg.o\
+$(OBJECTS_DIR)/q_unicode.o\
+$(OBJECTS_DIR)/set.o\
+$(OBJECTS_DIR)/strlist.o\
+$(OBJECTS_DIR)/strutil.o\
+$(OBJECTS_DIR)/tassert.o\
+$(OBJECTS_DIR)/tecxxx.o\
+$(OBJECTS_DIR)/TranslatedString.o

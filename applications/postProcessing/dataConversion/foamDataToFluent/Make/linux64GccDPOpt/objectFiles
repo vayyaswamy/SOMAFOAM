@@ -1,0 +1,4 @@
+OBJECTS = \
+$(OBJECTS_DIR)/writeFluentScalarField.o\
+$(OBJECTS_DIR)/writeFluentVectorField.o\
+$(OBJECTS_DIR)/foamDataToFluent.o

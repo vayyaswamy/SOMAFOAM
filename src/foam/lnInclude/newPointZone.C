@@ -1,0 +1,1 @@
+../meshes/polyMesh/zones/pointZone/newPointZone.C

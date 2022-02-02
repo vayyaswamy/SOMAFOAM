@@ -1,0 +1,3 @@
+LOCAL_OBJECTS = \
+systemCall.o\
+systemCallFunctionObject.o

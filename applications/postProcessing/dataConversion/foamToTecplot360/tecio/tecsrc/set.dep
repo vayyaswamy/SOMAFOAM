@@ -1,0 +1,15 @@
+$(OBJECTS_DIR)/set.o: set.dep
+set.dep: set.cpp
+set.dep: stdafx.h
+set.dep: MASTER.h
+set.dep: W__BASE.h
+set.dep: TranslatedString.h
+set.dep: GLOBAL.h
+set.dep: TASSERT.h
+set.dep: Q_UNICODE.h
+set.dep: ALLOC.h
+set.dep: SET.h
+$(OBJECTS_DIR)/set.o: $(EXE_DEP)
+$(OBJECTS_DIR)/set.o:
+	@SOURCE_DIR=.
+	SOURCE=set.cpp ; $(cpptoo)

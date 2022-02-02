@@ -1,0 +1,14 @@
+$(OBJECTS_DIR)/q_unicode.o: q_unicode.dep
+q_unicode.dep: q_unicode.cpp
+q_unicode.dep: stdafx.h
+q_unicode.dep: MASTER.h
+q_unicode.dep: W__BASE.h
+q_unicode.dep: TranslatedString.h
+q_unicode.dep: GLOBAL.h
+q_unicode.dep: TASSERT.h
+q_unicode.dep: ALLOC.h
+q_unicode.dep: Q_UNICODE.h
+$(OBJECTS_DIR)/q_unicode.o: $(EXE_DEP)
+$(OBJECTS_DIR)/q_unicode.o:
+	@SOURCE_DIR=.
+	SOURCE=q_unicode.cpp ; $(cpptoo)

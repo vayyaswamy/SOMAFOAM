@@ -1,0 +1,25 @@
+DEPENDENCIES = \
+crMatrix/crAddressing.dep\
+crMatrix/crMatrix.dep\
+$(lduPrecon)/CholeskyPrecon/CholeskyPrecon.dep\
+$(lduPrecon)/ILU0/ILU0.dep\
+$(lduPrecon)/ILUC0/ILUC0.dep\
+$(lduPrecon)/ILUCp/ILUCp.dep\
+$(lduPrecon)/symGaussSeidelPrecon/symGaussSeidelPrecon.dep\
+$(lduPrecon)/amgPrecon/amgPrecon.dep\
+$(lduSmoother)/symGaussSeidelSmoother/symGaussSeidelSmoother.dep\
+$(lduSmoother)/iluSmoother/iluSmoother.dep\
+$(lduSolver)/cgSolver/cgSolver.dep\
+$(lduSolver)/bicgSolver/bicgSolver.dep\
+$(lduSolver)/bicgStabSolver/bicgStabSolver.dep\
+$(lduSolver)/gmresSolver/gmresSolver.dep\
+$(lduSolver)/amgSolver/amgSolver.dep\
+$(lduSolver)/fpeAmgSolver/fpeAmgSolver.dep\
+$(lduSolver)/mpeAmgSolver/mpeAmgSolver.dep\
+$(lduSolver)/rreAmgSolver/rreAmgSolver.dep\
+$(lduSolver)/deflationSolver/deflationSolver.dep\
+$(amg)/amgCycle.dep\
+$(amg)/fineAmgLevel.dep\
+$(amg)/coarseAmgLevel.dep\
+$(amgPolicy)/amgPolicy.dep\
+$(amgPolicy)/pamgPolicy.dep

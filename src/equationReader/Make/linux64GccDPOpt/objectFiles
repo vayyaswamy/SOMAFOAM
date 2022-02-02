@@ -1,0 +1,10 @@
+OBJECTS = \
+$(OBJECTS_DIR)/equationSources.o\
+$(OBJECTS_DIR)/equation.o\
+$(OBJECTS_DIR)/equationIO.o\
+$(OBJECTS_DIR)/equationOperation.o\
+$(OBJECTS_DIR)/equationReader.o\
+$(OBJECTS_DIR)/equationReaders.o\
+$(OBJECTS_DIR)/equationReaderIO.o\
+$(OBJECTS_DIR)/IOEquationReader.o\
+$(OBJECTS_DIR)/IOEquationReaderIO.o

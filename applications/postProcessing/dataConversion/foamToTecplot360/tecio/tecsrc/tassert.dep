@@ -1,0 +1,14 @@
+$(OBJECTS_DIR)/tassert.o: tassert.dep
+tassert.dep: tassert.cpp
+tassert.dep: stdafx.h
+tassert.dep: MASTER.h
+tassert.dep: W__BASE.h
+tassert.dep: TranslatedString.h
+tassert.dep: GLOBAL.h
+tassert.dep: TASSERT.h
+tassert.dep: Q_UNICODE.h
+tassert.dep: STRUTIL.h
+$(OBJECTS_DIR)/tassert.o: $(EXE_DEP)
+$(OBJECTS_DIR)/tassert.o:
+	@SOURCE_DIR=.
+	SOURCE=tassert.cpp ; $(cpptoo)

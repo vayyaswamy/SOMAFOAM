@@ -1,0 +1,1 @@
+../db/IOstreams/Pstreams/allReduceTemplates.C

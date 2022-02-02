@@ -1,0 +1,7 @@
+pdf = pdf
+uniform = uniform
+normal = normal
+general = general
+exponential = exponential
+RosinRammler = RosinRammler
+LIB = $(FOAM_LIBBIN)/libpdf

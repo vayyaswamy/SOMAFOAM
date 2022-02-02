@@ -1,0 +1,19 @@
+DEPENDENCIES = \
+$(autoHexMeshDriver)/autoLayerDriver.dep\
+$(autoHexMeshDriver)/autoLayerDriverShrink.dep\
+$(autoHexMeshDriver)/autoSnapDriver.dep\
+$(autoHexMeshDriver)/autoRefineDriver.dep\
+$(autoHexMeshDriver)/autoHexMeshDriver.dep\
+$(autoHexMeshDriver)/layerParameters/layerParameters.dep\
+$(autoHexMeshDriver)/refinementParameters/refinementParameters.dep\
+$(autoHexMeshDriver)/snapParameters/snapParameters.dep\
+$(autoHexMeshDriver)/pointData/pointData.dep\
+$(autoHexMesh)/meshRefinement/meshRefinementBaffles.dep\
+$(autoHexMesh)/meshRefinement/meshRefinement.dep\
+$(autoHexMesh)/meshRefinement/meshRefinementMerge.dep\
+$(autoHexMesh)/meshRefinement/meshRefinementProblemCells.dep\
+$(autoHexMesh)/meshRefinement/meshRefinementRefine.dep\
+$(autoHexMesh)/refinementSurfaces/refinementSurfaces.dep\
+$(autoHexMesh)/shellSurfaces/shellSurfaces.dep\
+$(autoHexMesh)/trackedParticle/trackedParticle.dep\
+$(autoHexMesh)/trackedParticle/trackedParticleCloud.dep

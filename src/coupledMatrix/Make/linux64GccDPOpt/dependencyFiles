@@ -1,0 +1,20 @@
+DEPENDENCIES = \
+coupledLduMatrix/coupledLduMatrix.dep\
+coupledLduPrecon/coupledLduPrecon/coupledLduPrecon.dep\
+coupledLduPrecon/noPrecon/coupledNoPrecon.dep\
+coupledLduPrecon/diagonalPrecon/coupledDiagonalPrecon.dep\
+coupledLduPrecon/GaussSeidelPrecon/coupledGaussSeidelPrecon.dep\
+coupledLduPrecon/CholeskyPrecon/coupledCholeskyPrecon.dep\
+coupledLduSmoother/coupledLduSmoother/coupledLduSmoother.dep\
+coupledLduSmoother/GaussSeidelSmoother/coupledGaussSeidelSmoother.dep\
+coupledLduSmoother/iluSmoother/coupledIluSmoother.dep\
+coupledLduSolver/coupledSolverPerformance/coupledSolverPerformance.dep\
+coupledLduSolver/coupledLduSolver/coupledLduSolver.dep\
+coupledLduSolver/iterativeSolver/coupledIterativeSolver.dep\
+coupledLduSolver/diagonalSolver/coupledDiagonalSolver.dep\
+coupledLduSolver/smoothSolver/coupledSmoothSolver.dep\
+coupledLduSolver/cgSolver/coupledCgSolver.dep\
+coupledLduSolver/bicgSolver/coupledBicgSolver.dep\
+coupledLduSolver/bicgStabSolver/coupledBicgStabSolver.dep\
+coupledFvMatrices/coupledFvMatrices.dep\
+coupledFvMatrices/coupledFvScalarMatrix/coupledFvScalarMatrix.dep

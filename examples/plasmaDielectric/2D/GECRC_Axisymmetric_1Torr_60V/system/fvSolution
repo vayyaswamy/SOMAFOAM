@@ -1,0 +1,61 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    Yi
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+    Yin
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+    Te
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    };
+
+    Phi_Phi_Phi
+    {
+        solver           BiCGStab;
+        preconditioner   Cholesky;
+        relTol           0.001;
+	minIter 	 1;
+    };
+}
+
+relaxationFactors
+{
+    fields
+    {
+    }
+    equations
+    {
+		”.*”           1; 
+    }
+}

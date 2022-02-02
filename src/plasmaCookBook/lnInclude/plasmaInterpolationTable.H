@@ -1,0 +1,1 @@
+../interpolations/interpolationTable/plasmaInterpolationTable.H

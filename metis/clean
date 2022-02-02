@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for dir in rpmBuild/BUILD rpmBuild/BUILDROOT rpmBuild/rpmDB rpmBuild/RPMS rpmBuild/SRPMS rpmBuild/TGZS rpmBuild/tmp
+do
+    echo "Removing $dir/"
+    [ -d $dir ] && rm -rf $dir
+done

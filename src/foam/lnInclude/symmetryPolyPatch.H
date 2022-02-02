@@ -1,0 +1,1 @@
+../meshes/polyMesh/polyPatches/constraint/symmetry/symmetryPolyPatch.H

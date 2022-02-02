@@ -1,0 +1,12 @@
+$(OBJECTS_DIR)/region4.o: freesteam-2.1/region4.dep
+freesteam-2.1/region4.dep: freesteam-2.1/region4.c
+freesteam-2.1/region4.dep: freesteam-2.1/region4.h
+freesteam-2.1/region4.dep: freesteam-2.1/common.h
+freesteam-2.1/region4.dep: freesteam-2.1/config.h
+freesteam-2.1/region4.dep: freesteam-2.1/region1.h
+freesteam-2.1/region4.dep: freesteam-2.1/region3.h
+freesteam-2.1/region4.dep: freesteam-2.1/region2.h
+$(OBJECTS_DIR)/region4.o: $(EXE_DEP)
+$(OBJECTS_DIR)/region4.o:
+	@SOURCE_DIR=freesteam-2.1
+	SOURCE=freesteam-2.1/region4.c ; $(ctoo)

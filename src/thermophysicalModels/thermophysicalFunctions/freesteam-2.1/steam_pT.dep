@@ -1,0 +1,16 @@
+$(OBJECTS_DIR)/steam_pT.o: freesteam-2.1/steam_pT.dep
+freesteam-2.1/steam_pT.dep: freesteam-2.1/steam_pT.c
+freesteam-2.1/steam_pT.dep: freesteam-2.1/steam_pT.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/common.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/config.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/steam.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/region1.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/region4.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/region2.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/region3.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/zeroin.h
+freesteam-2.1/steam_pT.dep: freesteam-2.1/b23.h
+$(OBJECTS_DIR)/steam_pT.o: $(EXE_DEP)
+$(OBJECTS_DIR)/steam_pT.o:
+	@SOURCE_DIR=freesteam-2.1
+	SOURCE=freesteam-2.1/steam_pT.c ; $(ctoo)

@@ -1,0 +1,50 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+pdf = pdf
+uniform = uniform
+normal = normal
+general = general
+exponential = exponential
+RosinRammler = RosinRammler
+
+$(pdf)/pdf.C
+$(pdf)/newPdf.C
+
+$(uniform)/uniform.C
+$(normal)/normal.C
+$(general)/general.C
+$(exponential)/exponential.C
+$(RosinRammler)/RosinRammler.C
+
+LIB = $(FOAM_LIBBIN)/libpdf

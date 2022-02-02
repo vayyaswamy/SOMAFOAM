@@ -1,0 +1,15 @@
+DEPENDENCIES = \
+dynamicFvMesh/dynamicFvMesh.dep\
+dynamicFvMesh/newDynamicFvMesh.dep\
+staticFvMesh/staticFvMesh.dep\
+solidBodyMotionFvMesh/solidBodyMotionFvMesh.dep\
+dynamicBoxFvMesh/dynamicBoxFvMesh.dep\
+movingBoxFvMesh/movingBoxFvMesh.dep\
+dynamicMotionSolverFvMesh/dynamicMotionSolverFvMesh.dep\
+subsetMotionSolverFvMesh/subsetMotionSolverFvMesh.dep\
+dynamicInkJetFvMesh/dynamicInkJetFvMesh.dep\
+dynamicRefineFvMesh/dynamicRefineFvMesh.dep\
+mixerGgiFvMesh/mixerGgiFvMesh.dep\
+turboFvMesh/turboFvMesh.dep\
+fvMeshAdder/fvMeshAdder.dep\
+fvMeshDistribute/fvMeshDistribute.dep

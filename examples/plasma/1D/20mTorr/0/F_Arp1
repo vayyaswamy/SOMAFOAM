@@ -1,0 +1,44 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      F_Arp1;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [ 0 0 0 1 0 0 0 ];
+
+internalField   uniform ( 0 0 0 );
+
+boundaryField
+{
+    electrode
+    {
+        type            ionHGLFlux;
+        mobility        mu_Arp1;
+        refCoeff        0;
+        charge          1;
+        molWeight       39.9995;
+    }
+    ground
+    {
+        type            ionHGLFlux;
+        mobility        mu_Arp1;
+        refCoeff        0;
+        charge          1;
+        molWeight       39.9995;
+    }
+    otherfaces
+    {
+        type            empty;
+    }
+}

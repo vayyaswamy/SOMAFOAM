@@ -1,0 +1,7 @@
+OBJECTS = \
+$(OBJECTS_DIR)/extrudeModel.o\
+$(OBJECTS_DIR)/newExtrudeModel.o\
+$(OBJECTS_DIR)/linearNormal.o\
+$(OBJECTS_DIR)/linearRadial.o\
+$(OBJECTS_DIR)/sigmaRadial.o\
+$(OBJECTS_DIR)/wedge.o

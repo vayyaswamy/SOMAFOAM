@@ -1,0 +1,4 @@
+ODESolvers  =  ODESolvers
+translationODE = translationODE
+sixDOF = sixDOF
+LIB = $(FOAM_LIBBIN)/libODE

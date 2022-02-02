@@ -1,0 +1,1 @@
+../primitives/VectorN/vector6/diagTensor6.H

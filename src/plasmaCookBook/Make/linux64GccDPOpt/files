@@ -1,0 +1,78 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+plasmaConstants/plasmaConstants.C
+
+multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModel.C
+multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/newMultiSpeciesPlasmaModel.C
+multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModels.C
+
+plasmaEnergyModels/plasmaEnergyModel/plasmaEnergyModel.C
+
+plasmaEnergyModels/eTemperature/eTemp/eTemp.C
+plasmaEnergyModels/eTemperature/eTemp/neweTemp.C
+plasmaEnergyModels/eTemperature/efullImplicit/efullImplicit.C
+plasmaEnergyModels/eTemperature/fullImplicitTE/fullImplicitTE.C
+
+plasmaEnergyModels/iTemperature/iTemp/iTemp.C
+plasmaEnergyModels/iTemperature/iTemp/newiTemp.C
+plasmaEnergyModels/iTemperature/ifullImplicit/ifullImplicit.C
+plasmaEnergyModels/iTemperature/gasCorrectedTemp/gasCorrectedTemp.C
+plasmaEnergyModels/iTemperature/gasTemp/gasTemp.C
+
+plasmaEnergyModels/gTemperature/gTemp/gTemp.C
+plasmaEnergyModels/gTemperature/gTemp/newgTemp.C
+plasmaEnergyModels/gTemperature/gfullImplicit/gfullImplicit.C
+plasmaEnergyModels/gTemperature/none/none.C
+
+plasmaBoundaryConditions/plasmaPotential/plasmaPotential.C
+plasmaBoundaryConditions/driftDiffusionElectronDensity/driftDiffusionElectronDensity.C
+plasmaBoundaryConditions/driftDiffusionPositiveIonDensity/driftDiffusionPositiveIonDensity.C
+plasmaBoundaryConditions/driftDiffusionOpenBoundary/driftDiffusionOpenBoundary.C
+plasmaBoundaryConditions/electronTemperature/electronTemperature.C
+plasmaBoundaryConditions/electronHGLFlux/electronHGLFlux.C
+plasmaBoundaryConditions/electronThermalFlux/electronThermalFlux.C
+plasmaBoundaryConditions/eEnergyThermalMFlux/eEnergyThermalMFlux.C
+plasmaBoundaryConditions/ionHGLFlux/ionHGLFlux.C
+plasmaBoundaryConditions/eEnergyHGLFlux/eEnergyHGLFlux.C
+plasmaBoundaryConditions/eEnergyThermalFlux/eEnergyThermalFlux.C
+plasmaBoundaryConditions/plasmaExtendedPotential/plasmaExtendedPotential.C
+plasmaBoundaryConditions/electronThermalVelocity/electronThermalVelocity.C
+plasmaBoundaryConditions/externalCircuitPotential/externalCircuitPotential.C
+
+plasmaBoundaryConditions/plasmaDielectricRegionCoupleBase/plasmaDielectricRegionCoupleBase.C
+plasmaBoundaryConditions/plasmaDielectricEpsilon/plasmaDielectricEpsilonFvPatchScalarField.C
+plasmaBoundaryConditions/coupledPotential/coupledPotentialFvPatchScalarField.C
+plasmaBoundaryConditions/plasmaDielectricEpsilonSlave/plasmaDielectricEpsilonSlaveFvPatchScalarField.C
+
+LIB = $(FOAM_LIBBIN)/libplasmaCookBook

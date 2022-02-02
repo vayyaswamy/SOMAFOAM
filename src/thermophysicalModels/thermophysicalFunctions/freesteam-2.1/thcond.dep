@@ -1,0 +1,9 @@
+$(OBJECTS_DIR)/thcond.o: freesteam-2.1/thcond.dep
+freesteam-2.1/thcond.dep: freesteam-2.1/thcond.c
+freesteam-2.1/thcond.dep: freesteam-2.1/thcond.h
+freesteam-2.1/thcond.dep: freesteam-2.1/common.h
+freesteam-2.1/thcond.dep: freesteam-2.1/config.h
+$(OBJECTS_DIR)/thcond.o: $(EXE_DEP)
+$(OBJECTS_DIR)/thcond.o:
+	@SOURCE_DIR=freesteam-2.1
+	SOURCE=freesteam-2.1/thcond.c ; $(ctoo)

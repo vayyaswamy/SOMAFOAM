@@ -1,0 +1,9 @@
+LOCAL_OBJECTS = \
+emcModels.o\
+newEmcModels.o\
+voltageControl.o\
+powerControl.o\
+none.o\
+regionProperties.o\
+plasmaDielectricWallCoupledFvPatchScalarField.o\
+plasmaMultiRegionFoam.o

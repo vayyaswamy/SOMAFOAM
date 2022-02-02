@@ -1,0 +1,59 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+autoHexMesh             = autoHexMesh
+autoHexMeshDriver       = $(autoHexMesh)/autoHexMeshDriver
+
+$(autoHexMeshDriver)/autoLayerDriver.C
+$(autoHexMeshDriver)/autoLayerDriverShrink.C
+$(autoHexMeshDriver)/autoSnapDriver.C
+$(autoHexMeshDriver)/autoRefineDriver.C
+$(autoHexMeshDriver)/autoHexMeshDriver.C
+
+$(autoHexMeshDriver)/layerParameters/layerParameters.C
+$(autoHexMeshDriver)/refinementParameters/refinementParameters.C
+$(autoHexMeshDriver)/snapParameters/snapParameters.C
+$(autoHexMeshDriver)/pointData/pointData.C
+
+$(autoHexMesh)/meshRefinement/meshRefinementBaffles.C
+$(autoHexMesh)/meshRefinement/meshRefinement.C
+$(autoHexMesh)/meshRefinement/meshRefinementMerge.C
+$(autoHexMesh)/meshRefinement/meshRefinementProblemCells.C
+$(autoHexMesh)/meshRefinement/meshRefinementRefine.C
+$(autoHexMesh)/refinementSurfaces/refinementSurfaces.C
+$(autoHexMesh)/shellSurfaces/shellSurfaces.C
+$(autoHexMesh)/trackedParticle/trackedParticle.C
+$(autoHexMesh)/trackedParticle/trackedParticleCloud.C
+
+LIB = $(FOAM_LIBBIN)/libautoMesh
+

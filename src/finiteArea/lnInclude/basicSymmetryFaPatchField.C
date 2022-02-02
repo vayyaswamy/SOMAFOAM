@@ -1,0 +1,1 @@
+../fields/faPatchFields/basic/basicSymmetry/basicSymmetryFaPatchField.C

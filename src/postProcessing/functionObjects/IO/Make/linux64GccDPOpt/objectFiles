@@ -1,0 +1,3 @@
+OBJECTS = \
+$(OBJECTS_DIR)/writeRegisteredObject.o\
+$(OBJECTS_DIR)/writeRegisteredObjectFunctionObject.o

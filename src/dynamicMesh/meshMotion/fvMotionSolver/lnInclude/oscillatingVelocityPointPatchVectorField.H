@@ -1,0 +1,1 @@
+../pointPatchFields/derived/oscillatingVelocity/oscillatingVelocityPointPatchVectorField.H

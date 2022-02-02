@@ -1,0 +1,126 @@
+#!/bin/sh
+#------------------------------------------------------------------------------
+# =========                 |
+# \\      /  F ield         | foam-extend: Open Source CFD
+#  \\    /   O peration     | Version:     4.0
+#   \\  /    A nd           | Web:         http://www.foam-extend.org
+#    \\/     M anipulation  | For copyright notice see file Copyright
+#------------------------------------------------------------------------------
+# License
+#     This file is part of foam-extend.
+#
+#     foam-extend is free software: you can redistribute it and/or modify it
+#     under the terms of the GNU General Public License as published by the
+#     Free Software Foundation, either version 3 of the License, or (at your
+#     option) any later version.
+#
+#     foam-extend is distributed in the hope that it will be useful, but
+#     WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#     General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Script
+#     foamCleanPath
+#
+# Description
+#     Usage: foamCleanPath [-strip] path [wildcard] .. [wildcard]
+#
+#     Prints its argument (which should be a ':' separated path)
+#     without all
+#         - duplicate elements
+#         - (if '-strip') non-accessible directories
+#         - elements whose start matches a wildcard
+#
+#     Note:
+#         - this routine will fail when directories have embedded spaces
+#         - false matches possible if a wildcard contains '.' (sed regex)
+#------------------------------------------------------------------------------
+if [ "$#" -lt 1 -o "$1" = "-h" -o "$1" = "-help" ]
+then
+   cat <<USAGE 1>&2
+Usage: ${0##*/} [-strip] path [wildcard] .. [wildcard]
+
+    Prints its argument (which should be a ':' separated list) cleansed from
+      - duplicate elements
+      - elements whose start matches one of the wildcard(s)
+      - (if '-strip') non-accessible directories
+USAGE
+   exit 1
+fi
+
+
+strip=''
+if [ "$1" = "-strip" ]
+then
+    strip=true
+    shift
+fi
+
+
+dirList="$1"
+shift
+
+##DEBUG echo "input>$dirList<" 1>&2
+
+# preserve current IFS and split on whitespace
+oldIFS="$IFS"
+IFS=' '
+
+# "wildcard1 ... wildcardN" may have been passed as a single parameter
+set -- $*
+
+# strip out wildcards via sed
+while [ "$#" -ge 1 ]
+do
+    wildcard=$1
+    shift
+    ##DEBUG echo "remove>$wildcard<" 1>&2
+    dirList=`echo "$dirList" | sed -e "s@${wildcard}[^:]*:@@g"`
+done
+
+# split on ':' (and on space as well to avoid any surprises)
+IFS=': '
+set -- $dirList
+
+##DEBUG echo "intermediate>$dirList<" 1>&2
+
+# rebuild the list from scratch
+unset dirList
+for dir
+do
+    ##DEBUG echo "check>$dir<" 1>&2
+    #- dirs must exist
+    if [ -e "$dir" ]
+    then
+        #- no duplicate dirs
+        duplicate=`echo " $dirList " | sed -ne "s@ $dir @DUP@p"`
+
+        if [ ! "$duplicate" ]
+        then
+            dirList="$dirList $dir"
+        fi
+    elif [ "$strip" != "true" ]
+    then
+        # Print non-existing directories if not in 'strip' mode.
+        dirList="$dirList $dir"
+    fi
+done
+
+# parse on whitespace
+IFS=' '
+set -- $dirList
+
+# join on ':'
+IFS=':'
+dirList="$*"
+
+# restore IFS
+IFS="$oldIFS"
+
+##DEBUG echo "output>$dirList<" 1>&2
+echo "$dirList"
+
+# -----------------------------------------------------------------------------

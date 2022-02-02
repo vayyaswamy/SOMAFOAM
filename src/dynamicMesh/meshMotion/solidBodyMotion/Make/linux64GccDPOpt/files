@@ -1,0 +1,51 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+solidBodyMotionFunction/solidBodyMotionFunction.C
+solidBodyMotionFunction/newSolidBodyMotionFunction.C
+
+noMotion/noMotion.C
+translation/translation.C
+graphMotion/graphMotion.C
+
+linearOscillation/linearOscillation.C
+rotatingOscillation/rotatingOscillation.C
+harmonicOscillation/harmonicOscillation.C
+
+SDA/SDA.C
+SKA/SKA.C
+
+constantVelocity/constantVelocity.C
+graphVelocity/graphVelocity.C
+
+LIB = $(FOAM_LIBBIN)/libsolidBodyMotion

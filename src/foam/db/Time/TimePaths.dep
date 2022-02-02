@@ -1,0 +1,35 @@
+$(OBJECTS_DIR)/TimePaths.o: db/Time/TimePaths.dep
+db/Time/TimePaths.dep: db/Time/TimePaths.C
+db/Time/TimePaths.dep: db/Time/TimePaths.H
+db/Time/TimePaths.dep: lnInclude/fileName.H
+db/Time/TimePaths.dep: lnInclude/word.H
+db/Time/TimePaths.dep: lnInclude/foamString.H
+db/Time/TimePaths.dep: lnInclude/char.H
+db/Time/TimePaths.dep: lnInclude/Hasher.H
+db/Time/TimePaths.dep: lnInclude/foamStringI.H
+db/Time/TimePaths.dep: lnInclude/wordI.H
+db/Time/TimePaths.dep: lnInclude/debugSwitch.H
+db/Time/TimePaths.dep: lnInclude/controlSwitches.H
+db/Time/TimePaths.dep: lnInclude/safeBool.H
+db/Time/TimePaths.dep: lnInclude/safeBoolI.H
+db/Time/TimePaths.dep: lnInclude/scalar.H
+db/Time/TimePaths.dep: lnInclude/floatScalar.H
+db/Time/TimePaths.dep: lnInclude/doubleFloat.H
+db/Time/TimePaths.dep: lnInclude/label.H
+db/Time/TimePaths.dep: lnInclude/int.H
+db/Time/TimePaths.dep: lnInclude/long.H
+db/Time/TimePaths.dep: lnInclude/longLong.H
+db/Time/TimePaths.dep: lnInclude/pTraits.H
+db/Time/TimePaths.dep: lnInclude/direction.H
+db/Time/TimePaths.dep: lnInclude/products.H
+db/Time/TimePaths.dep: lnInclude/ScalarTemplate.H
+db/Time/TimePaths.dep: lnInclude/doubleScalar.H
+db/Time/TimePaths.dep: lnInclude/longDoubleScalar.H
+db/Time/TimePaths.dep: lnInclude/debug.H
+db/Time/TimePaths.dep: lnInclude/controlSwitchesI.H
+db/Time/TimePaths.dep: lnInclude/controlSwitches.C
+db/Time/TimePaths.dep: lnInclude/fileNameI.H
+$(OBJECTS_DIR)/TimePaths.o: $(EXE_DEP)
+$(OBJECTS_DIR)/TimePaths.o:
+	@SOURCE_DIR=db/Time
+	SOURCE=db/Time/TimePaths.C ; $(Ctoo)

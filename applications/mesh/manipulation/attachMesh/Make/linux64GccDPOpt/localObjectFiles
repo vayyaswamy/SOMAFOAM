@@ -1,0 +1,3 @@
+LOCAL_OBJECTS = \
+attachPolyTopoChanger.o\
+attachMesh.o

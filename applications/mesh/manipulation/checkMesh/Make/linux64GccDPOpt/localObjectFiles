@@ -1,0 +1,5 @@
+LOCAL_OBJECTS = \
+printMeshStats.o\
+checkTopology.o\
+checkGeometry.o\
+checkMesh.o

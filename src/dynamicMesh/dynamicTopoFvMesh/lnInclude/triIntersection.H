@@ -1,0 +1,1 @@
+../convexSetAlgorithm/triIntersection.H

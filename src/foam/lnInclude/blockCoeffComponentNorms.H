@@ -1,0 +1,1 @@
+../primitives/BlockCoeff/BlockCoeffNorm/BlockCoeffComponentNorm/blockCoeffComponentNorms.H

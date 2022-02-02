@@ -1,0 +1,8 @@
+EXE_INC = \
+    -I$(METIS_INCLUDE_DIR) \
+    -I../decompositionMethods/lnInclude
+
+LIB_LIBS = \
+    -ldecompositionMethods \
+    -L$(FOAM_LIBBIN)/dummy \
+    -L$(METIS_LIB_DIR) -lmetis

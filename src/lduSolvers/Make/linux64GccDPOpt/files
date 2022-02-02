@@ -1,0 +1,69 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+crMatrix/crAddressing.C
+crMatrix/crMatrix.C
+
+lduPrecon = lduPrecon
+$(lduPrecon)/CholeskyPrecon/CholeskyPrecon.C
+$(lduPrecon)/ILU0/ILU0.C
+$(lduPrecon)/ILUC0/ILUC0.C
+$(lduPrecon)/ILUCp/ILUCp.C
+$(lduPrecon)/symGaussSeidelPrecon/symGaussSeidelPrecon.C
+$(lduPrecon)/amgPrecon/amgPrecon.C
+
+lduSmoother = lduSmoother
+$(lduSmoother)/symGaussSeidelSmoother/symGaussSeidelSmoother.C
+$(lduSmoother)/iluSmoother/iluSmoother.C
+
+lduSolver = lduSolver
+$(lduSolver)/cgSolver/cgSolver.C
+$(lduSolver)/bicgSolver/bicgSolver.C
+$(lduSolver)/bicgStabSolver/bicgStabSolver.C
+$(lduSolver)/gmresSolver/gmresSolver.C
+$(lduSolver)/amgSolver/amgSolver.C
+$(lduSolver)/fpeAmgSolver/fpeAmgSolver.C
+$(lduSolver)/mpeAmgSolver/mpeAmgSolver.C
+$(lduSolver)/rreAmgSolver/rreAmgSolver.C
+$(lduSolver)/deflationSolver/deflationSolver.C
+
+amg = amg
+$(amg)/amgCycle.C
+$(amg)/fineAmgLevel.C
+$(amg)/coarseAmgLevel.C
+
+amgPolicy = $(amg)/amgPolicy
+$(amgPolicy)/amgPolicy.C
+$(amgPolicy)/pamgPolicy.C
+
+LIB = $(FOAM_LIBBIN)/liblduSolvers

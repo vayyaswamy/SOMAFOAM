@@ -1,0 +1,1 @@
+../meshes/polyMesh/polyPatches/basic/coupled/coupledPolyPatch.C

@@ -1,0 +1,13 @@
+$(OBJECTS_DIR)/word.o: primitives/strings/word/word.dep
+primitives/strings/word/word.dep: primitives/strings/word/word.C
+primitives/strings/word/word.dep: primitives/strings/word/word.H
+primitives/strings/word/word.dep: lnInclude/foamString.H
+primitives/strings/word/word.dep: lnInclude/char.H
+primitives/strings/word/word.dep: lnInclude/Hasher.H
+primitives/strings/word/word.dep: lnInclude/foamStringI.H
+primitives/strings/word/word.dep: primitives/strings/word/wordI.H
+primitives/strings/word/word.dep: lnInclude/debug.H
+$(OBJECTS_DIR)/word.o: $(EXE_DEP)
+$(OBJECTS_DIR)/word.o:
+	@SOURCE_DIR=primitives/strings/word
+	SOURCE=primitives/strings/word/word.C ; $(Ctoo)
