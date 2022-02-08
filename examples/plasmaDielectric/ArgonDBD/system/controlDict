@@ -1,0 +1,143 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+libs (
+      "libfoam.so"
+      "liblduSolvers.so"
+      "libplasmaCookBook.so"
+     );
+
+application     somaFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         1E-4;
+
+deltaT          1E-10;
+
+MaxCo		100.0;
+
+deltaTMax	1e-10;
+
+deltaTMin	1e-11;
+
+writeControl    runTime;
+
+writeInterval   1E-7;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  15;
+
+writeCompression uncompressed;
+
+timeFormat      general;
+
+timePrecision   8;
+
+runTimeModifiable yes;
+
+restartCapable on;
+
+OptimisationSwitches
+{
+    commsType       nonBlocking;
+}
+
+DebugSwitches
+{
+    dimensionSet    0;
+}
+
+functions
+{
+	dumpObjects
+	{
+		type            writeRegisteredObject;
+		functionObjectLibs ("libIOFunctionObjects.so");
+		outputControl   outputTime;
+		objectNames    ("Sy_electron" "surfC");
+	}
+	dumpObjects_1
+	{
+		type            writeRegisteredObject;
+		functionObjectLibs ("libIOFunctionObjects.so");
+		outputControl   outputTime;
+		region			dielectric_1;
+		objectNames    ("E");
+	}
+	fields
+        (
+            Te
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+            N_electron
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+            Phi
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+        );
+//	boundTemperature
+//	{
+//		type            boundField;
+//		functionObjectLibs ("libsampling.so");
+//		name   Te;
+//		minValue	300;
+//		maxValue	600000;
+//	}
+
+	probes
+	{ 
+		type	probes;
+		libs 	(sampling);
+
+		name	probes;
+		
+		outputControl	timeStep;
+
+		outputInterval	500;
+
+		fields 		(Jnet Phi);
+		
+		probeLocations
+		(
+			(1E-4 0 1E-4)  // at plasma-dielectric_1 interface
+			(1E-4 1E-4 1E-4) // at mid-point
+		);
+	}
+
+}
+
+
+// ************************************************************************* //
