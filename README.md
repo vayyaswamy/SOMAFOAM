@@ -4,8 +4,6 @@
 
   This software consists of FOAM based FV method and other utilities designed and implemented for modular, multiphysics plasma fluid simulation.
 
-Please visit [wiki](https://bitbucket.org/ltpsimulator/ltps/wiki/Home) for more information.
-
 The foam-extend snapshot used in this project corresponds to following
 ```
 commit efcc2b1b7df8543c7873f89a6f50c30e047b1b11
