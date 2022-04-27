@@ -1,6 +1,4 @@
-# LTPS (Low Temperature Plasma Simulator)
-
-![alternativetext](ltp.jpg)
+# SOMAFOAM
 
   This software consists of FOAM based FV method and other utilities designed and implemented for modular, multiphysics plasma fluid simulation.
 
