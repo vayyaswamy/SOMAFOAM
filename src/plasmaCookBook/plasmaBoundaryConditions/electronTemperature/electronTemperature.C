@@ -251,6 +251,14 @@ void Foam::electronTemperature::write(Ostream& os) const
         << Tse_ << token::END_STATEMENT << nl;
     os.writeKeyword("Edepend")
         << Edepend_ << token::END_STATEMENT << nl;
+     os.writeKeyword("TFN")
+        << TFN_ << token::END_STATEMENT << nl;
+    os.writeKeyword("field_emission")
+        << FE_ << token::END_STATEMENT << nl;
+    os.writeKeyword("field_enhancement_factor")
+        << beta_ << token::END_STATEMENT << nl;
+    os.writeKeyword("work_function")
+        << wf_ << token::END_STATEMENT << nl;
     this->writeEntry("value", os);
 }
 
