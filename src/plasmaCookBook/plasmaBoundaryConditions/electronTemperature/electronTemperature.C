@@ -71,7 +71,7 @@ Foam::electronTemperature::electronTemperature
     seec_(ptf.seec_),
     Tse_(ptf.Tse_),
     Edepend_(ptf.Edepend_),
-    TFN_(ptf.Tse_),
+    TFN_(ptf.TFN_),
     FE_(ptf.FE_),
     beta_(ptf.beta_),
     wf_(ptf.wf_)
