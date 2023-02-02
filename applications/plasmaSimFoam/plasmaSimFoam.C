@@ -101,14 +101,28 @@ int main(int argc, char *argv[])
 	{
 		while (runTime.run())
 		{
+			// solve plasma equations 
 			#include "plasmaEqn.H"
 
+			// postFix increment. Will update after loop is completed 
 		    runTime++;
 
 		    Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
 		        << runTime.elapsedCpuTime() << "s" << endl;
 
+			// solve poisson equation  
 			#include "solvePoisson.H"
+
+	        // set up new time step by matching electron flux of the system to a user specified courant number  
+		    scalar Cofactor = mspm().divFe();
+		    scalar deltaTNew = MaxCo/(Cofactor+1e-10);
+		    deltaTNew = min(deltaTNew,deltaTMax);
+		    deltaTNew = max(deltaTNew,deltaTMin);
+		    runTime.setDeltaT(deltaTNew);
+
+		    // print obtained time step and courant number into terminal 
+		    Info << "New timestep = " << runTime.deltaTValue() << endl;
+		    Info << "Courant = " << Cofactor*runTime.deltaTValue() << endl;
 
 		    if (runTime.write() && restartCapabale)
 		    {		    

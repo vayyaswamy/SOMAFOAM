@@ -1,7 +1,12 @@
 	const dimensionedScalar eCharge = 1.60217662E-19;
-
 	const dimensionedScalar bolzC = 1.38064852E-23;
 
+	// dictionary lookup in sys/controlDic for courant number parameters 
+	scalar MaxCo(readScalar(runTime.controlDict().lookup("MaxCo")));
+	scalar deltaTMax(readScalar(runTime.controlDict().lookup("deltaTMax")));
+	scalar deltaTMin(readScalar(runTime.controlDict().lookup("deltaTMin")));
+
+	// controls for plasma simulation and species utilized 
 	IOdictionary plasmaProperties
 	(
 		IOobject
@@ -26,10 +31,9 @@
 		)
 	);
 
+	// dictionary lookup in const/electroMagnetics for electrical controls  
 	const word solutionDomain(electroMagnetics.lookup("solutionDomain"));
-
 	const word poissonEquationSolver(electroMagnetics.lookup("poissonEquationSolver"));
-
 	const word emcModelRef(electroMagnetics.lookup("emcModel"));
 
 	if ((solutionDomain != "plasmaDielectric") && (solutionDomain != "plasma"))
@@ -38,31 +42,31 @@
 		    << solutionDomain << abort(FatalError);
 	}
 
+	// error checking for model solving the Poisson's equation
 	if ((poissonEquationSolver != "semiImplicit") && (poissonEquationSolver != "explicit") && (poissonEquationSolver != "linearized"))
 	{
 		FatalError << "in electroMagnetics, unknown poissonEquationSolver type " << nl
 		    << poissonEquationSolver << abort(FatalError);
 	}
 
+	// dictionary lookup in sys/controlDict for user-defined simulation control  
 	Switch restartCapabale(runTime.controlDict().lookup("restartCapable"));
 
+	// initialize chemitry modules and reference different components
 	autoPtr<psiChemistryModel> pChemistry 
 	(
 		psiChemistryModel::New(mesh) 
 	);
 
 	psiChemistryModel& chemistry = pChemistry();
-
 	hsCombustionThermo& thermo = chemistry.thermo();
-
 	basicMultiComponentMixture& composition = thermo.composition();
-
 	PtrList<volScalarField>& Y = composition.Y();
-
 	PtrList<scalar> W_(composition.species().size());
 
 	// ------------------------------------------------------------------------- //
 
+	// mesh scalar of voltage in the plasma
 	volScalarField Phi
 	(
 		IOobject
@@ -92,6 +96,20 @@
 		dimensionedScalar("epsilon", dimensionSet(0, 0, 0, 1, 0), 8.85418782E-12)
 	);
 
+	volScalarField epsiloni
+	(
+		IOobject
+		(
+		    "epsiloni",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::NO_READ,
+		    IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedScalar("epsiloni", dimensionSet(0, 0, 0, 1, 0), 0)
+	);
+
 	volVectorField E
 	(
 		IOobject
@@ -104,6 +122,35 @@
 		),
 		mesh,
 		dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
+	);
+
+	volVectorField gradTe
+	(
+		IOobject
+		(
+		    "gradTe",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::NO_READ,
+		    IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
+	);
+
+	// electron conductivity within the system
+	volScalarField kappa_e
+	(
+		IOobject
+		(
+		    "kappa_electron",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::NO_READ,
+		    IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
 	);
 
 	volVectorField ddtE
@@ -120,6 +167,7 @@
 		dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
 	);
 
+	// for electromagnetic modules with the plasmaExtendedPotential BC, this is required 
 	IOdictionary voltageDict
 	(
 		IOobject
@@ -159,6 +207,35 @@
 		dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
 	);
 
+  	volVectorField conductionCurrent
+    (
+    	IOobject
+    	(
+    		"conductionCurrent",
+    		runTime.timeName(),
+    		mesh, 
+    		IOobject::NO_READ,
+    		IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedVector("conductionCurrent", dimensionSet(0, 0, 0, 1, 0), vector::zero)
+	);
+
+  	volVectorField totalCurrent
+    (
+    	IOobject
+    	(
+    		"totalCurrent",
+    		runTime.timeName(),
+    		mesh, 
+    		IOobject::NO_READ,
+    		IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedVector("totalCurrent", dimensionSet(0, 0, 0, 1, 0), vector::zero)
+	);
+
+	// hastables for species in the system 
 	multivariateSurfaceInterpolationScheme<scalar>::fieldTable fields;
 
 	forAll(Y, i)
@@ -178,6 +255,7 @@
 		);
 	}
 
+	// plasma module defined 
 	autoPtr<multiSpeciesPlasmaModel> mspm
 	(
 		multiSpeciesPlasmaModel::New
@@ -186,10 +264,13 @@
 		)
 	);
 
+	// initialized plasma module
 	mspm().input();
 
+	// initializes energy module
 	plasmaEnergyModel pem(thermo, mspm(), E);
 
+	// initializes electromagnetic module 
     autoPtr<emcModel> emc
 	(
 		emcModel::New
