@@ -1,0 +1,69 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      plasmaProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+plasmaModel  mixed<constGasThermoPhysics>;
+
+activeSpecies 3;
+
+backgroundGas Ar;
+
+multiTimeStep false;
+
+electron
+{
+	diffusionModel einsteinRelation;
+	mobilityModel eTemp;
+	charge -1;
+	speciesSolution true;
+	collisionFrequency muBased;//muBased/rrBased
+	transportModel driftDiffusion;
+}
+Arp1
+{
+	diffusionModel einsteinRelation;
+	mobilityModel EON;
+	charge 1;
+	speciesSolution true;
+	transportModel driftDiffusion;
+}
+Ar2p1
+{
+	diffusionModel einsteinRelation;
+	mobilityModel EON;
+	charge 1;
+	speciesSolution true;
+	transportModel driftDiffusion;
+}
+Arm
+{
+	diffusionModel constant;
+	D 0.0000165;
+	speciesSolution true;
+}
+Ar
+{
+	speciesSolution false;
+}
+
+energyModel
+{
+	electron efullImplicit;
+	ion gasTemp;
+	gas none;
+}
+
+// ************************************************************************* //
