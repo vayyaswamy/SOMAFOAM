@@ -193,6 +193,9 @@ void Foam::externalCircuit1D::updateCoeffs()
 		const volScalarField& epsilon = db().objectRegistry::lookupObject<volScalarField>("epsiloni");
 		const scalarField& x_currentDensity = currentDensity.component(0);
 
+		// avoid segfault error in older compiling systems 
+		scalarField J = x_currentDensity;
+
 		scalar netCurrent = 0; 
 		scalar sumCurrent = 0;
 		const faceList & ff = this->patch().boundaryMesh().mesh().faces(); 
@@ -207,7 +210,7 @@ void Foam::externalCircuit1D::updateCoeffs()
 			    pLocal[pointi] = pp[pLabels[pointi]]; 
 
 			scalar xDim = Foam::max(pLocal & vector(1,0,0)) - Foam::min(pLocal & vector(1,0,0)); // And similar for yDim and zDim 
-			sumCurrent += x_currentDensity[celli]*xDim;
+			sumCurrent += J[celli]*xDim;
 			epsiloni += epsilon[celli]*xDim;
 		}
 
