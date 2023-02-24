@@ -92,6 +92,8 @@ class ODEChemistryModel
 
         scalarField eChemSource_;
 
+        scalarField metastableSource_;
+
         PtrList<scalarField> collFreq_;
 
 
@@ -211,6 +213,8 @@ public:
             inline tmp<volScalarField> collFreq(const label i) const;
 
             virtual tmp<volScalarField> eChemSourceExplicit() const;
+
+            virtual tmp<volScalarField> metastableSource() const;
 
         // ODE functions (overriding abstract functions in ODE.H)
 

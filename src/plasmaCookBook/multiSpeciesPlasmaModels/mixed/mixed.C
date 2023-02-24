@@ -608,7 +608,6 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
 		lduSolverPerformance solverPerf;
 		
-
 		forAll(species(), i)
 		{  
 			scalar initialResidual = 1.0;

@@ -181,4 +181,35 @@ Foam::ODEChemistryModel<CompType, ThermoType>::eChemSource
     return teChemSource;
 }
 
+template<class CompType, class ThermoType>
+inline Foam::tmp<Foam::volScalarField>
+Foam::ODEChemistryModel<CompType, ThermoType>::metastableSource
+() const
+{
+    tmp<volScalarField> tmetastableSource
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "metastableSource",
+                this->time().timeName(),
+                this->mesh(),
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            this->mesh(),
+            dimensionedScalar("zero", dimMass/dimVolume/dimTime, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
+    );
+
+    if (this->chemistry_)
+    {
+        tmetastableSource().internalField() = metastableSource_;
+        tmetastableSource().correctBoundaryConditions();
+    }
+    return tmetastableSource;
+}
+
 // ************************************************************************* //

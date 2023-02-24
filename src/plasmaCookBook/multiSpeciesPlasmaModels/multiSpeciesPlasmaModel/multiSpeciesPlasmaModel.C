@@ -537,12 +537,8 @@ Foam::multiSpeciesPlasmaModel::divFe()
 
     volScalarField& divFe = tdivFe();
 
-    //Info << "div step " << endl;
-
     divFe = mag(0.5*fvc::div(F_[eIndex_]));
     tdivFe().correctBoundaryConditions();
-
-    //Info << "div step done " << endl;
 
     scalar maxdivFe = gMax(divFe);
 
@@ -617,7 +613,9 @@ Foam::multiSpeciesPlasmaModel::electronTempSource
 
     volScalarField pets = 0.0*ets;
 
-    pets = (chemistry.eChemSource()())*plasmaConstants::A/W(eIndex_); 
+    pets = (chemistry.eChemSource()())*plasmaConstants::A/W(eIndex_);
+
+    pets += (chemistry.metastableSource()())*plasmaConstants::A;
 
 	if (collisionFrequency_[eIndex_] == "muBased")
 	{

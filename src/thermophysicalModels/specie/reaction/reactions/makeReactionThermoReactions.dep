@@ -210,6 +210,8 @@ reaction/reactions/makeReactionThermoReactions.dep: lnInclude/Reaction.C
 reaction/reactions/makeReactionThermoReactions.dep: reaction/reactions/makeReactionThermo.H
 reaction/reactions/makeReactionThermoReactions.dep: lnInclude/electronImpactInelasticReaction.H
 reaction/reactions/makeReactionThermoReactions.dep: lnInclude/electronImpactInelasticReaction.C
+reaction/reactions/makeReactionThermoReactions.dep: lnInclude/metastableTwoImpactReaction.H
+reaction/reactions/makeReactionThermoReactions.dep: lnInclude/metastableTwoImpactReaction.C
 reaction/reactions/makeReactionThermoReactions.dep: lnInclude/electronImpactElasticReaction.H
 reaction/reactions/makeReactionThermoReactions.dep: lnInclude/electronImpactElasticReaction.C
 reaction/reactions/makeReactionThermoReactions.dep: lnInclude/ionIrreversibleReaction.H

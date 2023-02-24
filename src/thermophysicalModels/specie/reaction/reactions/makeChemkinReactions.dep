@@ -210,6 +210,8 @@ reaction/reactions/makeChemkinReactions.dep: lnInclude/Reaction.C
 reaction/reactions/makeChemkinReactions.dep: reaction/reactions/makeReactionThermo.H
 reaction/reactions/makeChemkinReactions.dep: lnInclude/electronImpactInelasticReaction.H
 reaction/reactions/makeChemkinReactions.dep: lnInclude/electronImpactInelasticReaction.C
+reaction/reactions/makeChemkinReactions.dep: lnInclude/metastableTwoImpactReaction.H
+reaction/reactions/makeChemkinReactions.dep: lnInclude/metastableTwoImpactReaction.C
 reaction/reactions/makeChemkinReactions.dep: lnInclude/electronImpactElasticReaction.H
 reaction/reactions/makeChemkinReactions.dep: lnInclude/electronImpactElasticReaction.C
 reaction/reactions/makeChemkinReactions.dep: lnInclude/ionIrreversibleReaction.H

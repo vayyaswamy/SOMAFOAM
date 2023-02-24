@@ -175,6 +175,8 @@ reaction/reactions/makeTabularReactions.dep: lnInclude/ReactionI.H
 reaction/reactions/makeTabularReactions.dep: lnInclude/Reaction.C
 reaction/reactions/makeTabularReactions.dep: lnInclude/electronImpactInelasticReaction.H
 reaction/reactions/makeTabularReactions.dep: lnInclude/electronImpactInelasticReaction.C
+reaction/reactions/makeTabularReactions.dep: lnInclude/metastableTwoImpactReaction.H
+reaction/reactions/makeTabularReactions.dep: lnInclude/metastableTwoImpactReaction.C
 reaction/reactions/makeTabularReactions.dep: lnInclude/electronImpactElasticReaction.H
 reaction/reactions/makeTabularReactions.dep: lnInclude/electronImpactElasticReaction.C
 reaction/reactions/makeTabularReactions.dep: lnInclude/ionIrreversibleReaction.H

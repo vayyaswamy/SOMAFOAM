@@ -70,6 +70,7 @@ Foam::ODEChemistryModel<CompType, ThermoType>::ODEChemistryModel
     RR_(nSpecie_),
     coeffs_(nSpecie_ + 4),
 	eChemSource_(mesh.nCells(), 0.0),
+    metastableSource_(mesh.nCells(), 0.0),
 	collFreq_(nSpecie_)
 {
     // create the fields for the chemistry sources
@@ -941,11 +942,18 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 				}
 				if ((R.type() == "ionElasticArrheniusReaction"))
 				{
-				  // getting index of neutral species
+				    // getting index of neutral species
 					const label sii = R.lhs()[0].index; 
 					collFreq_[sii][celli] += omegai*specieThermo_[sii].W()/Y_[sii][celli]/rhoi;
-				  // need to multiply by electron mass and divide by other species mass
+				    // need to multiply by electron mass and divide by other species mass
 				}
+                if (R.type() == "metastableTwoImpactArrheniusReaction")
+                {
+                    const label sii = R.lhs()[0].index;
+                    // Info << "weight of argon metastable is: " << specieThermo_[sii].W() << endl;
+                    // Info << "gathering variables of interest: " << R.deltaE() << " " << R.fractional() << endl;
+                    metastableSource_[celli] += (1/2)*omegai*R.deltaE()*R.fractional();
+                }
 
 				forAll(R.lhs(), s)
 				{

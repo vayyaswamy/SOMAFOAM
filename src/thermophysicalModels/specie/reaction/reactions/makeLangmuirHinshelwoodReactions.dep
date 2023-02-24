@@ -175,6 +175,8 @@ reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/ReactionI.H
 reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/Reaction.C
 reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/electronImpactInelasticReaction.H
 reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/electronImpactInelasticReaction.C
+reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/metastableTwoImpactReaction.H
+reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/metastableTwoImpactReaction.C
 reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/electronImpactElasticReaction.H
 reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/electronImpactElasticReaction.C
 reaction/reactions/makeLangmuirHinshelwoodReactions.dep: lnInclude/ionIrreversibleReaction.H
