@@ -31,20 +31,31 @@ class power
 		scalar frequency_;
 		scalar bias_;
 		scalar power_;
-		int nCycles_;
 		scalar dampingFactor_;
-		scalar mf_;
 		scalar timeCounter_;
 		scalar timeCount_;
 		label curTimeIndex_;
 
 		OFstream* powerLogFilePtr_;
 		scalar amplitude_;
+
+		scalar rmsCurrent_;
+		scalar ncells_;
+		scalar rmsCount_;
+		scalar currentSum_;
+		const word operation_;
+		const word waveform_;
+		scalar dutyCycle_;
+		scalar w_;
+		scalar e_;
 		scalar powerSum_;
+		scalar tolerance_;
 
         volScalarField meshV_;
 
     // Private Member Functions
+
+		scalar currentDensitySum() const;
 
         inline scalar powerSumMesh() const;
 
