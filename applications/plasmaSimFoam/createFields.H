@@ -36,6 +36,8 @@
 	const word poissonEquationSolver(electroMagnetics.lookup("poissonEquationSolver"));
 	const word emcModelRef(electroMagnetics.lookup("emcModel"));
 
+	const word courantNumber(runTime.controlDict().lookup("courantNumber"));
+
 	if ((solutionDomain != "plasmaDielectric") && (solutionDomain != "plasma"))
 	{
 		FatalError << "in electroMagnetics, unknown solutionDomain type " << nl

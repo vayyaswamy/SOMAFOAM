@@ -4,5 +4,6 @@ $(OBJECTS_DIR)/newEmcModels.o\
 $(OBJECTS_DIR)/voltageControl.o\
 $(OBJECTS_DIR)/powerControl.o\
 $(OBJECTS_DIR)/none.o\
+$(OBJECTS_DIR)/currentControl.o\
 $(OBJECTS_DIR)/regionProperties.o\
 $(OBJECTS_DIR)/plasmaSimFoam.o

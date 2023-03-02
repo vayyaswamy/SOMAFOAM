@@ -4,5 +4,6 @@ newEmcModels.o\
 voltageControl.o\
 powerControl.o\
 none.o\
+currentControl.o\
 regionProperties.o\
 plasmaSimFoam.o
