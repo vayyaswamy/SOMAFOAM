@@ -36,6 +36,10 @@
 	const word poissonEquationSolver(electroMagnetics.lookup("poissonEquationSolver"));
 	const word emcModelRef(electroMagnetics.lookup("emcModel"));
 
+	// dictionary lookup in const/electroMagnetics for spatio-temporal controls
+	const word refSpatioTemporal(electroMagnetics.lookup("spatioTemporal"));
+
+	// determine if the courant criterion to be utilized or not
 	const word courantNumber(runTime.controlDict().lookup("courantNumber"));
 
 	if ((solutionDomain != "plasmaDielectric") && (solutionDomain != "plasma"))
@@ -237,6 +241,22 @@
 		dimensionedVector("totalCurrent", dimensionSet(0, 0, 0, 1, 0), vector::zero)
 	);
 
+    // volumetric scalar field for sources and sinks of electrons in the system. 
+    // Calculation obtained by obtaining the divergence of electron flux
+	volScalarField electronDiv
+	(
+		IOobject
+		(
+			"electronDiv",
+			runTime.timeName(),
+			mesh,
+			IOobject::NO_READ,
+			IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
+	);
+
 	// hastables for species in the system 
 	multivariateSurfaceInterpolationScheme<scalar>::fieldTable fields;
 
@@ -281,6 +301,20 @@
 		    mspm(),
 		    E,
 			runTime
+		)
+    );
+
+	// initializes spatioTemporal Module 
+	autoPtr<spatioTemporal> spatioTemp
+	(
+		spatioTemporal::New
+		(
+			electroMagnetics,
+		    electroMagnetics,
+		    mspm(),
+		    E,
+			runTime,
+			mesh
 		)
     );
 

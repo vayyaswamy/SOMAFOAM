@@ -5,5 +5,9 @@ electroMagneticsControls/voltageControl/voltageControl.dep\
 electroMagneticsControls/powerControl/powerControl.dep\
 electroMagneticsControls/none/none.dep\
 electroMagneticsControls/currentControl/currentControl.dep\
+postProcessing/spatioTemporal/spatioTemporals.dep\
+postProcessing/spatioTemporal/newspatioTemporal.dep\
+postProcessing/spatioNone/spatioNone.dep\
+postProcessing/one/one.dep\
 regionProperties/regionProperties.dep\
 plasmaSimFoam.dep

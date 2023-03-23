@@ -24,6 +24,7 @@ Description
 #include "plasmaEnergyModel.H"
 #include "thermoPhysicsTypes.H"
 #include "emcModels.H"
+#include "spatioTemporal.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -160,6 +161,17 @@ int main(int argc, char *argv[])
 					specN.write();
 				}
 		    }
+
+			if (refSpatioTemporal!="noneD")
+			{	
+				// only call mspm().divFelectron() when necessary
+				if (refSpatioTemporal == "oneD")
+				{
+					electronDiv = mspm().divFelectron();
+				}
+
+				spatioTemp -> correct();
+			}
 		}
 	}
 

@@ -811,6 +811,7 @@ plasmaSimFoam.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/p
 plasmaSimFoam.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/polynomialTransportI.H
 plasmaSimFoam.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/polynomialTransport.C
 plasmaSimFoam.dep: electroMagneticsControls/emcModels/emcModels.H
+plasmaSimFoam.dep: postProcessing/spatioTemporal/spatioTemporal.H
 plasmaSimFoam.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/setRootCase.H
 plasmaSimFoam.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/createTime.H
 plasmaSimFoam.dep: createPlasmaMesh.H

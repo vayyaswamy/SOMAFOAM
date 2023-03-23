@@ -39,7 +39,6 @@ Foam::emcModels::power::power
     power_(readScalar(emcModelCoeffs_.lookup("power"))),
     dampingFactor_(readScalar(emcModelCoeffs_.lookup("dampingFactor"))),
     ncells_(0.0),
-    rmsCount_(1.0),
 	currentSum_(0.0),
 	operation_(emcModelCoeffs_.lookup("waveform")),
 	waveform_(emcModelCoeffs_.lookup("operation")),
@@ -47,8 +46,9 @@ Foam::emcModels::power::power
 	w_(readScalar(emcModelCoeffs_.lookup("naturalFrequency"))),
 	e_(readScalar(emcModelCoeffs_.lookup("dampingRatio"))),
 	powerSum_(0.0),
+	tpowerOld_(0.0),
+	tcurrentDensityOld_(0.0),
 	tolerance_(readScalar(emcModelCoeffs_.lookup("tolerance"))),
-	timeCounter_(0.0),
 	timeCount_(0.0),
 	curTimeIndex_(time_.timeIndex()),
 	powerLogFilePtr_(NULL),
@@ -81,7 +81,7 @@ Foam::emcModels::power::power
     	powerLogFile << "time" << tab;
     	powerLogFile << "input" << tab;
     	powerLogFile << "RMScurrent" << tab;
-    	powerLogFile << "power" << endl;
+    	powerLogFile << "AVGpower" << endl;
     }
 }
 
@@ -97,7 +97,7 @@ inline Foam::scalar Foam::emcModels::power::powerSumMesh() const
     const objectRegistry& db = E_.db();
     const volVectorField& tddtE = db.lookupObject<volVectorField>("ddtE");
 
-	volScalarField tpowerSumMesh = meshV_*((plasmaConstants::eCharge*mspm_.netChargeFlux() + plasmaConstants::epsilon0*tddtE) & E_);
+	volScalarField tpowerSumMesh = meshV_*((mspm_.netChargeFlux() + plasmaConstants::epsilon0*tddtE) & E_);
 
     return gSum(tpowerSumMesh);
 }
@@ -120,8 +120,11 @@ void Foam::emcModels::power::correct(dictionary& voltageDict)
 		const scalar& tpower = powerSumMesh();
 		const scalar& tcurrentDensity = currentDensitySum();
 
-		powerSum_ += tpower;
-		currentSum_ += tcurrentDensity;
+		powerSum_ += (tpower+tpowerOld_)*time_.deltaT().value()*0.5;
+		tpowerOld_ = tpower;
+
+		currentSum_ += (tcurrentDensity+tcurrentDensityOld_)*time_.deltaT().value()*0.5;
+		tcurrentDensityOld_ = tcurrentDensity;
 
 		curTimeIndex_ = time_.timeIndex();
 
@@ -130,18 +133,16 @@ void Foam::emcModels::power::correct(dictionary& voltageDict)
 			amplitude_ = initialAmplitude_;
 		}
 
-		timeCount_ = 1/frequency_/time_.deltaT().value();
+		timeCount_ = timeCount_ + time_.deltaT().value();
 
-		if(curTimeIndex_ - timeCounter_ >= timeCount_)
+		if(timeCount_ >= 1/frequency_)
 		{
-			timeCounter_ =  curTimeIndex_;
-
-			scalar rmsCurrent_ = Foam::sqrt(currentSum_/rmsCount_);
-			scalar powerSumAve_ = powerSum_/timeCount_;
+			scalar currentSumAve_ = Foam::sqrt(frequency_*currentSum_);
+			scalar powerSumAve_ = frequency_*powerSum_;
 
 			powerSum_ = 0.0;
 			currentSum_ = 0.0;
-			rmsCount_ = 0.0;
+			timeCount_ = 0.0;
 
 			scalar amplitudeOld_(amplitude_);
 
@@ -172,18 +173,19 @@ void Foam::emcModels::power::correct(dictionary& voltageDict)
    				OFstream& resistanceLogFile = *powerLogFilePtr_;
 				resistanceLogFile << time_.value() << tab;
 				resistanceLogFile << amplitude_ << tab;
-				resistanceLogFile << rmsCurrent_ << tab;
+				resistanceLogFile << currentSumAve_ << tab;
 				resistanceLogFile << powerSumAve_ << endl;
 			}
-		}
-		else
-		{
-			rmsCount_ = rmsCount_ + 1;
 		}
 
 		if (operation_ == "sinusoidal")
 		{
 			scalar voltageValue = amplitude_*Foam::sin(2.0*M_PI*frequency_*time_.value()) + bias_;
+			voltageDict.set("voltage", voltageValue);
+		}
+		if (operation_ == "cosinusoidal")
+		{
+			scalar voltageValue = amplitude_*Foam::cos(2.0*M_PI*frequency_*time_.value()) + bias_;
 			voltageDict.set("voltage", voltageValue);
 		}
 		else if (operation_ == "pulsed")
@@ -252,7 +254,8 @@ void Foam::emcModels::power::correct(dictionary& voltageDict)
 	else
 	{
         FatalErrorIn("emcModels::power::correct(dictionary& voltageDict)")
-            << " incorrect mode "
+            << " incorrect mode:  flag 'continuousFrequencyModulated' for"
+            << " mode not found"
             << exit(FatalError);
 	}
 }

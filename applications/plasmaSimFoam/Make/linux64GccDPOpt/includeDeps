@@ -4,5 +4,9 @@ include electroMagneticsControls/voltageControl/voltageControl.dep
 include electroMagneticsControls/powerControl/powerControl.dep
 include electroMagneticsControls/none/none.dep
 include electroMagneticsControls/currentControl/currentControl.dep
+include postProcessing/spatioTemporal/spatioTemporals.dep
+include postProcessing/spatioTemporal/newspatioTemporal.dep
+include postProcessing/spatioNone/spatioNone.dep
+include postProcessing/one/one.dep
 include regionProperties/regionProperties.dep
 include plasmaSimFoam.dep

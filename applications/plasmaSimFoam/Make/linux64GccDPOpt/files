@@ -61,6 +61,10 @@ electroMagneticsControls/powerControl/powerControl.C
 electroMagneticsControls/none/none.C
 electroMagneticsControls/currentControl/currentControl.C
 
+postProcessing/spatioTemporal/spatioTemporals.C
+postProcessing/spatioTemporal/newspatioTemporal.C
+postProcessing/spatioNone/spatioNone.C
+postProcessing/one/one.C
 
 regionProperties/regionProperties.C
 

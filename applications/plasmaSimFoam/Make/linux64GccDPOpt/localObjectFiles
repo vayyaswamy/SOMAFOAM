@@ -5,5 +5,9 @@ voltageControl.o\
 powerControl.o\
 none.o\
 currentControl.o\
+spatioTemporals.o\
+newspatioTemporal.o\
+spatioNone.o\
+one.o\
 regionProperties.o\
 plasmaSimFoam.o
