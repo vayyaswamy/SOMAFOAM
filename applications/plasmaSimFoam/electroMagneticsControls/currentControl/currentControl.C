@@ -80,7 +80,7 @@ meshV_
     	resistanceLogFile << "time" << tab;
     	resistanceLogFile << "input" << tab;
     	resistanceLogFile << "RMScurrent" << tab;
-    	resistanceLogFile << "power" << endl;
+    	resistanceLogFile << "AVGpower" << endl;
 	}
 }
 
