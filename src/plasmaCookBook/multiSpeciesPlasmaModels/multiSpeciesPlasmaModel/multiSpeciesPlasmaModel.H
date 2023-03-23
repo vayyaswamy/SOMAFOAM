@@ -217,6 +217,9 @@ public:
 
         scalar divFe();
 
+        // calculate divergence of the electron flux
+        tmp<volScalarField> divFelectron();
+
         tmp<volVectorField> gradTe();
 
         tmp<volScalarField> netCharge();

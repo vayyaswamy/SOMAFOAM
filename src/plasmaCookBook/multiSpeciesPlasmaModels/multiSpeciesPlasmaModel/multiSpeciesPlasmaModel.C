@@ -383,11 +383,6 @@ void Foam::multiSpeciesPlasmaModel::input
 			graphDiffData_.set(i, new graph("D_data_file","inter_data","D_data", file_D));;
 		}
 
-		//N_[i] = thermo_.rho()*thermo_.composition().Y(i)*plasmaConstants::A/W(i);
-
-		//N_[i].correctBoundaryConditions();
-
-
         if ( i < activeSpecies_)
 		{
 		    z_.set
@@ -512,6 +507,8 @@ Foam::scalar Foam::multiSpeciesPlasmaModel::correct
     return correct(chemistry, E, fields);
 }
 
+
+
 Foam::scalar 
 Foam::multiSpeciesPlasmaModel::divFe()
 {
@@ -543,8 +540,40 @@ Foam::multiSpeciesPlasmaModel::divFe()
     scalar maxdivFe = gMax(divFe);
 
     return maxdivFe;
-
 }
+
+Foam::tmp<Foam::volScalarField> 
+Foam::multiSpeciesPlasmaModel::divFelectron()
+{
+	// temporal data structure. Destroyed after call completed
+	tmp<volScalarField> tdivFe
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "tdivFe",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh_,
+            dimensionedScalar("zero", dimensionSet(0, 0, -1, 0, 0), 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
+    );
+
+    // perform calculation of the divergence of the electron flux
+    volScalarField& divFe = tdivFe();
+    divFe = fvc::div((fvc::interpolate(F_[eIndex_]) & mesh_.Sf()), N(eIndex_), "div(F,Ni)");
+
+    // update boundary condition as the mesh values are updated
+    tdivFe().correctBoundaryConditions();
+
+    return tdivFe;
+}
+
 
 inline Foam::tmp<Foam::volScalarField>
 Foam::multiSpeciesPlasmaModel::RR
@@ -849,7 +878,6 @@ Foam::multiSpeciesPlasmaModel::potentialExpSource()
     {
         if (i < activeSpecies_)
         {
-        	//Info << "N(i) old = " << N(i).oldTime() << endl;
 		    volScalarField netExpSource 
 			= z_[i]*(N(i).oldTime()
 			+ runTime_.deltaT().value()*((Sy_[i]*plasmaConstants::A/W(i))
