@@ -1,5 +1,4 @@
 	const dimensionedScalar eCharge = 1.60217662E-19;
-
 	const dimensionedScalar bolzC = 1.38064852E-23;
 
 	autoPtr<psiChemistryModel> pChemistry 
@@ -76,17 +75,17 @@
 		dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
 	);
 
-	IOdictionary voltageDict
-	(
-		IOobject
-		(
-		    "voltageDict",
-		    runTime.constant(),
-		    mesh,
-		    IOobject::NO_READ,
-		    IOobject::NO_WRITE
-		)
-	);
+	// IOdictionary voltageDict
+	// (
+	// 	IOobject
+	// 	(
+	// 	    "voltageDict",
+	// 	    runTime.constant(),
+	// 	    mesh,
+	// 	    IOobject::NO_READ,
+	// 	    IOobject::NO_WRITE
+	// 	)
+	// );
 
 	// ------------------------------------------------------------------------- //
 
@@ -172,3 +171,92 @@
 		mesh,
 		dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
 	);
+
+	  	volVectorField conductionCurrent
+    (
+    	IOobject
+    	(
+    		"conductionCurrent",
+    		runTime.timeName(),
+    		mesh, 
+    		IOobject::NO_READ,
+    		IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedVector("conductionCurrent", dimensionSet(0, 0, 0, 1, 0), vector::zero)
+	);
+
+  	volVectorField totalCurrent
+    (
+    	IOobject
+    	(
+    		"totalCurrent",
+    		runTime.timeName(),
+    		mesh, 
+    		IOobject::NO_READ,
+    		IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedVector("totalCurrent", dimensionSet(0, 0, 0, 1, 0), vector::zero)
+	);
+
+    // volumetric scalar field for sources and sinks of electrons in the system. 
+    // Calculation obtained by obtaining the divergence of electron flux
+	volScalarField electronDiv
+	(
+		IOobject
+		(
+			"electronDiv",
+			runTime.timeName(),
+			mesh,
+			IOobject::NO_READ,
+			IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
+	);
+
+	// initializes spatioTemporal Module 
+	autoPtr<spatioTemporal> spatioTemp
+	(
+		spatioTemporal::New
+		(
+			electroMagnetics,
+		    electroMagnetics,
+		    mspm(),
+		    E,
+			runTime,
+			mesh
+		)
+    );
+
+	volVectorField gradTe
+	(
+		IOobject
+		(
+		    "gradTe",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::NO_READ,
+		    IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
+	);
+
+	// electron conductivity within the system
+	volScalarField kappa_e
+	(
+		IOobject
+		(
+		    "kappa_electron",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::NO_READ,
+		    IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
+	);
+
+

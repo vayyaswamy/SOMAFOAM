@@ -29,9 +29,32 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 2 "<command-line>" 2
 # 1 "options"
-EXE_INC =     -Iplasma     -Idielectric     -IregionProperties     -IelectroMagneticsControls/emcModels     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude     -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude     -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude     -I$(LIB_SRC)/plasmaCookBook/lnInclude     -I$(LIB_SRC)/finiteVolume/lnInclude     -I$(LIB_SRC)/meshTools/lnInclude 
-# 13 "options"
+EXE_INC =     -Iplasma     -Idielectric     -IregionProperties     -IelectroMagneticsControls/emcModels     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude     -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude     -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude     -I$(LIB_SRC)/plasmaCookBook/lnInclude     -I$(LIB_SRC)/finiteVolume/lnInclude     -I$(LIB_SRC)/meshTools/lnInclude     -IpostProcessing/spatioTemporal
+# 14 "options"
 
 EXE_LIBS = 	-lreactionThermophysicalModels 	-lbasicThermophysicalModels 	-lchemistryModel 	-lfiniteVolume 	-lmeshTools 	-lspecie 	-lplasmaCookBook

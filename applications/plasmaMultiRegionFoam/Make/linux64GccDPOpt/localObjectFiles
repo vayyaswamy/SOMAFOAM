@@ -4,6 +4,10 @@ newEmcModels.o\
 voltageControl.o\
 powerControl.o\
 none.o\
+spatioTemporals.o\
+newspatioTemporal.o\
+spatioNone.o\
+one.o\
 regionProperties.o\
 plasmaDielectricWallCoupledFvPatchScalarField.o\
 plasmaMultiRegionFoam.o

@@ -767,6 +767,7 @@ plasmaMultiRegionFoam.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnI
 plasmaMultiRegionFoam.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/polynomialTransportI.H
 plasmaMultiRegionFoam.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/polynomialTransport.C
 plasmaMultiRegionFoam.dep: electroMagneticsControls/emcModels/emcModels.H
+plasmaMultiRegionFoam.dep: postProcessing/spatioTemporal/spatioTemporal.H
 plasmaMultiRegionFoam.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/setRootCase.H
 plasmaMultiRegionFoam.dep: $(WM_PROJECT_DIR)/src/foam/lnInclude/createTime.H
 plasmaMultiRegionFoam.dep: plasma/createPlasmaMeshes.H

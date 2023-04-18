@@ -4,6 +4,10 @@ $(OBJECTS_DIR)/newEmcModels.o\
 $(OBJECTS_DIR)/voltageControl.o\
 $(OBJECTS_DIR)/powerControl.o\
 $(OBJECTS_DIR)/none.o\
+$(OBJECTS_DIR)/spatioTemporals.o\
+$(OBJECTS_DIR)/newspatioTemporal.o\
+$(OBJECTS_DIR)/spatioNone.o\
+$(OBJECTS_DIR)/one.o\
 $(OBJECTS_DIR)/regionProperties.o\
 $(OBJECTS_DIR)/plasmaDielectricWallCoupledFvPatchScalarField.o\
 $(OBJECTS_DIR)/plasmaMultiRegionFoam.o
