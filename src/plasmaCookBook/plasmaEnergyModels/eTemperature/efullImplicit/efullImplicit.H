@@ -76,7 +76,7 @@ public:
 
     // Member Functions
 
-        virtual void correct(psiChemistryModel& chemistry, const volVectorField& E);
+        virtual Foam::scalar correct(psiChemistryModel& chemistry, const volVectorField& E);
 };
 
 

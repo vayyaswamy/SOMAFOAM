@@ -1,4 +1,0 @@
-DEPENDENCIES = \
-tecplotWriter.dep\
-vtkMesh.dep\
-foamToTecplot360.dep

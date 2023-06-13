@@ -1,7 +1,0 @@
-LOCAL_OBJECTS = \
-extrudeModel.o\
-newExtrudeModel.o\
-linearNormal.o\
-linearRadial.o\
-sigmaRadial.o\
-wedge.o

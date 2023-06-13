@@ -1,3 +1,0 @@
-LOCAL_OBJECTS = \
-meshDualiser.o\
-polyDualMeshApp.o

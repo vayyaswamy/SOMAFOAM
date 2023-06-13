@@ -55,7 +55,7 @@ Foam::efullImplicitTE::efullImplicitTE
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::efullImplicitTE::correct
+Foam::scalar Foam::efullImplicitTE::correct
 (
     psiChemistryModel& chemistry,
 	const volVectorField& E
@@ -99,6 +99,8 @@ void Foam::efullImplicitTE::correct
     TeC.max(TeMin);
 
 	TeC.min(TeMax);
+
+    return 0;
 }
 
 

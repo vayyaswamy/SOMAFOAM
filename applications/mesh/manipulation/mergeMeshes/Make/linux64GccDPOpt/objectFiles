@@ -1,3 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/mergePolyMesh.o\
-$(OBJECTS_DIR)/mergeMeshes.o

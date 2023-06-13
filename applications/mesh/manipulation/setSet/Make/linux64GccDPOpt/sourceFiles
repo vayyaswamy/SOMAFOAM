@@ -1,5 +1,0 @@
-SOURCE = \
-writePointSet.C\
-writeFuns.C\
-writePatch.C\
-setSet.C

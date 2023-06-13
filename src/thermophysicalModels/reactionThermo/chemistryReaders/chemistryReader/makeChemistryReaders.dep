@@ -175,6 +175,8 @@ chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src
 chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/Reaction.C
 chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/electronImpactInelasticReaction.H
 chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/electronImpactInelasticReaction.C
+chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/metastableTwoImpactReaction.H
+chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/metastableTwoImpactReaction.C
 chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/electronImpactElasticReaction.H
 chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/electronImpactElasticReaction.C
 chemistryReaders/chemistryReader/makeChemistryReaders.dep: $(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/ionIrreversibleReaction.H

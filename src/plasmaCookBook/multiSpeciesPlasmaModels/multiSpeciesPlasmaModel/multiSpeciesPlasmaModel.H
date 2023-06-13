@@ -119,11 +119,7 @@ protected:
 
         volScalarField NG_;
 
-        inline void updateTemperature();
-
-        void updateChemistry(psiChemistryModel& chemistry);
-
-        inline void updateChemistryCollFreq(psiChemistryModel& chemistry);
+        
 
 private:
   
@@ -204,10 +200,21 @@ public:
 
         virtual scalar W(label i) const = 0;
 
+        inline void updateTemperature();
+
+        void updateChemistry(psiChemistryModel& chemistry);
+
+        inline void updateChemistryCollFreq(psiChemistryModel& chemistry);
+
         tmp<volScalarField> electronTempSource
 		(
 			const psiChemistryModel& chemistry		
 		);
+
+        tmp<volScalarField> dElectronTempSourceDTe
+        (
+            const psiChemistryModel& chemistry      
+        );
 
         tmp<volScalarField> ionTempSource
 		(
@@ -216,9 +223,6 @@ public:
 		);
 
         scalar divFe();
-
-        // calculate divergence of the electron flux
-        tmp<volScalarField> divFelectron();
 
         tmp<volVectorField> gradTe();
 

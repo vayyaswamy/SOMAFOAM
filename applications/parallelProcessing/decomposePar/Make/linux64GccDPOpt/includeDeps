@@ -1,9 +1,0 @@
-include decomposeMesh.dep
-include decomposePar.dep
-include domainDecomposition.dep
-include distributeCells.dep
-include faMeshDecomposition.dep
-include fvFieldDecomposer.dep
-include faFieldDecomposer.dep
-include pointFieldDecomposer.dep
-include lagrangianFieldDecomposer.dep

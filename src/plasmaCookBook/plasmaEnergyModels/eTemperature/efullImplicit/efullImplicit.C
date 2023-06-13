@@ -51,7 +51,7 @@ Foam::efullImplicit::efullImplicit
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::efullImplicit::correct
+Foam::scalar Foam::efullImplicit::correct
 (
     psiChemistryModel& chemistry,
 	const volVectorField& E
@@ -59,24 +59,34 @@ void Foam::efullImplicit::correct
 {
 
     //Info << "efullImplicit start " << endl;
+    lduSolverPerformance solverPerf;
+
+    
+
 	volScalarField& TeC = thermo().Te();
 
+    TeC.storePrevIter();
+
+
+    scalar initialResidual = 1.0;
+
+    int icorr = 0;
+
+    while ((icorr++ <= 5) & (initialResidual >= 1e-6))
+
+    {
+
 	eeFlux = 2.5*plasmaConstants::boltzC*mspm().J(eIndex_);
-
-	//eeFlux.correctBoundaryConditions();
-
-	if (restartCapable() && runTime().write())
-	{
-		eeFlux.write();
-	}
 
 	surfaceScalarField eeFluxF = fvc::interpolate(eeFlux) & mesh().Sf();
 
 	volScalarField eeSource = - plasmaConstants::eCharge*(mspm().J(eIndex_) & E) - mspm().electronTempSource(chemistry);
 
-    volScalarField eeSource_Su =  plasmaConstants::eCharge*(mspm().J(eIndex_) & E);
+    volScalarField eeSource_Su = plasmaConstants::eCharge*(mspm().J(eIndex_) & E) 
+                                + mspm().electronTempSource(chemistry) 
+                                - mspm().dElectronTempSourceDTe(chemistry)*TeC;
 
-    volScalarField eeSource_SuSp = mspm().electronTempSource(chemistry)/TeC;
+    volScalarField eeSource_SuSp = mspm().dElectronTempSourceDTe(chemistry);
 
 	const volScalarField& Ne = mspm().N(eIndex_);
 
@@ -85,23 +95,39 @@ void Foam::efullImplicit::correct
         fvm::ddt((1.5*plasmaConstants::boltzC*Ne), TeC)
       + fvm::div(eeFluxF, TeC)
       - fvm::laplacian(mspm().electronConductivity(chemistry), TeC, "laplacian(eC,Te)")
-	  + fvm::SuSp((-eeSource/TeC), TeC)
-      //+ fvm::SuSp(eeSource_SuSp, TeC)
-      //+ eeSource_Su
+	  //+ fvm::SuSp((-eeSource/TeC), TeC)
+      + fvm::SuSp(eeSource_SuSp, TeC)
+      + eeSource_Su
       //- eeSource 
     );
 
-    TeEqn.relax();
+    //TeEqn.relax();
 
-	TeEqn.solve();
+	solverPerf = TeEqn.solve();
+
+    initialResidual = solverPerf.initialResidual();
+
+    TeC.max(300.0);
+
+    thermo().correct();
+
+    mspm().updateTemperature();
+
+    mspm().updateChemistryCollFreq(chemistry);
+
+    }
 
     TeC.relax();
 
     TeC.max(300.0);
 
-    //TeC.min(5e5);
+    thermo().correct();
 
-    //Info << "efullImplicit done " << endl;
+    mspm().updateTemperature();
+
+    mspm().updateChemistryCollFreq(chemistry);
+
+    return 0;
 }
 
 

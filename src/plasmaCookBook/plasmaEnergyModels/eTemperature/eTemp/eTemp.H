@@ -140,7 +140,7 @@ public:
             return restartcapable;
         }
 
-        virtual void correct(psiChemistryModel& chemistry, const volVectorField& E) = 0;
+        virtual Foam::scalar correct(psiChemistryModel& chemistry, const volVectorField& E) = 0;
 };
 
 

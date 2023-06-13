@@ -1,3 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/extrude2DMesh.o\
-$(OBJECTS_DIR)/doExtrude2DMesh.o
