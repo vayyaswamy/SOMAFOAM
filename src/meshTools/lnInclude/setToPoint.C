@@ -1,1 +1,0 @@
-../sets/pointSources/setToPoint/setToPoint.C

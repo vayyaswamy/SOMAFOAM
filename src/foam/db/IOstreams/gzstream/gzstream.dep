@@ -1,7 +1,0 @@
-$(OBJECTS_DIR)/gzstream.o: db/IOstreams/gzstream/gzstream.dep
-db/IOstreams/gzstream/gzstream.dep: db/IOstreams/gzstream/gzstream.C
-db/IOstreams/gzstream/gzstream.dep: db/IOstreams/gzstream/gzstream.h
-$(OBJECTS_DIR)/gzstream.o: $(EXE_DEP)
-$(OBJECTS_DIR)/gzstream.o:
-	@SOURCE_DIR=db/IOstreams/gzstream
-	SOURCE=db/IOstreams/gzstream/gzstream.C ; $(Ctoo)

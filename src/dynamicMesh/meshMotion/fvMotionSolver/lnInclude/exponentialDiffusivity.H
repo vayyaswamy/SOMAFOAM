@@ -1,1 +1,0 @@
-../motionDiffusivity/manipulators/exponential/exponentialDiffusivity.H

@@ -1,4 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/edgeMesh.o\
-$(OBJECTS_DIR)/edgeMeshIO.o\
-$(OBJECTS_DIR)/featureEdgeMesh.o

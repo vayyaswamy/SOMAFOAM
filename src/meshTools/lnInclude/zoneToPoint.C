@@ -1,1 +1,0 @@
-../sets/pointSources/zoneToPoint/zoneToPoint.C

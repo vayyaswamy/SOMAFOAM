@@ -1,1 +1,0 @@
-../primitives/VectorN/vector4/sphericalTensor4.H

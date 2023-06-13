@@ -1,1 +1,0 @@
-../tecxxx.cpp

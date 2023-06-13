@@ -1,1 +1,0 @@
-../primitives/strings/word/word.H

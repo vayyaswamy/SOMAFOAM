@@ -1,1 +1,0 @@
-../interpolations/patchToPatchInterpolation/CalcPatchToPatchWeights.C

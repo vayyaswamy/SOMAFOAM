@@ -1,1 +1,0 @@
-../primitives/SphericalTensor2D/SphericalTensor2DTemplate.H

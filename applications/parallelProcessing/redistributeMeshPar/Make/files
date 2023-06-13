@@ -1,3 +1,0 @@
-redistributeMeshPar.C
-
-EXE = $(FOAM_APPBIN)/redistributeMeshPar

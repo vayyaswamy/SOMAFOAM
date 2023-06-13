@@ -1,3 +1,0 @@
-findRoot.C
-
-EXE = $(FOAM_APPBIN)/findRoot

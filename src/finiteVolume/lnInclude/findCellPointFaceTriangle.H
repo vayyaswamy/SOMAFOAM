@@ -1,1 +1,0 @@
-../interpolation/interpolation/interpolationCellPointFace/findCellPointFaceTriangle.H

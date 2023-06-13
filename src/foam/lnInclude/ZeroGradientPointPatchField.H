@@ -1,1 +1,0 @@
-../fields/PointPatchFieldTemplates/basic/zeroGradient/ZeroGradientPointPatchField.H

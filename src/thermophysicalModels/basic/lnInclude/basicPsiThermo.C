@@ -1,1 +1,0 @@
-../psiThermo/basicPsiThermo/basicPsiThermo.C

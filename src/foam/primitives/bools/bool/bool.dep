@@ -1,8 +1,0 @@
-$(OBJECTS_DIR)/bool.o: primitives/bools/bool/bool.dep
-primitives/bools/bool/bool.dep: primitives/bools/bool/bool.C
-primitives/bools/bool/bool.dep: primitives/bools/bool/bool.H
-primitives/bools/bool/bool.dep: lnInclude/pTraits.H
-$(OBJECTS_DIR)/bool.o: $(EXE_DEP)
-$(OBJECTS_DIR)/bool.o:
-	@SOURCE_DIR=primitives/bools/bool
-	SOURCE=primitives/bools/bool/bool.C ; $(Ctoo)

@@ -1,1 +1,0 @@
-../fields/GeometricFields/GeometricDiagTensorField/GeometricDiagTensorField.H

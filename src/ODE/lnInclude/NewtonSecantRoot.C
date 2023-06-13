@@ -1,1 +1,0 @@
-../findRoot/NewtonSecantRoot/NewtonSecantRoot.C

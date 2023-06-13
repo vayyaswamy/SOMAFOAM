@@ -1,2 +1,0 @@
-PINC       = -I$(MPI_ARCH_PATH)/include
-PLIBS      = -L$(MPI_ARCH_PATH)/lib -lmpi

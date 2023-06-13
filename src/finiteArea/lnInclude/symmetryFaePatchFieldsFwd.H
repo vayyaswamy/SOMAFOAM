@@ -1,1 +1,0 @@
-../fields/faePatchFields/constraint/symmetry/symmetryFaePatchFieldsFwd.H

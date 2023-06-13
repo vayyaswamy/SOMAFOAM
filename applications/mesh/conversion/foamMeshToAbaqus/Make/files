@@ -1,3 +1,0 @@
-foamMeshToAbaqus.C
-
-EXE = $(FOAM_APPBIN)/foamMeshToAbaqus

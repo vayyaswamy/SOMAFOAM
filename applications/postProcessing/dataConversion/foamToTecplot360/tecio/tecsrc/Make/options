@@ -1,7 +1,0 @@
-#include "tecioOptions"
-
-EXE_INC = \
-    $(TECIO_FLAGS) $(TECIO_INC)
-
-LIB_LIBS = \
-    $(TECIO_LIBS)

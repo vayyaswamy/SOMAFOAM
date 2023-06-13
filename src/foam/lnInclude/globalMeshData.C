@@ -1,1 +1,0 @@
-../meshes/polyMesh/globalMeshData/globalMeshData.C

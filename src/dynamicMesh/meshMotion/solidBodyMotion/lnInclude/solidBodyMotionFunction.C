@@ -1,1 +1,0 @@
-../solidBodyMotionFunction/solidBodyMotionFunction.C

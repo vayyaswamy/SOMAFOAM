@@ -1,4 +1,0 @@
-regionCellSets.C
-
-EXE = $(FOAM_APPBIN)/regionCellSets
-

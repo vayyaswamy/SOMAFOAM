@@ -1,1 +1,0 @@
-../plasmaEnergyModels/eTemperature/eTemp/neweTemp.C

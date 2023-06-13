@@ -1,1 +1,0 @@
-../multiSpeciesPlasmaModels/mixedN/mixedN.H

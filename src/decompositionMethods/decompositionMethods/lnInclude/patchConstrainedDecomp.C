@@ -1,1 +1,0 @@
-../patchConstrainedDecomp/patchConstrainedDecomp.C

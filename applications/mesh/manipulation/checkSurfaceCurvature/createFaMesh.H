@@ -1,2 +1,0 @@
-
-    faMesh aMesh(mesh);

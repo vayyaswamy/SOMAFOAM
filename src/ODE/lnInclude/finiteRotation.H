@@ -1,1 +1,0 @@
-../sixDOF/finiteRotation/finiteRotation.H

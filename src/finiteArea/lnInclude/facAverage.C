@@ -1,1 +1,0 @@
-../finiteArea/fac/facAverage.C

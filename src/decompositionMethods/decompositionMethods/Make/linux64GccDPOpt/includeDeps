@@ -1,6 +1,0 @@
-include decompositionMethod/decompositionMethod.dep
-include manualDecomp/manualDecomp.dep
-include geomDecomp/geomDecomp.dep
-include simpleGeomDecomp/simpleGeomDecomp.dep
-include hierarchGeomDecomp/hierarchGeomDecomp.dep
-include patchConstrainedDecomp/patchConstrainedDecomp.dep

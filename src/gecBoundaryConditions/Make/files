@@ -1,4 +1,0 @@
-electronVelocity/electronVelocity.C
-ionVelocity/ionVelocity.C
-
-LIB = $(FOAM_LIBBIN)/libgecBoundaryConditions

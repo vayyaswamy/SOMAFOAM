@@ -1,1 +1,0 @@
-../fvMesh/extendedStencil/cellToFace/MeshObjects/upwindCFCCellToFaceStencilObject.H

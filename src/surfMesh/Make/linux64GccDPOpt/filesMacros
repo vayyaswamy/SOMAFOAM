@@ -1,2 +1,0 @@
-surfaceFormats = surfaceFormats
-LIB = $(FOAM_LIBBIN)/libsurfMesh

@@ -1,1 +1,0 @@
-../primitives/SphericalTensor/SphericalTensorTemplate.H

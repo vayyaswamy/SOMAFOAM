@@ -1,1 +1,0 @@
-../fields/faPatchFields/constraint/empty/emptyFaPatchField.C

@@ -1,1 +1,0 @@
-../primitives/BlockCoeff/BlockCoeffNorm/BlockCoeffMaxNorm/blockCoeffMaxNorms.C

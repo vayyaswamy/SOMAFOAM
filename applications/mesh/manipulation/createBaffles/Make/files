@@ -1,3 +1,0 @@
-createBaffles.C
-
-EXE = $(FOAM_APPBIN)/createBaffles

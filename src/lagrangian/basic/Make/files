@@ -1,9 +1,0 @@
-Cloud = Cloud
-particle = particle
-passiveParticle = passiveParticle
-indexedParticle = indexedParticle
-
-$(passiveParticle)/passiveParticleCloud.C
-$(indexedParticle)/indexedParticleCloud.C
-
-LIB = $(FOAM_LIBBIN)/liblagrangian

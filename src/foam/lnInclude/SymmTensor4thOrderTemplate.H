@@ -1,1 +1,0 @@
-../primitives/SymmTensor4thOrder/SymmTensor4thOrderTemplate.H

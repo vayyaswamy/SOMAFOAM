@@ -1,1 +1,0 @@
-../surfaceFormats/starcd/STARCDsurfaceFormatCore.H

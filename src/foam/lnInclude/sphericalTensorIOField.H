@@ -1,1 +1,0 @@
-../fields/Fields/sphericalTensorField/sphericalTensorIOField.H

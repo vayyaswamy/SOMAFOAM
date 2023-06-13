@@ -1,1 +1,0 @@
-../finiteVolume/snGradSchemes/quadraticFitSnGrad/quadraticFitSnGradData.H

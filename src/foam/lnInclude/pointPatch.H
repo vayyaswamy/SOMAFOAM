@@ -1,1 +1,0 @@
-../meshes/pointMesh/pointPatches/pointPatch/pointPatch.H

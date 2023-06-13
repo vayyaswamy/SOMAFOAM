@@ -1,1 +1,0 @@
-../equationReader/equationReaderTemplates.C

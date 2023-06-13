@@ -1,4 +1,0 @@
-LOCAL_OBJECTS = \
-ggiCheckFunctionObject.o\
-meshCheckFunctionObject.o\
-mixingPlaneCheckFunctionObject.o

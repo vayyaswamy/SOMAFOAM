@@ -1,5 +1,0 @@
-#!/bin/bash
-
-cd ${0%/*} || exit 1    # run from this directory
-
-echo "alias ltps='source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/etc/bashrc'" >> $HOME/.bashrc

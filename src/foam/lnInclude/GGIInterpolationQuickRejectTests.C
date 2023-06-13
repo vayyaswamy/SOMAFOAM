@@ -1,1 +1,0 @@
-../interpolations/GGIInterpolation/GGIInterpolationQuickRejectTests.C

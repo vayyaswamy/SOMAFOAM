@@ -1,5 +1,0 @@
-edgeMesh.C
-edgeMeshIO.C
-featureEdgeMesh.C
-
-LIB = $(FOAM_LIBBIN)/libedgeMesh

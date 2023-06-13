@@ -1,1 +1,0 @@
-../fields/faPatchFields/basic/calculated/calculatedFaPatchField.C

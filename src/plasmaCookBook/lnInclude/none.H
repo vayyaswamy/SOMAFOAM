@@ -1,1 +1,0 @@
-../plasmaEnergyModels/gTemperature/none/none.H

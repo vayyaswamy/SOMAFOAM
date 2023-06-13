@@ -1,3 +1,0 @@
-SOURCE = \
-$(liquidMixture)/liquidMixture.C\
-$(liquidMixture)/liquidMixtureIO.C

@@ -1,1 +1,0 @@
-../sets/pointSources/cellToPoint/cellToPoint.C

@@ -1,1 +1,0 @@
-../fields/faPatchFields/basic/fixedGradient/fixedGradientFaPatchFieldsFwd.H

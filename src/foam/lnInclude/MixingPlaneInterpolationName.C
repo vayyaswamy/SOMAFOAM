@@ -1,1 +1,0 @@
-../interpolations/MixingPlaneInterpolation/MixingPlaneInterpolationName.C

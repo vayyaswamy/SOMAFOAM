@@ -1,1 +1,0 @@
-../meshes/pointMesh/pointPatches/derived/global/globalPointPatch.H

@@ -1,1 +1,0 @@
-../plasmaBoundaryConditions/electronThermalVelocity/electronThermalVelocity.C

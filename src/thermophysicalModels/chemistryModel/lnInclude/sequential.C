@@ -1,1 +1,0 @@
-../chemistrySolver/sequential/sequential.C

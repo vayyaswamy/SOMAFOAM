@@ -1,1 +1,0 @@
-../meshes/meshShapes/cell/pyramidPointFaceRef.H

@@ -1,1 +1,0 @@
-../interpolation/interpolation/interpolationCellPointWallModified/interpolationCellPointWallModifiedI.H

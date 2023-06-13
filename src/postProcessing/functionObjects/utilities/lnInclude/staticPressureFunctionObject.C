@@ -1,1 +1,0 @@
-../staticPressure/staticPressureFunctionObject.C

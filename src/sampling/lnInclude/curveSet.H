@@ -1,1 +1,0 @@
-../sampledSet/curve/curveSet.H

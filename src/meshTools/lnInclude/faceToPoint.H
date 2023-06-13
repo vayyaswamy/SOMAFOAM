@@ -1,1 +1,0 @@
-../sets/pointSources/faceToPoint/faceToPoint.H

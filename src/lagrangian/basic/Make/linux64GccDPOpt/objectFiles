@@ -1,3 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/passiveParticleCloud.o\
-$(OBJECTS_DIR)/indexedParticleCloud.o

@@ -1,1 +1,0 @@
-../interpolation/surfaceInterpolation/schemes/downwind/downwind.H

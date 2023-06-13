@@ -1,7 +1,0 @@
-LOCAL_OBJECTS = \
-decompositionMethod.o\
-manualDecomp.o\
-geomDecomp.o\
-simpleGeomDecomp.o\
-hierarchGeomDecomp.o\
-patchConstrainedDecomp.o

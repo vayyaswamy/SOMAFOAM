@@ -1,1 +1,0 @@
-../searchableSurface/searchableSurfaceWithGaps.C

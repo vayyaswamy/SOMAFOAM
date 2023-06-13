@@ -1,1 +1,0 @@
-../field/magSqr/magSqr.C

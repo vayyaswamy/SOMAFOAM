@@ -1,1 +1,0 @@
-../triSurface/triSurface/interfaces/GTS/readGTS.C

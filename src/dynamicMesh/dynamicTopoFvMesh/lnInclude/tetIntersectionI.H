@@ -1,1 +1,0 @@
-../convexSetAlgorithm/tetIntersectionI.H

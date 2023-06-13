@@ -1,1 +1,0 @@
-../meshes/polyMesh/polyPatches/derived/wall/wallPolyPatch.H

@@ -1,1 +1,0 @@
-../plasmaEnergyModels/iTemperature/ifullImplicit/ifullImplicit.H

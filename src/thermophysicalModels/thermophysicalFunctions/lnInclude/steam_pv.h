@@ -1,1 +1,0 @@
-../freesteam-2.1/steam_pv.h

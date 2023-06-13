@@ -1,1 +1,0 @@
-../sampledSurface/thresholdCellFaces/thresholdCellFaces.C

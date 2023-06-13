@@ -1,9 +1,0 @@
-$(OBJECTS_DIR)/zeroin.o: freesteam-2.1/zeroin.dep
-freesteam-2.1/zeroin.dep: freesteam-2.1/zeroin.c
-freesteam-2.1/zeroin.dep: freesteam-2.1/zeroin.h
-freesteam-2.1/zeroin.dep: freesteam-2.1/common.h
-freesteam-2.1/zeroin.dep: freesteam-2.1/config.h
-$(OBJECTS_DIR)/zeroin.o: $(EXE_DEP)
-$(OBJECTS_DIR)/zeroin.o:
-	@SOURCE_DIR=freesteam-2.1
-	SOURCE=freesteam-2.1/zeroin.c ; $(ctoo)

@@ -1,7 +1,0 @@
-$(OBJECTS_DIR)/geompack.o: triSurface/triSurfaceTools/geompack/geompack.dep
-triSurface/triSurfaceTools/geompack/geompack.dep: triSurface/triSurfaceTools/geompack/geompack.C
-triSurface/triSurfaceTools/geompack/geompack.dep: triSurface/triSurfaceTools/geompack/geompack.H
-$(OBJECTS_DIR)/geompack.o: $(EXE_DEP)
-$(OBJECTS_DIR)/geompack.o:
-	@SOURCE_DIR=triSurface/triSurfaceTools/geompack
-	SOURCE=triSurface/triSurfaceTools/geompack/geompack.C ; $(Ctoo)

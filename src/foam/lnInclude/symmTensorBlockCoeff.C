@@ -1,1 +1,0 @@
-../primitives/BlockCoeff/symmTensorBlockCoeff.C

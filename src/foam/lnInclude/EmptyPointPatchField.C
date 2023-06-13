@@ -1,1 +1,0 @@
-../fields/PointPatchFieldTemplates/constraint/empty/EmptyPointPatchField.C

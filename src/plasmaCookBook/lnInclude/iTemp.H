@@ -1,1 +1,0 @@
-../plasmaEnergyModels/iTemperature/iTemp/iTemp.H

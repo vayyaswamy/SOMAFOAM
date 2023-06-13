@@ -1,1 +1,0 @@
-../submodels/absorptionEmissionModel/absorptionEmissionModel/newAbsorptionEmissionModel.C

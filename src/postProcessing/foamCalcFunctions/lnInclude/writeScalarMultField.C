@@ -1,1 +1,0 @@
-../basic/scalarMult/writeScalarMultField.C

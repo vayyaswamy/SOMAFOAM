@@ -1,1 +1,0 @@
-../surfaceFormats/gts/GTSsurfaceFormatRunTime.C
