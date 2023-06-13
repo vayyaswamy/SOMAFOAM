@@ -1,0 +1,10 @@
+LOCAL_OBJECTS = \
+equationSources.o\
+equation.o\
+equationIO.o\
+equationOperation.o\
+equationReader.o\
+equationReaders.o\
+equationReaderIO.o\
+IOEquationReader.o\
+IOEquationReaderIO.o

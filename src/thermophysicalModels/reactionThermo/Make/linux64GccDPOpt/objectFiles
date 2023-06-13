@@ -1,0 +1,23 @@
+OBJECTS = \
+$(OBJECTS_DIR)/chemkinReader.o\
+$(OBJECTS_DIR)/chemkinLexer.o\
+$(OBJECTS_DIR)/makeChemistryReaders.o\
+$(OBJECTS_DIR)/basicMultiComponentMixture.o\
+$(OBJECTS_DIR)/hCombustionThermo.o\
+$(OBJECTS_DIR)/newhCombustionThermo.o\
+$(OBJECTS_DIR)/hCombustionThermos.o\
+$(OBJECTS_DIR)/hsCombustionThermo.o\
+$(OBJECTS_DIR)/newhsCombustionThermo.o\
+$(OBJECTS_DIR)/hsCombustionThermos.o\
+$(OBJECTS_DIR)/hhuCombustionThermo.o\
+$(OBJECTS_DIR)/newhhuCombustionThermo.o\
+$(OBJECTS_DIR)/hhuCombustionThermos.o\
+$(OBJECTS_DIR)/hReactionThermo.o\
+$(OBJECTS_DIR)/newhReactionThermo.o\
+$(OBJECTS_DIR)/hReactionThermos.o\
+$(OBJECTS_DIR)/hsReactionThermo.o\
+$(OBJECTS_DIR)/newhsReactionThermo.o\
+$(OBJECTS_DIR)/hsReactionThermos.o\
+$(OBJECTS_DIR)/fixedUnburntEnthalpyFvPatchScalarField.o\
+$(OBJECTS_DIR)/gradientUnburntEnthalpyFvPatchScalarField.o\
+$(OBJECTS_DIR)/mixedUnburntEnthalpyFvPatchScalarField.o

@@ -1,0 +1,2 @@
+include writeRegisteredObject/writeRegisteredObject.dep
+include writeRegisteredObject/writeRegisteredObjectFunctionObject.dep

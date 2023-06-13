@@ -1,0 +1,13 @@
+DEPENDENCIES = \
+$(atomicWeights)/atomicWeights.dep\
+$(specie)/specie.dep\
+$(speciesTable)/speciesTable.dep\
+$(equationOfState)/perfectGas/perfectGas.dep\
+$(equationOfState)/cubicEquationOfState/redlichKwong/redlichKwong.dep\
+$(equationOfState)/cubicEquationOfState/aungierRedlichKwong/aungierRedlichKwong.dep\
+$(equationOfState)/cubicEquationOfState/pengRobinson/pengRobinson.dep\
+$(equationOfState)/cubicEquationOfState/soaveRedlichKwong/soaveRedlichKwong.dep\
+$(reactions)/makeChemkinReactions.dep\
+$(reactions)/makeReactionThermoReactions.dep\
+$(reactions)/makeLangmuirHinshelwoodReactions.dep\
+$(reactions)/makeTabularReactions.dep

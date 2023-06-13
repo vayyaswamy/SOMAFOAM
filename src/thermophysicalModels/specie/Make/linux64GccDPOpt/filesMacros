@@ -1,0 +1,6 @@
+atomicWeights = atomicWeights
+specie = specie
+speciesTable = speciesTable
+equationOfState = equationOfState
+reactions = reaction/reactions
+LIB = $(FOAM_LIBBIN)/libspecie

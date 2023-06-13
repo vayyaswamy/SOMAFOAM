@@ -1,0 +1,6 @@
+OBJECTS = \
+$(OBJECTS_DIR)/solid.o\
+$(OBJECTS_DIR)/newSolid.o\
+$(OBJECTS_DIR)/ash.o\
+$(OBJECTS_DIR)/C.o\
+$(OBJECTS_DIR)/CaCO3.o

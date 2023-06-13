@@ -1,0 +1,1 @@
+../plasmaBoundaryConditions/electronTemperatureOpenBoundary/electronTemperatureOpenBoundary.H

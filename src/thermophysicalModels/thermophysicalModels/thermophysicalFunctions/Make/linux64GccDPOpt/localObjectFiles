@@ -1,0 +1,26 @@
+LOCAL_OBJECTS = \
+thermophysicalFunction.o\
+NSRDSfunc0.o\
+NSRDSfunc1.o\
+NSRDSfunc2.o\
+NSRDSfunc3.o\
+NSRDSfunc4.o\
+NSRDSfunc5.o\
+NSRDSfunc6.o\
+NSRDSfunc7.o\
+NSRDSfunc14.o\
+APIdiffCoefFunc.o\
+common.o\
+steam.o\
+b23.o\
+backwards.o\
+viscosity.o\
+thcond.o\
+region1.o\
+region2.o\
+region3.o\
+region4.o\
+steam_pv.o\
+steam_ph.o\
+steam_pT.o\
+zeroin.o

@@ -1,0 +1,66 @@
+#!/bin/sh
+#------------------------------------------------------------------------------
+# =========                 |
+# \\      /  F ield         | foam-extend: Open Source CFD
+#  \\    /   O peration     | Version:     4.0
+#   \\  /    A nd           | Web:         http://www.foam-extend.org
+#    \\/     M anipulation  | For copyright notice see file Copyright
+#------------------------------------------------------------------------------
+# License
+#     This file is part of foam-extend.
+#
+#     foam-extend is free software: you can redistribute it and/or modify it
+#     under the terms of the GNU General Public License as published by the
+#     Free Software Foundation, either version 3 of the License, or (at your
+#     option) any later version.
+#
+#     foam-extend is distributed in the hope that it will be useful, but
+#     WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#     General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Script
+#     wmakeFilesAndOptions
+#
+# Description
+#     Script to scan the current directory for directories and source files
+#     and construct Make/files and Make/options
+#
+#     Usage : wmakeFilesAndOptions
+#
+#------------------------------------------------------------------------------
+Script=${0##*/}
+
+#
+# check environment variables
+#
+for check in WM_OPTIONS WM_LINK_LANGUAGE WM_DIR
+do
+    eval test "\$$check" || {
+        echo "$Script error: environment variable \$$check not set" 1>&2
+        exit 1
+    }
+done
+
+if [ -d Make ]
+then
+    echo "$Script error: Make directory already exists" 1>&2
+    exit 1
+else
+    mkdir Make
+fi
+
+[ -e Make/files ] || {
+    echo "$Script: Creating files"
+    $WM_DIR/scripts/makeFiles
+}
+
+[ -e Make/options ] || {
+    echo "$Script: Creating options"
+    $WM_DIR/scripts/makeOptions
+}
+
+#------------------------------------------------------------------------------

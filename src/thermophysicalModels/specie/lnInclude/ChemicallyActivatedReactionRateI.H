@@ -1,0 +1,1 @@
+../reaction/reactionRate/ChemicallyActivatedReactionRate/ChemicallyActivatedReactionRateI.H

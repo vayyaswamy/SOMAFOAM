@@ -1,0 +1,13 @@
+LOCAL_OBJECTS = \
+ODESolver.o\
+newODESolver.o\
+Euler.o\
+RK.o\
+KRR4.o\
+SIBS.o\
+SIMPR.o\
+polyExtrapolate.o\
+translationODE.o\
+finiteRotation.o\
+sixDOFqODE.o\
+sixDOFbodies.o

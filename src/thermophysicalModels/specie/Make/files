@@ -1,0 +1,20 @@
+atomicWeights = atomicWeights
+specie = specie
+speciesTable = speciesTable
+equationOfState = equationOfState
+reactions = reaction/reactions
+
+$(atomicWeights)/atomicWeights.C
+$(specie)/specie.C
+$(speciesTable)/speciesTable.C
+$(equationOfState)/perfectGas/perfectGas.C
+$(equationOfState)/cubicEquationOfState/redlichKwong/redlichKwong.C
+$(equationOfState)/cubicEquationOfState/aungierRedlichKwong/aungierRedlichKwong.C
+$(equationOfState)/cubicEquationOfState/pengRobinson/pengRobinson.C
+$(equationOfState)/cubicEquationOfState/soaveRedlichKwong/soaveRedlichKwong.C
+$(reactions)/makeChemkinReactions.C
+$(reactions)/makeReactionThermoReactions.C
+$(reactions)/makeLangmuirHinshelwoodReactions.C
+$(reactions)/makeTabularReactions.C
+
+LIB = $(FOAM_LIBBIN)/libspecie

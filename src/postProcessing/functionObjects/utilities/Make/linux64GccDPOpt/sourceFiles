@@ -1,0 +1,5 @@
+SOURCE = \
+staticPressure/staticPressure.C\
+staticPressure/staticPressureFunctionObject.C\
+MachNumber/MachNumber.C\
+divFlux/divFlux.C

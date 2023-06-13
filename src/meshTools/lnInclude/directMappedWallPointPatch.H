@@ -1,0 +1,1 @@
+../directMapped/directMappedPointPatch/directMappedWallPointPatch.H

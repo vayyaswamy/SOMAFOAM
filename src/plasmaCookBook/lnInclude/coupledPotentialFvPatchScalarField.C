@@ -1,0 +1,1 @@
+../plasmaBoundaryConditions/coupledPotential/coupledPotentialFvPatchScalarField.C

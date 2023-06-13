@@ -1,0 +1,27 @@
+OBJECTS = \
+$(OBJECTS_DIR)/radiationConstants.o\
+$(OBJECTS_DIR)/radiationModel.o\
+$(OBJECTS_DIR)/newRadiationModel.o\
+$(OBJECTS_DIR)/noRadiation.o\
+$(OBJECTS_DIR)/P1.o\
+$(OBJECTS_DIR)/fvDOM.o\
+$(OBJECTS_DIR)/radiativeIntensityRay.o\
+$(OBJECTS_DIR)/blackBodyEmission.o\
+$(OBJECTS_DIR)/absorptionCoeffs.o\
+$(OBJECTS_DIR)/viewFactor.o\
+$(OBJECTS_DIR)/scatterModel.o\
+$(OBJECTS_DIR)/newScatterModel.o\
+$(OBJECTS_DIR)/constantScatter.o\
+$(OBJECTS_DIR)/absorptionEmissionModel.o\
+$(OBJECTS_DIR)/newAbsorptionEmissionModel.o\
+$(OBJECTS_DIR)/noAbsorptionEmission.o\
+$(OBJECTS_DIR)/constantAbsorptionEmission.o\
+$(OBJECTS_DIR)/binaryAbsorptionEmission.o\
+$(OBJECTS_DIR)/greyMeanAbsorptionEmission.o\
+$(OBJECTS_DIR)/wideBandAbsorptionEmission.o\
+$(OBJECTS_DIR)/MarshakRadiationMixedFvPatchScalarField.o\
+$(OBJECTS_DIR)/MarshakRadiationFixedTMixedFvPatchScalarField.o\
+$(OBJECTS_DIR)/greyDiffusiveRadiationMixedFvPatchScalarField.o\
+$(OBJECTS_DIR)/wideBandDiffusiveRadiationMixedFvPatchScalarField.o\
+$(OBJECTS_DIR)/wideBandSpecularRadiationMixedFvPatchScalarField.o\
+$(OBJECTS_DIR)/greyDiffusiveViewFactorFixedValueFvPatchScalarField.o

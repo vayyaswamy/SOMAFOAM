@@ -1,0 +1,4 @@
+setWriters = sampledSet/writers
+surfWriters = sampledSurface/writers
+meshToMesh = meshToMeshInterpolation/meshToMesh
+LIB = $(FOAM_LIBBIN)/libsampling

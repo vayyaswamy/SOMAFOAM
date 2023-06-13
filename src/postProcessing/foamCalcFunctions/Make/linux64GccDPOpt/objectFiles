@@ -1,0 +1,14 @@
+OBJECTS = \
+$(OBJECTS_DIR)/calcType.o\
+$(OBJECTS_DIR)/newCalcType.o\
+$(OBJECTS_DIR)/domainIntegrate.o\
+$(OBJECTS_DIR)/components.o\
+$(OBJECTS_DIR)/componentsTurbo.o\
+$(OBJECTS_DIR)/mag.o\
+$(OBJECTS_DIR)/magSqr.o\
+$(OBJECTS_DIR)/magGrad.o\
+$(OBJECTS_DIR)/div.o\
+$(OBJECTS_DIR)/randomise.o\
+$(OBJECTS_DIR)/interpolate.o\
+$(OBJECTS_DIR)/addSubtract.o\
+$(OBJECTS_DIR)/scalarMult.o

@@ -1,0 +1,1 @@
+../reaction/reactionsTemplates/electronImpactInelasticReaction/electronImpactInelasticReaction.H

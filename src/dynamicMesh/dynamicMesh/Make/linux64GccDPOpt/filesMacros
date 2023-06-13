@@ -1,0 +1,10 @@
+polyMeshModifiers = polyMeshModifiers
+attachDetach = $(polyMeshModifiers)/attachDetach
+layerAdditionRemoval = $(polyMeshModifiers)/layerAdditionRemoval
+slidingInterface = $(polyMeshModifiers)/slidingInterface
+enrichedPatch = $(slidingInterface)/enrichedPatch
+repatchCoverage = $(polyMeshModifiers)/repatchCoverage
+directActions = directTopoChange/directTopoChange/directActions
+meshCut = directTopoChange/meshCut
+modifiers = $(meshCut)/modifiers
+LIB = $(FOAM_LIBBIN)/libdynamicMesh

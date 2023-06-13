@@ -1,0 +1,4 @@
+thermophysicalFunction = thermophysicalFunction
+NSRDSfunctions         = NSRDSfunctions
+APIfunctions           = APIfunctions
+LIB = $(FOAM_LIBBIN)/libthermophysicalFunctions

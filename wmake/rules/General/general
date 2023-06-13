@@ -1,0 +1,11 @@
+AR         = ar
+ARFLAGS    = cr
+RANLIB     = ranlib
+LD         = ld
+
+FOAM_DEV_REVISION_NUMBER = $(shell foamVersion -revision)
+
+GFLAGS     = -D$(WM_ARCH) -DWM_$(WM_PRECISION_OPTION)
+GINC       =
+GLIBS      = -lm
+GLIB_LIBS  =

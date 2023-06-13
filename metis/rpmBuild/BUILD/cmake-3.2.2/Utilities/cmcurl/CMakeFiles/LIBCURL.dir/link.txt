@@ -1,0 +1,1 @@
+/usr/bin/gcc   -m64 -fPIC  -w   -m64 CMakeFiles/LIBCURL.dir/curltest.c.o  -o LIBCURL -rdynamic lib/libcmcurl.a -ldl ../cmzlib/libcmzlib.a 

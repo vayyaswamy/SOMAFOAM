@@ -1,0 +1,24 @@
+EXE_INC = \
+    -I$(LIB_SRC)/coupledMatrix/lnInclude \
+    -IelectroMagneticsControls/emcModels \
+    -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude \
+    -I$(LIB_SRC)/plasmaCookBook/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -IregionProperties \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -IpostProcessing/spatioTemporal 
+
+EXE_LIBS = \
+    -lcoupledLduMatrix \
+	-lreactionThermophysicalModels \
+	-lbasicThermophysicalModels \
+	-lchemistryModel \
+	-lfiniteVolume \
+	-lmeshTools \
+	-lspecie \
+	-lfoam \
+	-ldl \
+	-lplasmaCookBook

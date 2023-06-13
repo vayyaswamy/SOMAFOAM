@@ -1,0 +1,75 @@
+#------------------------------------------------------------------------------
+# =========                 |
+# \\      /  F ield         | foam-extend: Open Source CFD
+#  \\    /   O peration     | Version:     4.0
+#   \\  /    A nd           | Web:         http://www.foam-extend.org
+#    \\/     M anipulation  | For copyright notice see file Copyright
+#------------------------------------------------------------------------------
+# License
+#     This file is part of foam-extend.
+#
+#     foam-extend is free software: you can redistribute it and/or modify it
+#     under the terms of the GNU General Public License as published by the
+#     Free Software Foundation, either version 3 of the License, or (at your
+#     option) any later version.
+#
+#     foam-extend is distributed in the hope that it will be useful, but
+#     WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#     General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Script
+#     MakefileFiles
+#
+# Description
+#     General, easy to use make system for multi-platform development.
+#
+#------------------------------------------------------------------------------
+
+GENERAL_RULES = $(WM_DIR)/rules/General
+RULES         = $(WM_DIR)/rules/$(WM_ARCH)$(WM_COMPILER)
+OBJECTS_DIR   = $(WM_OPTIONS)
+FFLAGS        =
+
+include $(GENERAL_RULES)/general
+include $(RULES)/general
+include $(OBJECTS_DIR)/options
+
+#------------------------------------------------------------------------------
+# declare names of make system control files derived from file files
+#------------------------------------------------------------------------------
+
+FILES   = $(WM_OPTIONS)/files
+
+SFILES  = $(WM_OPTIONS)/sourceFiles
+OFILES  = $(WM_OPTIONS)/objectFiles
+DFILES  = $(WM_OPTIONS)/dependencyFiles
+IFILES  = $(WM_OPTIONS)/includeDeps
+
+#------------------------------------------------------------------------------
+# Declare dependecy of all make system files on FILE
+# Causes all derived files to be remade if any are changed or missing
+#------------------------------------------------------------------------------
+
+allFiles : $(FILES) $(SFILES) $(OFILES) $(DFILES) $(IFILES)
+
+$(FILES) : files
+	@$(CPP) $(GFLAGS) $(FFLAGS) files > $(FILES)
+
+$(SFILES): files
+	@wmakeDerivedFiles
+
+$(OFILES): files
+	@wmakeDerivedFiles
+
+$(DFILES): files
+	@wmakeDerivedFiles
+
+$(IFILES): files
+	@wmakeDerivedFiles
+
+
+#------------------------------------------------------------------------------

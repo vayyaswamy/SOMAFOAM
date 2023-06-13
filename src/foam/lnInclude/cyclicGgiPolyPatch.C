@@ -1,0 +1,1 @@
+../meshes/polyMesh/polyPatches/constraint/cyclicGgi/cyclicGgiPolyPatch.C

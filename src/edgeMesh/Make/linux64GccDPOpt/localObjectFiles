@@ -1,0 +1,4 @@
+LOCAL_OBJECTS = \
+edgeMesh.o\
+edgeMeshIO.o\
+featureEdgeMesh.o

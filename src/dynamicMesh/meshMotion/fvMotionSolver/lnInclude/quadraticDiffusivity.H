@@ -1,0 +1,1 @@
+../motionDiffusivity/manipulators/quadratic/quadraticDiffusivity.H

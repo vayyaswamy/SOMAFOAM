@@ -1,0 +1,1 @@
+../meshes/primitiveMesh/PrimitivePatchTemplate/PrimitivePatchName.C

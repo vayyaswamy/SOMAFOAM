@@ -1,0 +1,1 @@
+../derivedFvPatchFields/isentropicTotalTemperature/isentropicTotalTemperatureFvPatchScalarField.H

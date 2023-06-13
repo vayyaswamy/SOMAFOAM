@@ -1,0 +1,18 @@
+DEPENDENCIES = \
+fieldAverage/fieldAverage/fieldAverage.dep\
+fieldAverage/fieldAverageItem/fieldAverageItem.dep\
+fieldAverage/fieldAverageItem/fieldAverageItemIO.dep\
+fieldAverage/fieldAverageFunctionObject/fieldAverageFunctionObject.dep\
+fieldMinMax/fieldMinMax.dep\
+fieldMinMax/fieldMinMaxFunctionObject.dep\
+minMaxField/minMaxField.dep\
+maxFieldCell/maxFieldCell.dep\
+fieldValues/fieldValue/fieldValue.dep\
+fieldValues/faceSource/faceSource.dep\
+fieldValues/faceSource/faceSourceFunctionObject.dep\
+fieldValues/cellSource/cellSource.dep\
+fieldValues/cellSource/cellSourceFunctionObject.dep\
+readFields/readFields.dep\
+readFields/readFieldsFunctionObject.dep\
+surfaceInterpolateFields/surfaceInterpolateFieldsFunctionObject.dep\
+surfaceInterpolateFields/surfaceInterpolateFields.dep

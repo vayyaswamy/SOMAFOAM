@@ -1,0 +1,1 @@
+../radiationModel/fvDOM/interpolationLookUpTable/interpolationLookUpTableI.H

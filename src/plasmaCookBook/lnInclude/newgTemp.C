@@ -1,0 +1,1 @@
+../plasmaEnergyModels/gTemperature/gTemp/newgTemp.C

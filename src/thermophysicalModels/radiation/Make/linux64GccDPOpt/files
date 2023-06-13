@@ -1,0 +1,72 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+
+radiationConstants/radiationConstants.C
+
+
+radiationModel/radiationModel/radiationModel.C
+radiationModel/radiationModel/newRadiationModel.C
+radiationModel/noRadiation/noRadiation.C
+radiationModel/P1/P1.C
+radiationModel/fvDOM/fvDOM/fvDOM.C
+radiationModel/fvDOM/radiativeIntensityRay/radiativeIntensityRay.C
+radiationModel/fvDOM/blackBodyEmission/blackBodyEmission.C
+radiationModel/fvDOM/absorptionCoeffs/absorptionCoeffs.C
+radiationModel/viewFactor/viewFactor.C
+
+
+submodels/scatterModel/scatterModel/scatterModel.C
+submodels/scatterModel/scatterModel/newScatterModel.C
+submodels/scatterModel/constantScatter/constantScatter.C
+
+
+
+submodels/absorptionEmissionModel/absorptionEmissionModel/absorptionEmissionModel.C
+submodels/absorptionEmissionModel/absorptionEmissionModel/newAbsorptionEmissionModel.C
+submodels/absorptionEmissionModel/noAbsorptionEmission/noAbsorptionEmission.C
+submodels/absorptionEmissionModel/constantAbsorptionEmission/constantAbsorptionEmission.C
+submodels/absorptionEmissionModel/binaryAbsorptionEmission/binaryAbsorptionEmission.C
+submodels/absorptionEmissionModel/greyMeanAbsorptionEmission/greyMeanAbsorptionEmission.C
+submodels/absorptionEmissionModel/wideBandAbsorptionEmission/wideBandAbsorptionEmission.C
+
+
+
+derivedFvPatchFields/MarshakRadiation/MarshakRadiationMixedFvPatchScalarField.C
+derivedFvPatchFields/MarshakRadiationFixedT/MarshakRadiationFixedTMixedFvPatchScalarField.C
+derivedFvPatchFields/greyDiffusiveRadiation/greyDiffusiveRadiationMixedFvPatchScalarField.C
+derivedFvPatchFields/wideBandDiffusiveRadiation/wideBandDiffusiveRadiationMixedFvPatchScalarField.C
+derivedFvPatchFields/wideBandSpecularRadiation/wideBandSpecularRadiationMixedFvPatchScalarField.C
+derivedFvPatchFields/greyDiffusiveViewFactor/greyDiffusiveViewFactorFixedValueFvPatchScalarField.C
+
+LIB = $(FOAM_LIBBIN)/libradiation

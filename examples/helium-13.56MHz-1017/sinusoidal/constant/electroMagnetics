@@ -1,0 +1,51 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      electroMagnetics;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solutionDomain		plasma;
+
+poissonEquationSolver	semiImplicit;
+
+emcModel		power;
+
+spatioTemporal 		oneD;
+
+powerCoeffs
+{
+	mode 					continuousFrequencyModulated;
+	initialAmplitude		100;
+	frequency 				13.56E6;
+	bias					0;
+	power 					3;
+	dampingFactor			0.005;
+	waveform				sinusoidal;
+	operation				symmetricalBipolar;
+	dutyCycle				0;
+	naturalFrequency		0;
+	dampingRatio			0;
+	tolerance				2.5;			
+}
+
+oneDCoeffs
+{
+	frequency		13.56E6;
+	outputInterval	5;
+	nCycles			2;
+	deltaT			5E-11;	
+}
+
+
+// ************************************************************************* //

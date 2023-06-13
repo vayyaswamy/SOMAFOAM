@@ -1,0 +1,8 @@
+DEPENDENCIES = \
+$(pdf)/pdf.dep\
+$(pdf)/newPdf.dep\
+$(uniform)/uniform.dep\
+$(normal)/normal.dep\
+$(general)/general.dep\
+$(exponential)/exponential.dep\
+$(RosinRammler)/RosinRammler.dep

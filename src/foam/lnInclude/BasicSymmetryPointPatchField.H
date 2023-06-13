@@ -1,0 +1,1 @@
+../fields/PointPatchFieldTemplates/basic/basicSymmetry/BasicSymmetryPointPatchField.H

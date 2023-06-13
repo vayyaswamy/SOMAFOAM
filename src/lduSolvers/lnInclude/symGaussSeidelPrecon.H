@@ -1,0 +1,1 @@
+../lduPrecon/symGaussSeidelPrecon/symGaussSeidelPrecon.H

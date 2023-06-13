@@ -1,0 +1,9 @@
+OBJECTS = \
+$(OBJECTS_DIR)/basicChemistryModel.o\
+$(OBJECTS_DIR)/psiChemistryModel.o\
+$(OBJECTS_DIR)/newPsiChemistryModel.o\
+$(OBJECTS_DIR)/psiChemistryModels.o\
+$(OBJECTS_DIR)/rhoChemistryModel.o\
+$(OBJECTS_DIR)/newRhoChemistryModel.o\
+$(OBJECTS_DIR)/rhoChemistryModels.o\
+$(OBJECTS_DIR)/makeChemistrySolvers.o

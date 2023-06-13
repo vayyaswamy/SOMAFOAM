@@ -1,0 +1,8 @@
+OBJECTS = \
+$(OBJECTS_DIR)/pdf.o\
+$(OBJECTS_DIR)/newPdf.o\
+$(OBJECTS_DIR)/uniform.o\
+$(OBJECTS_DIR)/normal.o\
+$(OBJECTS_DIR)/general.o\
+$(OBJECTS_DIR)/exponential.o\
+$(OBJECTS_DIR)/RosinRammler.o

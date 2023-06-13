@@ -1,0 +1,10 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/data/vayyaswamy/ltps/metis/rpmBuild/BUILD/cmake-3.2.2/Tests/FindPackageModeMakefileTest/foo.cpp
+

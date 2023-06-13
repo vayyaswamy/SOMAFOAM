@@ -1,0 +1,9 @@
+OBJECTS = \
+$(OBJECTS_DIR)/boundaryRegion.o\
+$(OBJECTS_DIR)/cellTable.o\
+$(OBJECTS_DIR)/meshReader.o\
+$(OBJECTS_DIR)/meshReaderAux.o\
+$(OBJECTS_DIR)/calcPointCells.o\
+$(OBJECTS_DIR)/createPolyCells.o\
+$(OBJECTS_DIR)/createPolyBoundary.o\
+$(OBJECTS_DIR)/polyDualMesh.o

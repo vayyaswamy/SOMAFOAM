@@ -1,0 +1,14 @@
+DEPENDENCIES = \
+calcType/calcType.dep\
+calcType/newCalcType.dep\
+field/domainIntegrate/domainIntegrate.dep\
+field/components/components.dep\
+field/componentsTurbo/componentsTurbo.dep\
+field/mag/mag.dep\
+field/magSqr/magSqr.dep\
+field/magGrad/magGrad.dep\
+field/div/div.dep\
+field/randomise/randomise.dep\
+field/interpolate/interpolate.dep\
+basic/addSubtract/addSubtract.dep\
+basic/scalarMult/scalarMult.dep

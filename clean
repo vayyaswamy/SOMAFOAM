@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd ${0%/*} || exit 1    # run from this directory
+
+source "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/etc/bashrc
+
+wcleanAllButLibBinLnInclude
+
+( cd metis && ./clean )

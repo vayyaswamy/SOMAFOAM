@@ -1,0 +1,1 @@
+../motionDiffusivity/directional/directionalDiffusivity.H

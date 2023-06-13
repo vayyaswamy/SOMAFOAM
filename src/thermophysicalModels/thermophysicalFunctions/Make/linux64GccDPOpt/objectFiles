@@ -1,0 +1,26 @@
+OBJECTS = \
+$(OBJECTS_DIR)/thermophysicalFunction.o\
+$(OBJECTS_DIR)/NSRDSfunc0.o\
+$(OBJECTS_DIR)/NSRDSfunc1.o\
+$(OBJECTS_DIR)/NSRDSfunc2.o\
+$(OBJECTS_DIR)/NSRDSfunc3.o\
+$(OBJECTS_DIR)/NSRDSfunc4.o\
+$(OBJECTS_DIR)/NSRDSfunc5.o\
+$(OBJECTS_DIR)/NSRDSfunc6.o\
+$(OBJECTS_DIR)/NSRDSfunc7.o\
+$(OBJECTS_DIR)/NSRDSfunc14.o\
+$(OBJECTS_DIR)/APIdiffCoefFunc.o\
+$(OBJECTS_DIR)/common.o\
+$(OBJECTS_DIR)/steam.o\
+$(OBJECTS_DIR)/b23.o\
+$(OBJECTS_DIR)/backwards.o\
+$(OBJECTS_DIR)/viscosity.o\
+$(OBJECTS_DIR)/thcond.o\
+$(OBJECTS_DIR)/region1.o\
+$(OBJECTS_DIR)/region2.o\
+$(OBJECTS_DIR)/region3.o\
+$(OBJECTS_DIR)/region4.o\
+$(OBJECTS_DIR)/steam_pv.o\
+$(OBJECTS_DIR)/steam_ph.o\
+$(OBJECTS_DIR)/steam_pT.o\
+$(OBJECTS_DIR)/zeroin.o

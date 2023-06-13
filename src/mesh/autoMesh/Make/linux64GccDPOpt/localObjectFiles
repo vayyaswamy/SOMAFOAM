@@ -1,0 +1,19 @@
+LOCAL_OBJECTS = \
+autoLayerDriver.o\
+autoLayerDriverShrink.o\
+autoSnapDriver.o\
+autoRefineDriver.o\
+autoHexMeshDriver.o\
+layerParameters.o\
+refinementParameters.o\
+snapParameters.o\
+pointData.o\
+meshRefinementBaffles.o\
+meshRefinement.o\
+meshRefinementMerge.o\
+meshRefinementProblemCells.o\
+meshRefinementRefine.o\
+refinementSurfaces.o\
+shellSurfaces.o\
+trackedParticle.o\
+trackedParticleCloud.o

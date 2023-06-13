@@ -1,0 +1,1 @@
+../meshes/pointMesh/pointPatches/derived/coupled/coupledFacePointPatch.H

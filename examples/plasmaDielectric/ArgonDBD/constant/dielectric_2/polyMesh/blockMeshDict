@@ -1,0 +1,83 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.4.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 2e-4;
+
+vertices
+(
+    (0 1 0)
+    (1 1 0)
+    (1 1.1 0)
+    (0 1.1 0)
+
+    (0 1 1)
+    (1 1 1)
+    (1 1.1 1)
+    (0 1.1 1)
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (1 40 1) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    electrode
+    {
+        type patch;
+        faces
+        (
+            (3 7 6 2)
+        );
+    }
+    plasma_2
+    {
+		type            regionCouple;
+		shadowRegion    region0;
+		shadowPatch     dielectric_2;
+		zone            dielectric_2_Zone;
+		attached        off;
+		master          off;
+		isWall          on;
+		bridgeOverlap   off;
+        faces
+        (
+            (0 4 5 1)
+        );
+    }
+    otherfaces
+    {
+        type empty;
+        faces
+        (
+	    (0 3 7 4 )   
+            (2 1 5 6) 
+            (0 1 2 3 )
+            (4 7 6 5)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

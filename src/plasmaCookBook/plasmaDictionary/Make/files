@@ -1,0 +1,3 @@
+plasmaDictionary.C
+
+EXE = $(FOAM_APPBIN)/plasmaDictionary

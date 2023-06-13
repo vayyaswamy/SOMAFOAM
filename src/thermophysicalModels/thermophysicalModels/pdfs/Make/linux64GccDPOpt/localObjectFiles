@@ -1,0 +1,8 @@
+LOCAL_OBJECTS = \
+pdf.o\
+newPdf.o\
+uniform.o\
+normal.o\
+general.o\
+exponential.o\
+RosinRammler.o

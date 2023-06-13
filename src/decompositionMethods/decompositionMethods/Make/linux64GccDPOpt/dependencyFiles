@@ -1,0 +1,7 @@
+DEPENDENCIES = \
+decompositionMethod/decompositionMethod.dep\
+manualDecomp/manualDecomp.dep\
+geomDecomp/geomDecomp.dep\
+simpleGeomDecomp/simpleGeomDecomp.dep\
+hierarchGeomDecomp/hierarchGeomDecomp.dep\
+patchConstrainedDecomp/patchConstrainedDecomp.dep

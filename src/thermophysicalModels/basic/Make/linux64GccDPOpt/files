@@ -1,0 +1,72 @@
+# 1 "files"
+# 1 "<built-in>"
+# 1 "<command-line>"
+
+
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+
+# 17 "/usr/include/stdc-predef.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2 "<command-line>" 2
+# 1 "files"
+mixtures/basicMixture/basicMixture.C
+mixtures/basicMixture/basicMixtures.C
+
+basicThermo/basicThermo.C
+
+psiThermo/basicPsiThermo/basicPsiThermo.C
+psiThermo/basicPsiThermo/newBasicPsiThermo.C
+psiThermo/hPsiThermo/hPsiThermos.C
+psiThermo/hsPsiThermo/hsPsiThermos.C
+psiThermo/ePsiThermo/ePsiThermos.C
+psiThermo/realGasHThermo/realGasHThermos.C
+psiThermo/realGasEThermo/realGasEThermos.C
+
+rhoThermo/basicRhoThermo/basicRhoThermo.C
+rhoThermo/basicRhoThermo/newBasicRhoThermo.C
+rhoThermo/hRhoThermo/hRhoThermos.C
+rhoThermo/hsRhoThermo/hsRhoThermos.C
+
+IAPWS_Waterproperties/IAPWSThermo/IAPWS-IF97.C
+IAPWS_Waterproperties/IAPWSThermo/IAPWSThermos.C
+
+derivedFvPatchFields/fixedEnthalpy/fixedEnthalpyFvPatchScalarField.C
+derivedFvPatchFields/gradientEnthalpy/gradientEnthalpyFvPatchScalarField.C
+derivedFvPatchFields/mixedEnthalpy/mixedEnthalpyFvPatchScalarField.C
+
+derivedFvPatchFields/fixedInternalEnergy/fixedInternalEnergyFvPatchScalarField.C
+derivedFvPatchFields/gradientInternalEnergy/gradientInternalEnergyFvPatchScalarField.C
+derivedFvPatchFields/mixedInternalEnergy/mixedInternalEnergyFvPatchScalarField.C
+
+derivedFvPatchFields/ggiEnthalpyJump/ggiEnthalpyJumpFvPatchFields.C
+derivedFvPatchFields/mixingPlaneEnthalpyJump/mixingPlaneEnthalpyJumpFvPatchFields.C
+
+derivedFvPatchFields/wallHeatTransfer/wallHeatTransferFvPatchScalarField.C
+
+derivedFvPatchFields/temperatureDirectedInletOutletVelocity/temperatureDirectedInletOutletVelocityFvPatchVectorField.C
+derivedFvPatchFields/isentropicTotalPressure/isentropicTotalPressureFvPatchScalarField.C
+derivedFvPatchFields/isentropicTotalTemperature/isentropicTotalTemperatureFvPatchScalarField.C
+
+LIB = $(FOAM_LIBBIN)/libbasicThermophysicalModels

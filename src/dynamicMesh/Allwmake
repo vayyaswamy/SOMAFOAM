@@ -1,0 +1,16 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+set -x
+
+wmake libso dynamicMesh
+
+# Make meshMotion solvers
+meshMotion/Allwmake
+
+# Make libraries in dynamicFvMesh
+wmake libso dynamicFvMesh
+wmake libso dynamicTopoFvMesh
+
+wmake libso topoChangerFvMesh
+
+# ----------------------------------------------------------------- end-of-file
