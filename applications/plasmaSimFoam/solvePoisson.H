@@ -1,8 +1,6 @@
 {
 	emc->correct(voltageDict);
 
-	epsiloni = epsilon0 + runTime.deltaTValue()*eCharge*mspm().potentialImpSource();
-
 	if (poissonEquationSolver == "semiImplicit")
 	{
 		volScalarField epsSource = epsilon0 + runTime.deltaTValue()*eCharge*mspm().potentialImpSource();

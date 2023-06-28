@@ -47,6 +47,8 @@ inline bool Foam::pimpleControl::correct()
 {
     corrPISO_++;
 
+    //Info << "iteration " << corrPISO_ << endl;
+
     if (debug)
     {
         Info<< algorithmName_ << " correct: corrPISO = " << corrPISO_ << endl;
@@ -54,11 +56,13 @@ inline bool Foam::pimpleControl::correct()
 
     if (corrPISO_ <= nCorrPISO_)
     {
+        //Info << "corrPISO_ = " << corrPISO_ << endl;
         return true;
     }
     else
     {
         corrPISO_ = 0;
+        //Info << "corrPISO_ = " << corrPISO_ << endl;
         return false;
     }
 }

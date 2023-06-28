@@ -284,8 +284,6 @@ public:
             //- deltaE associated with inelastic collisions
             virtual scalar deltaE() const;
 
-            //- branching ratio associated with metastable collisions 
-            virtual scalar fractional() const;
 
         //- Write
         virtual void write(Ostream&) const;

@@ -1,6 +1,0 @@
-LOCAL_OBJECTS = \
-solid.o\
-newSolid.o\
-ash.o\
-C.o\
-CaCO3.o

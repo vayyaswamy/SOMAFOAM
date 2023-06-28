@@ -22,7 +22,6 @@ Description
 #include "plasmaEnergyModel.H"
 #include "thermoPhysicsTypes.H"
 #include "emcModels.H"
-#include "spatioTemporal.H"
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -45,23 +44,6 @@ int main(int argc, char *argv[])
 		#include "solvePlasma.H"
 
 		#include "solvePoisson.H"
-
-     	if (courantNumber == "on")
-	 	{
-		    scalar Cofactor = mspm().divFe();
-		    scalar deltaTNew = MaxCo/(Cofactor+1e-10);
-		    deltaTNew = min(deltaTNew,deltaTMax);
-		    deltaTNew = max(deltaTNew,deltaTMin);
-		    runTime.setDeltaT(deltaTNew);
-
-		    // print obtained time step and courant number into terminal 
-	    	Info << "New timestep = " << runTime.deltaTValue() << endl;
-	    	Info << "Courant = " << Cofactor*runTime.deltaTValue() << endl;
-	 	}
-	 	else
-	 	{
-
-	 	}
 
 	    if (runTime.write() && restartCapabale)
 	    {		    
@@ -98,16 +80,6 @@ int main(int argc, char *argv[])
 				specN.write();
 		    }
 	    }
-
-		if (refSpatioTemporal!="noneD")
-		{	
-			if (refSpatioTemporal == "oneD")
-			{
-				electronDiv = mspm().divFelectron();
-			}
-
-			spatioTemp -> correct();
-		}
 
 	    Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
 		        << runTime.elapsedCpuTime() << "s" << endl;

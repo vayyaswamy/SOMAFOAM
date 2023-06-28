@@ -138,8 +138,8 @@ EulerDdtScheme<Type>::fvcDdt
     }
     else
     {
-        // Info << "vf = " << vf << endl;
-        // Info << "vf.oldTime = " << vf.oldTime() << endl;
+        Info << "vf = " << vf << endl;
+        Info << "vf.oldTime = " << vf.oldTime() << endl;
         return tmp<GeometricField<Type, fvPatchField, volMesh> >
         (
             new GeometricField<Type, fvPatchField, volMesh>

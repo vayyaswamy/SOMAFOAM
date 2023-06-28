@@ -47,9 +47,10 @@ plasmaEnergyModel::plasmaEnergyModel
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
-void plasmaEnergyModel::ecorrect(psiChemistryModel& chemistry, const volVectorField& E)
+Foam::scalar plasmaEnergyModel::ecorrect(psiChemistryModel& chemistry, const volVectorField& E)
 {
-    eTempPtr_->correct(chemistry, E);
+    scalar output = eTempPtr_->correct(chemistry, E);
+    return output;
 }
 
 void plasmaEnergyModel::icorrect(psiChemistryModel& chemistry)

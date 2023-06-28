@@ -1,1 +1,0 @@
-../mixtures/homogeneousMixture/homogeneousMixture.C

@@ -183,16 +183,16 @@ Foam::ODEChemistryModel<CompType, ThermoType>::eChemSource
 
 template<class CompType, class ThermoType>
 inline Foam::tmp<Foam::volScalarField>
-Foam::ODEChemistryModel<CompType, ThermoType>::metastableSource
+Foam::ODEChemistryModel<CompType, ThermoType>::dEChemSourceDTe
 () const
 {
-    tmp<volScalarField> tmetastableSource
+    tmp<volScalarField> teChemSource
     (
         new volScalarField
         (
             IOobject
             (
-                "metastableSource",
+                "dEChemSourceDTe",
                 this->time().timeName(),
                 this->mesh(),
                 IOobject::NO_READ,
@@ -206,10 +206,10 @@ Foam::ODEChemistryModel<CompType, ThermoType>::metastableSource
 
     if (this->chemistry_)
     {
-        tmetastableSource().internalField() = metastableSource_;
-        tmetastableSource().correctBoundaryConditions();
+        teChemSource().internalField() = dEChemSourceDTe_;
+        teChemSource().correctBoundaryConditions();
     }
-    return tmetastableSource;
+    return teChemSource;
 }
 
 // ************************************************************************* //

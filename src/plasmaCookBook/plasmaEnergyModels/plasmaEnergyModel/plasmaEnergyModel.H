@@ -83,7 +83,7 @@ public:
 
     // Member Functions
 
-        virtual void ecorrect(psiChemistryModel& chemistry, const volVectorField& E);
+        virtual Foam::scalar ecorrect(psiChemistryModel& chemistry, const volVectorField& E);
         virtual void icorrect(psiChemistryModel& chemistry);
         virtual void gcorrect(psiChemistryModel& chemistry, const volVectorField& E);
 

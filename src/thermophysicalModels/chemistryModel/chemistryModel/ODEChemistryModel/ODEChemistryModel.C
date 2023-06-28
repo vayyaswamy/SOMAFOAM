@@ -70,7 +70,7 @@ Foam::ODEChemistryModel<CompType, ThermoType>::ODEChemistryModel
     RR_(nSpecie_),
     coeffs_(nSpecie_ + 4),
 	eChemSource_(mesh.nCells(), 0.0),
-    metastableSource_(mesh.nCells(), 0.0),
+    dEChemSourceDTe_(mesh.nCells(), 0.0),
 	collFreq_(nSpecie_)
 {
     // create the fields for the chemistry sources
@@ -801,6 +801,8 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
 
 			eChemSource_[celli] = 0.0;
 
+            dEChemSourceDTe_[celli] = 0.0;
+
             scalar rhoi = rho[celli];
             scalar Ti = this->thermo().T()[celli];
             scalar pi = this->thermo().p()[celli];
@@ -828,11 +830,24 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
 				    R, c, Ti, pi, Tei, Tioni, pf, cf, lRef, pr, cr, rRef
 				);
 
+                scalar omegaiplus = omega
+                (
+                    R, c, Ti, pi, Tei + 1e-08, Tioni, pf, cf, lRef, pr, cr, rRef
+                );
+
+                scalar omegaiminus = omega
+                (
+                    R, c, Ti, pi, Tei - 1e-08, Tioni, pf, cf, lRef, pr, cr, rRef
+                );
+
+                scalar dOmegaiDTe = (omegaiplus - omegaiminus) / 2e-08; 
+
 				if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
 				{
 				    scalar sl = R.lhs()[0].stoichCoeff;
 			    	eChemSource_[celli] += sl*omegai*R.deltaE()*5.48579E-4; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s, electron weight hard coded 
-				}
+				    dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*5.48579E-4;
+                }
 				if ((R.type() == "electronImpactElasticArrheniusReaction") || (R.type() == "electronImpactElasticTabularReaction"))
 				{
 				  // getting index of neutral species
@@ -840,6 +855,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
 
 					eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W(); //electron weight square
 				  // need to multiply by electron mass and divide by other species mass
+                    dEChemSourceDTe_[celli] += 3.0*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
 				}
 
 				forAll(R.lhs(), s)
@@ -942,18 +958,11 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 				}
 				if ((R.type() == "ionElasticArrheniusReaction"))
 				{
-				    // getting index of neutral species
+				  // getting index of neutral species
 					const label sii = R.lhs()[0].index; 
 					collFreq_[sii][celli] += omegai*specieThermo_[sii].W()/Y_[sii][celli]/rhoi;
-				    // need to multiply by electron mass and divide by other species mass
+				  // need to multiply by electron mass and divide by other species mass
 				}
-                if (R.type() == "metastableTwoImpactArrheniusReaction")
-                {
-                    const label sii = R.lhs()[0].index;
-                    // Info << "weight of argon metastable is: " << specieThermo_[sii].W() << endl;
-                    // Info << "gathering variables of interest: " << R.deltaE() << " " << R.fractional() << endl;
-                    metastableSource_[celli] += (1/2)*omegai*R.deltaE()*R.fractional();
-                }
 
 				forAll(R.lhs(), s)
 				{

@@ -23,8 +23,14 @@ electronThermalVelocity
 )
 :
   fixedValueFvPatchVectorField(p, iF),
-  scalar1Data_(0.0)
-{}
+  seec_(0),
+  Edepend_(true),
+  FE_(false),
+  beta_(1.0),
+  wf_(1.0)
+{
+    fvPatchField<vector>::operator=(this->patchInternalField());
+}
 
 
 Foam::electronThermalVelocity::
@@ -36,7 +42,11 @@ electronThermalVelocity
 )
 :
     fixedValueFvPatchVectorField(p, iF),
-    scalar1Data_(readScalar(dict.lookup("sec")))
+    seec_(readScalar(dict.lookup("seec"))),
+    Edepend_(readBool(dict.lookup("Edepend"))),
+    FE_(readBool(dict.lookup("field_emission"))),
+    beta_(readScalar(dict.lookup("field_enhancement_factor"))),
+    wf_(readScalar(dict.lookup("work_function")))
 {
     if (dict.found("value"))
     {
@@ -62,7 +72,11 @@ electronThermalVelocity
 )
 :
     fixedValueFvPatchVectorField(ptf, p, iF, mapper),
-    scalar1Data_(ptf.scalar1Data_)
+    seec_(ptf.seec_),
+    Edepend_(ptf.Edepend_),
+    FE_(ptf.FE_),
+    beta_(ptf.beta_),
+    wf_(ptf.wf_)
 {}
 
 
@@ -73,7 +87,11 @@ electronThermalVelocity
 )
 :
     fixedValueFvPatchVectorField(ptf),
-    scalar1Data_(ptf.scalar1Data_)
+    seec_(ptf.seec_),
+    Edepend_(ptf.Edepend_),
+    FE_(ptf.FE_),
+    beta_(ptf.beta_),
+    wf_(ptf.wf_)
 {}
 
 
@@ -85,7 +103,11 @@ electronThermalVelocity
 )
 :
     fixedValueFvPatchVectorField(ptf, iF),
-    scalar1Data_(ptf.scalar1Data_)
+    seec_(ptf.seec_),
+    Edepend_(ptf.Edepend_),
+    FE_(ptf.FE_),
+    beta_(ptf.beta_),
+    wf_(ptf.wf_)
 {}
 
 
@@ -117,43 +139,52 @@ void Foam::electronThermalVelocity::updateCoeffs()
         return;
     }
 
-    const volVectorField& Fi =
-        db().objectRegistry::lookupObject<volVectorField>("ionFlux");
+    vectorField n = patch().nf();
+
+    const fvPatchField<vector>& Fif=
+        patch().lookupPatchField<volVectorField, vector>("ionFlux");
+
+    const fvPatchField<scalar>& Tef=
+        patch().lookupPatchField<volScalarField, scalar>("Te"); 
+
+    const fvPatchField<vector>& Ef=
+        patch().lookupPatchField<volVectorField, vector>("E");
 
     const fvPatchField<scalar>& Nef =
         patch().lookupPatchField<volScalarField, scalar>("N_electron");
 
-    const fvPatchField<scalar>& Tef=
-        patch().lookupPatchField<volScalarField, scalar>("Te");
+    scalarField Enorm = Ef&n ;
 
-    vectorField n = patch().nf();
+    scalarField Fifnorm = Fif&n;
 
-    label patchi = this->patch().index();
+    scalarField a = pos(Enorm);   
 
-    const fvPatchVectorField& FiT = Fi.boundaryField()[patchi];
+    scalarField b = pos(Fifnorm);
 
-    scalarField Finorm = FiT&n;
+    const scalarField Gamma_se = seec_*(b*Fifnorm);
 
-    vectorField temp = 0.0*n;
-    
-    scalarField etemp = this->patchInternalField()&this->patch().Sf();
+    scalarField c = pos(Enorm); // to ensure field emission happens only if E-field is pointing inward even if Edepend is set to false
 
-    vectorField etempf = this->patchInternalField();
+    scalarField Gamma_FE = c*0.0;
 
-    forAll(temp, facei)
+    //Info << "FE_ = " << FE_ << endl;
+
+    if (FE_)
     {
-    	label faceCelli = patch().faceCells()[facei];
-        
-		if(Finorm[facei] > 0.0)
-		{	 
-		    temp[facei]=((0.25*Foam::sqrt(3.8595300515e7*Tef[facei])*n[facei]) + ((etemp[facei] > 0.0) ? etempf[facei]:vector::zero)
-					- scalar1Data_*(Fi[faceCelli]/Nef[facei]));
-        }
-        else
-        {
-		    temp[facei]=((0.25*Foam::sqrt(3.8595300515e7*Tef[facei])*n[facei]) + ((etemp[facei] > 0.0) ? etempf[facei]:vector::zero));
-        }
-	}
+        //Info << "Enorm = " << Enorm << endl;
+
+        scalarField vofy = 0.95 - sqr(3.79E-4)*beta_*c*mag(Enorm)*1E-2/sqr(wf_) ; // 1E-2 is for converting V/m to V/cm
+
+        //Info << "vofy = " << vofy << endl;
+
+        Gamma_FE = c*1.54E-6/1.602e-19*sqr(beta_*c*mag(Enorm) )/1.1/wf_*exp(-6.85E9*pow(wf_,1.5)*vofy/beta_/(c*mag(Enorm) + SMALL) ) ;
+
+        //Info << "Gamma_FE = " << Gamma_FE << endl;
+    }
+
+    //vectorField temp = 0.0*n;
+
+    vectorField temp = (0.25*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0)) - (Gamma_se + Gamma_FE)/Nef)*n;
 
     operator == (temp);
     
@@ -164,9 +195,17 @@ void Foam::electronThermalVelocity::updateCoeffs()
 void Foam::electronThermalVelocity::write(Ostream& os) const
 {
     fvPatchVectorField::write(os);
-    os.writeKeyword("sec")
-        << scalar1Data_ << token::END_STATEMENT << nl;
-    writeEntry("value", os);
+    os.writeKeyword("seec")
+        << seec_ << token::END_STATEMENT << nl;
+    os.writeKeyword("Edepend")
+        << Edepend_ << token::END_STATEMENT << nl;
+    os.writeKeyword("field_emission")
+        << FE_ << token::END_STATEMENT << nl;
+    os.writeKeyword("field_enhancement_factor")
+        << beta_ << token::END_STATEMENT << nl;
+    os.writeKeyword("work_function")
+        << wf_ << token::END_STATEMENT << nl;
+    this->writeEntry("value", os);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

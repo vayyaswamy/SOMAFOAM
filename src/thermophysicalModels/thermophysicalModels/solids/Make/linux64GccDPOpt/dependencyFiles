@@ -1,6 +1,0 @@
-DEPENDENCIES = \
-solid/solid.dep\
-solid/newSolid.dep\
-ash/ash.dep\
-C/C.dep\
-CaCO3/CaCO3.dep

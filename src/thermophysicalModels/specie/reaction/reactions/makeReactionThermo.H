@@ -35,7 +35,6 @@ Description
 #include "Reaction.H"
 
 #include "electronImpactInelasticReaction.H"
-#include "metastableTwoImpactReaction.H"
 #include "electronImpactElasticReaction.H"
 #include "ionIrreversibleReaction.H"
 #include "ionElasticReaction.H"
@@ -114,7 +113,6 @@ namespace Foam
                                                                               \
     makeReaction(Thermo, NonEquilibriumReversibleReaction, ReactionRate)		\
     makeReaction(Thermo, electronImpactInelasticReaction, ReactionRate)  	  \
-    makeReaction(Thermo, metastableTwoImpactReaction, ReactionRate)     \
     makeReaction(Thermo, electronImpactElasticReaction, ReactionRate)  			\
     makeReaction(Thermo, ionIrreversibleReaction, ReactionRate)  					\
     makeReaction(Thermo, ionElasticReaction, ReactionRate)  					

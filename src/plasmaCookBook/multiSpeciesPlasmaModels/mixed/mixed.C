@@ -120,10 +120,20 @@ inline void Foam::mixed<ThermoType>::updateFlux
 	const volVectorField& E
 )
 {     
-	
+	//Info << "entering updateFlux" << endl;
 	volVectorField& Fi = F_[i];
+
+	//Info <<"i = " << i << endl;
+
 	Fi = mu_[i]*(z_[i]*E - plasmaConstants::KBE*fvc::grad(T_[i]));
 
+	//Fi = mu_[i]*(z_[i]*E);
+
+	//Fi.correctBoundaryConditions();
+
+	//Info << "inside " << endl;
+
+	//Info << "exiting updateFlux " << endl;
 }
 
 
@@ -628,42 +638,54 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
 						initialResidual = 1.0;
 						
-						while ((initialResidual >= 1e-5) && (icorr++ <= 5)){
-
-							tmp<fvScalarMatrix> NEqn
-							(   
-								fvm::ddt(Ni)
-					   			+ fvm::div((fvc::interpolate(F_[i]) & mesh_.Sf()), Ni, "div(F,Ni)")
-								- fvm::laplacian(D_[i], Ni, "laplacian(D,Ni)")
-								- chemistry.RR(i)*plasmaConstants::A/W(i)
-							);
-
-					
-
-							solverPerf = NEqn->solve(mesh_.solutionDict().solver("Ni"));
-
-							//Info << "icorr = " << icorr << "Residual = " << initialResidual << endl;
-
-
-							initialResidual = min(initialResidual,solverPerf.initialResidual());
-
-							N_[i].max(1e4); // setting min value for active species number density
-
-							yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
-
-							//updateChemistryCollFreq(chemistry);
+						while ((initialResidual >= 1e-5) && (icorr++ <= 0)){
 
 						
+						tmp<fvScalarMatrix> NEqn
+						(   
+							fvm::ddt(Ni)
+					   		+ fvm::div((fvc::interpolate(F_[i]) & mesh_.Sf()), Ni, "div(F,Ni)")
+							- fvm::laplacian(D_[i], Ni, "laplacian(D,Ni)")
+							+ fvm::SuSp((-chemistry.RR(i)*plasmaConstants::A/W(i)/Ni), Ni)
+							//-chemistry.RR(i)*plasmaConstants::A/W(i)
+						);
 
-						}
+						//- fvc::laplacian((mu_[i]*plasmaConstants::KBE*Ni), Ti, "laplacian(D,T)")
 
-						N_[i].relax(); // field relax
+						//Info << "Step 3a " << i << endl;
 
-						N_[i].max(1e4);
+						//NEqn->relax(); // equation relax
+
+						//Info << "Step 4 " << endl;
+
+						solverPerf = NEqn->solve(mesh_.solutionDict().solver("Ni"));
+
+						//Info << "relaxing " << endl;
+
+
+						initialResidual = min(initialResidual,solverPerf.initialResidual());
+
+						//N_[i].relax();
+
+						//Info << "Residual = " << initialResidual << endl;
+
+						N_[i].max(1e4); // setting min value for active species number density
 
 						yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
 						//updateChemistryCollFreq(chemistry);
+
+						
+
+					}
+
+					N_[i].relax(); // field relax
+
+					N_[i].max(1e4);
+
+					yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
+
+					//	updateChemistryCollFreq(chemistry);
 
 						
 
@@ -743,29 +765,47 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 						//Info << "Species " << i << endl;
 
 						N_[i].storePrevIter();
-
-						initialResidual = 1.0;
 						
-						while ((initialResidual >= 1e-5) && (icorr++ <= 5))
+						while ((initialResidual >= 1e-5) && (icorr++ <= 0))
 						{
+
+						
+
+						//Info << "in while loop " << endl;
 						tmp<fvScalarMatrix> NnEqn
 						(   
 							fvm::ddt(Ni)
 							- fvm::laplacian(D_[i],Ni, "laplacian(D,Nin)")
-							- chemistry.RR(i)*plasmaConstants::A/W(i)
+							+ fvm::SuSp((-chemistry.RR(i)*plasmaConstants::A/W(i)/Ni), Ni)
+							//chemistry.RR(i)*plasmaConstants::A/W(i)
 						);
+
+						//Info << "equations setting up " << endl;
+
+						//NnEqn->relax();
+
+						//Info << "solving " << endl ;
 
 						solverPerf = NnEqn->solve(mesh_.solutionDict().solver("Nin"));
 
 						initialResidual = min(initialResidual,solverPerf.initialResidual());
 
-						//Info << "icorr = " << icorr << "Residual = " << initialResidual << endl;
+						//Info << "Residual = " << initialResidual << endl;
+
+						//Info << "solving " << endl;
+						//yi.max(0.0);
+
+						//N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
+
+						//Info << "setting max " << endl;
+						//N_[i].relax();
 
 						N_[i].max(1e4);
 
 						yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
 						//updateChemistryCollFreq(chemistry);
+
 						
 					}
 
@@ -777,6 +817,11 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
 						//updateChemistryCollFreq(chemistry);
 
+						//Info << "Done with heavy species " << endl;
+
+						//N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
+
+						//N_[i].max(1e10);
 					}
 				}
 		        yt += yi;  

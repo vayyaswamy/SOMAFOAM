@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
 
 	//Info << "Done " << endl;
 
-    lduMatrix::debug = 0;
+    //lduMatrix::debug = 0;
 
-	coupledLduMatrix::debug = 0;
+	//coupledLduMatrix::debug = 0;
 
-	blockLduMatrix::debug = 0;
+	//blockLduMatrix::debug = 0;
 	
 
 	if (solutionDomain == "plasmaDielectric")
@@ -163,10 +163,28 @@ int main(int argc, char *argv[])
 		    while (pimple.loop())
 		    {
 			
-			#include "solvePoisson.H"
-			#include "plasmaEqn.H"
+			/*while (pimple.correct())
+			{
+				#include "solvePoisson.H"	
+			}*/
+
+		    #include "solvePoisson.H"
+
+			#include "plasmaEqn.H"	
+			
+			
+			
 
 		    }
+
+		    //pem.ecorrect(chemistry, E);	
+
+	//Info << "Te corrected " << endl;
+
+	
+
+
+			gradTe = mspm().gradTe();
 			
 			
 

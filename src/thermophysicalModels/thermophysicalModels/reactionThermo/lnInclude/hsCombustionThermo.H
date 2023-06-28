@@ -1,1 +1,0 @@
-../combustionThermo/hsCombustionThermo/hsCombustionThermo.H

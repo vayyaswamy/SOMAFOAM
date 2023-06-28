@@ -93,6 +93,9 @@ bool Foam::BlockSolverPerformance<Type>::checkSingularity
 template<class Type>
 void Foam::BlockSolverPerformance<Type>::print() const
 {
+
+    //Info << "Using print statement " << endl;
+
     if (blockLduMatrix::debug)
     {
         Info<< solverName_ << ":  Solving for " << fieldName_;

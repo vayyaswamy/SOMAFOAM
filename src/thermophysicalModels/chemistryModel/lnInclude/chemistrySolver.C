@@ -1,1 +1,1 @@
-../chemistrySolver/chemistrySolver/chemistrySolver.C
+../chemistryModel/chemistrySolver/chemistrySolver/chemistrySolver.C

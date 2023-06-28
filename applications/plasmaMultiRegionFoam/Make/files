@@ -4,11 +4,6 @@ electroMagneticsControls/voltageControl/voltageControl.C
 electroMagneticsControls/powerControl/powerControl.C
 electroMagneticsControls/none/none.C
 
-postProcessing/spatioTemporal/spatioTemporals.C
-postProcessing/spatioTemporal/newspatioTemporal.C
-postProcessing/spatioNone/spatioNone.C
-postProcessing/one/one.C
-
 regionProperties/regionProperties.C
 
 derivedFvPatchFields/plasmaDielectricWallCoupled/plasmaDielectricWallCoupledFvPatchScalarField.C

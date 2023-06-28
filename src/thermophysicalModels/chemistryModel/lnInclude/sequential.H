@@ -1,1 +1,1 @@
-../chemistrySolver/sequential/sequential.H
+../chemistryModel/chemistrySolver/sequential/sequential.H

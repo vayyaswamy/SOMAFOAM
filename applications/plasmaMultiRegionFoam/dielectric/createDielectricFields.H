@@ -97,18 +97,3 @@
             )
         );
 	}
-
-    // hardcoded IOdictionary for cases where only a input 
-    // source is considered
-    IOdictionary voltageDict
-    (
-        IOobject
-        (
-            "voltageDict",
-            runTime.constant(),
-            dielectricRegions[0],
-            IOobject::NO_READ,
-            IOobject::NO_WRITE
-        )
-    );
-

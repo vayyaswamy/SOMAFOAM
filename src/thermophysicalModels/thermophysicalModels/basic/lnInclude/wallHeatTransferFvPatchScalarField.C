@@ -1,1 +1,0 @@
-../derivedFvPatchFields/wallHeatTransfer/wallHeatTransferFvPatchScalarField.C

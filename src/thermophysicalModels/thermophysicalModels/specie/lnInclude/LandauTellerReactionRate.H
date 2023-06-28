@@ -1,1 +1,0 @@
-../reaction/reactionRate/LandauTellerReactionRate/LandauTellerReactionRate.H

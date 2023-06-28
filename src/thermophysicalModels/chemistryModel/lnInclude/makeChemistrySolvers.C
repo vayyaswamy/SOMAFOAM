@@ -1,1 +1,1 @@
-../chemistrySolver/chemistrySolver/makeChemistrySolvers.C
+../chemistryModel/chemistrySolver/chemistrySolver/makeChemistrySolvers.C

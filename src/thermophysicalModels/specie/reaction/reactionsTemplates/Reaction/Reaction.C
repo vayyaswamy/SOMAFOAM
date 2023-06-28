@@ -354,12 +354,6 @@ scalar Reaction<ReactionThermo>::deltaE() const
     return 0.0;
 }
 
-template<class ReactionThermo>
-scalar Reaction<ReactionThermo>::fractional() const
-{
-    return 0.0;
-}
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

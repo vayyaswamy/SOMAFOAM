@@ -32,7 +32,15 @@ class electronThermalVelocity
 public fixedValueFvPatchVectorField
 {
 	// Private data
-	scalar scalar1Data_;
+	scalar seec_;
+
+	bool Edepend_;
+
+    bool FE_; 
+
+    scalar beta_;
+
+    scalar wf_;
 	
 	public:
 

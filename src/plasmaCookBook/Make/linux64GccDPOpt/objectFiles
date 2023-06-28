@@ -31,7 +31,6 @@ $(OBJECTS_DIR)/eEnergyThermalFlux.o\
 $(OBJECTS_DIR)/plasmaExtendedPotential.o\
 $(OBJECTS_DIR)/electronThermalVelocity.o\
 $(OBJECTS_DIR)/externalCircuitPotential.o\
-$(OBJECTS_DIR)/externalCircuit1D.o\
 $(OBJECTS_DIR)/plasmaDielectricRegionCoupleBase.o\
 $(OBJECTS_DIR)/plasmaDielectricEpsilonFvPatchScalarField.o\
 $(OBJECTS_DIR)/coupledPotentialFvPatchScalarField.o\
