@@ -58,7 +58,7 @@ Foam::scalar Foam::efullImplicit::correct
 )
 {
 
-    //Info << "efullImplicit start " << endl;
+    
     lduSolverPerformance solverPerf;
 
     
