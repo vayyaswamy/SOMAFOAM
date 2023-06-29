@@ -58,16 +58,9 @@ Foam::scalar Foam::efullImplicit::correct
 )
 {
 
-    //Info << "efullImplicit start " << endl;
     lduSolverPerformance solverPerf;
-
-    
-
 	volScalarField& TeC = thermo().Te();
-
     TeC.storePrevIter();
-
-
     scalar initialResidual = 1.0;
 
     int icorr = 0;
@@ -76,44 +69,40 @@ Foam::scalar Foam::efullImplicit::correct
 
     {
 
-	eeFlux = 2.5*plasmaConstants::boltzC*mspm().J(eIndex_);
+	   eeFlux = 2.5*plasmaConstants::boltzC*mspm().J(eIndex_);
 
-	surfaceScalarField eeFluxF = fvc::interpolate(eeFlux) & mesh().Sf();
+	   surfaceScalarField eeFluxF = fvc::interpolate(eeFlux) & mesh().Sf();
 
-	volScalarField eeSource = - plasmaConstants::eCharge*(mspm().J(eIndex_) & E) - mspm().electronTempSource(chemistry);
+	   volScalarField eeSource = - plasmaConstants::eCharge*(mspm().J(eIndex_) & E) - mspm().electronTempSource(chemistry);
 
-    volScalarField eeSource_Su = plasmaConstants::eCharge*(mspm().J(eIndex_) & E) 
-                                + mspm().electronTempSource(chemistry) 
-                                - mspm().dElectronTempSourceDTe(chemistry)*TeC;
+        volScalarField eeSource_Su = plasmaConstants::eCharge*(mspm().J(eIndex_) & E) 
+                                    + mspm().electronTempSource(chemistry) 
+                                    - mspm().dElectronTempSourceDTe(chemistry)*TeC;
 
-    volScalarField eeSource_SuSp = mspm().dElectronTempSourceDTe(chemistry);
+        volScalarField eeSource_SuSp = mspm().dElectronTempSourceDTe(chemistry);
 
-	const volScalarField& Ne = mspm().N(eIndex_);
+	   const volScalarField& Ne = mspm().N(eIndex_);
 
-    fvScalarMatrix TeEqn
-    (
-        fvm::ddt((1.5*plasmaConstants::boltzC*Ne), TeC)
-      + fvm::div(eeFluxF, TeC)
-      - fvm::laplacian(mspm().electronConductivity(chemistry), TeC, "laplacian(eC,Te)")
-	  //+ fvm::SuSp((-eeSource/TeC), TeC)
-      + fvm::SuSp(eeSource_SuSp, TeC)
-      + eeSource_Su
-      //- eeSource 
-    );
+        fvScalarMatrix TeEqn
+        (
+            fvm::ddt((1.5*plasmaConstants::boltzC*Ne), TeC)
+            + fvm::div(eeFluxF, TeC)
+            - fvm::laplacian(mspm().electronConductivity(chemistry), TeC, "laplacian(eC,Te)")
+            + fvm::SuSp(eeSource_SuSp, TeC)
+            + eeSource_Su 
+        );
 
-    //TeEqn.relax();
+	   solverPerf = TeEqn.solve();
 
-	solverPerf = TeEqn.solve();
+        initialResidual = solverPerf.initialResidual();
 
-    initialResidual = solverPerf.initialResidual();
+        TeC.max(300.0);
 
-    TeC.max(300.0);
+        thermo().correct();
 
-    thermo().correct();
+        mspm().updateTemperature();
 
-    mspm().updateTemperature();
-
-    mspm().updateChemistryCollFreq(chemistry);
+        mspm().updateChemistryCollFreq(chemistry);
 
     }
 
