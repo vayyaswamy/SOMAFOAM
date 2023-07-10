@@ -71,12 +71,18 @@ Foam::ODEChemistryModel<CompType, ThermoType>::ODEChemistryModel
     coeffs_(nSpecie_ + 4),
 	eChemSource_(mesh.nCells(), 0.0),
     dEChemSourceDTe_(mesh.nCells(), 0.0),
-	collFreq_(nSpecie_)
+	collFreq_(nSpecie_),
+    dRRDi_(nSpecie_)
 {
     // create the fields for the chemistry sources
     forAll(RR_, fieldI)
     {
         RR_.set
+        (
+            fieldI,
+            new scalarField(mesh.nCells(), 0.0)
+        );
+        dRRDi_.set
         (
             fieldI,
             new scalarField(mesh.nCells(), 0.0)
@@ -172,6 +178,8 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
 
     scalar kf, kr;
 
+    //Info << "inside omega " << endl;
+
     if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
 	{
       kf = R.kf(Te, p, c);
@@ -216,6 +224,7 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
         }
     }
     cf = max(0.0, c[lRef]);
+
 
     {
         scalar exp = R.lhs()[slRef].exponent;
@@ -788,15 +797,20 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
     for (label i=0; i<nSpecie_; i++)
     {
         RR_[i].setSize(rho.size());
+        dRRDi_[i].setSize(rho.size());
     }
+
+    Info << "In calculate" << endl;
 
     if (this->chemistry_)
     {
         forAll(rho, celli)
         {
+            
             for (label i=0; i<nSpecie_; i++)
             {
                 RR_[i][celli] = 0.0;
+                dRRDi_[i][celli] = 0.0;
             }
 
 			eChemSource_[celli] = 0.0;
@@ -810,12 +824,14 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
             scalar Tioni = this->thermo().Tion()[celli];
 
             scalarField c(nSpecie_);
+            scalarField c2(nSpecie_, 0.0);
             scalarField dcdt(nEqns(), 0.0);
 
             for (label i=0; i<nSpecie_; i++)
             {
                 scalar Yi = Y_[i][celli];
                 c[i] = rhoi*Yi/specieThermo_[i].W();
+                c2[i] = max(c[i], 0.0);
             }
 
 			scalar pf, cf, pr, cr;
@@ -841,6 +857,136 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
                 );
 
                 scalar dOmegaiDTe = (omegaiplus - omegaiminus) / 2e-08; 
+
+                scalar kf0, kr0;
+
+
+                if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
+                {
+                    kf0 = R.kf(Tei, pi, c2);
+                    kr0 = R.kr(kf0, Tei, pi, c2);
+                }
+                else if ((R.type() == "ionIrreversibleArrheniusReaction"))
+                {
+                    kf0 = R.kf(Tioni, pi, c2);
+                    kr0 = R.kr(kf0, Tioni, pi, c2);
+                }
+                else
+                {
+                    kf0 = R.kf(Ti, pi, c2);
+                    kr0 = R.kr(kf0, Ti, pi, c2);
+                }
+
+                forAll(R.lhs(), j)
+                {
+                    label sj = R.lhs()[j].index;
+                    scalar kf = kf0;
+                    forAll(R.lhs(), i)
+                    {
+                        label si = R.lhs()[i].index;
+                        scalar el = R.lhs()[i].exponent;
+                        if (i == j)
+                        {
+                            if (el < 1.0)
+                            {
+                                if (c2[si]>ROOTVSMALL)
+                                {
+                                    kf *= el*pow(c2[si] + VSMALL, el - 1.0);
+                                }
+                                else
+                                {
+                                    kf = 0.0;
+                                }
+                            }
+                            else
+                            {
+                                kf *= el*pow(c2[si], el - 1.0);
+                            }
+                        }
+                        else
+                        {
+                            kf *= pow(c2[si], el);
+                        }
+                    }
+
+                    forAll(R.lhs(), i)
+                    {
+                        label si = R.lhs()[i].index;
+                        scalar sl = R.lhs()[i].stoichCoeff;
+                        
+                        if (si == sj)
+                        {
+                            dRRDi_[si][celli] -= sl*kf;
+                        }
+                    }
+                    forAll(R.rhs(), i)
+                    {
+                        label si = R.rhs()[i].index;
+                        scalar sr = R.rhs()[i].stoichCoeff;
+
+                        if (si == sj)
+                        {
+                            dRRDi_[si][celli] += sr*kf;
+                        }
+                    }
+                }
+
+                forAll(R.rhs(), j)
+                {
+                    label sj = R.rhs()[j].index;
+                    scalar kr = kr0;
+                    forAll(R.rhs(), i)
+                    {
+                        label si = R.rhs()[i].index;
+                        scalar er = R.rhs()[i].exponent;
+                        if (i==j)
+                        {
+                            if (er<1.0)
+                            {
+                                if (c2[si]>ROOTVSMALL)
+                                {
+                                    kr *= er*pow(c2[si] + VSMALL, er - 1.0);
+                                }
+                                else
+                                {
+                                    kr = 0.0;
+                                }
+                            }
+                            else
+                            {
+                                kr *= er*pow(c2[si], er - 1.0);
+                            }
+                        }
+                        else
+                        {
+                            kr *= pow(c2[si], er);
+                        }   
+                    }
+
+                    forAll(R.lhs(), i)
+                    {
+                        label si = R.lhs()[i].index;
+                        scalar sl = R.lhs()[i].stoichCoeff;
+                        if (si == sj)
+                        {
+                            dRRDi_[si][celli] += sl*kr;    
+                        }
+                        
+                    }
+                    forAll(R.rhs(), i)
+                    {
+                        label si = R.rhs()[i].index;
+                        scalar sr = R.rhs()[i].stoichCoeff;
+                        if (si == sj)
+                        {
+                            dRRDi_[si][celli] -= sr*kr;    
+                        }
+                    }
+                }
+
+
+
+
 
 				if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
 				{
@@ -876,6 +1022,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
             for (label i=0; i<nSpecie_; i++)
             {
                 RR_[i][celli] = dcdt[i]*specieThermo_[i].W();
+                Info << "dRR = " << dRRDi_[i][celli] << endl;
             }
         }
     }
@@ -884,6 +1031,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
 template<class CompType, class ThermoType>
 void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 {
+    //Info << "Inside calculateWcf" << endl;
     const volScalarField rho
     (
         IOobject
@@ -901,6 +1049,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
     for (label i=0; i<nSpecie_; i++)
     {
         RR_[i].setSize(rho.size());
+        dRRDi_[i].setSize(rho.size());
     }
 
     if (this->chemistry_)
@@ -911,9 +1060,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
             {
                 RR_[i][celli] = 0.0;
 				collFreq_[i][celli] = 0.0;
+                dRRDi_[i][celli] = 0.0;
             }
 
 			eChemSource_[celli] = 0.0;
+
+            dEChemSourceDTe_[celli] = 0.0;
 
             scalar rhoi = rho[celli];
             scalar Ti = this->thermo().T()[celli];
@@ -923,15 +1075,19 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 
             scalarField c(nSpecie_);
             scalarField dcdt(nEqns(), 0.0);
+            scalarField c2(nSpecie_, 0.0);
 
             for (label i=0; i<nSpecie_; i++)
             {
                 scalar Yi = Y_[i][celli];
                 c[i] = rhoi*Yi/specieThermo_[i].W();
+                c2[i] = max(c[i], 0.0);
             }
 
 			scalar pf, cf, pr, cr;
 			label lRef, rRef;
+
+            
 
 			forAll(reactions_, i)
 			{
@@ -942,11 +1098,151 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 				    R, c, Ti, pi, Tei, Tioni, pf, cf, lRef, pr, cr, rRef
 				);
 
+                scalar omegaiplus = omega
+                (
+                    R, c, Ti, pi, Tei + 1e-08, Tioni, pf, cf, lRef, pr, cr, rRef
+                );
+
+                scalar omegaiminus = omega
+                (
+                    R, c, Ti, pi, Tei - 1e-08, Tioni, pf, cf, lRef, pr, cr, rRef
+                );
+
+                scalar dOmegaiDTe = (omegaiplus - omegaiminus) / 2e-08; 
+
+                scalar kf0, kr0;
+
+
+                if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
+                {
+                    kf0 = R.kf(Tei, pi, c2);
+                    kr0 = R.kr(kf0, Tei, pi, c2);
+                }
+                else if ((R.type() == "ionIrreversibleArrheniusReaction"))
+                {
+                    kf0 = R.kf(Tioni, pi, c2);
+                    kr0 = R.kr(kf0, Tioni, pi, c2);
+                }
+                else
+                {
+                    kf0 = R.kf(Ti, pi, c2);
+                    kr0 = R.kr(kf0, Ti, pi, c2);
+                }
+
+                forAll(R.lhs(), j)
+                {
+                    label sj = R.lhs()[j].index;
+                    scalar kf = kf0;
+                    forAll(R.lhs(), i)
+                    {
+                        label si = R.lhs()[i].index;
+                        scalar el = R.lhs()[i].exponent;
+                        if (si == sj)
+                        {
+                            if (el < 1.0)
+                            {
+                                if (c2[si]>ROOTVSMALL)
+                                {
+                                    kf *= el*pow(c2[si] + VSMALL, el - 1.0);
+                                }
+                                else
+                                {
+                                    kf = 0.0;
+                                }
+                            }
+                            else
+                            {
+                                kf *= el*pow(c2[si], el - 1.0);
+                            }
+                        }
+                        else
+                        {
+                            kf *= pow(c2[si], el);
+                        }
+                    }
+
+                    forAll(R.lhs(), i)
+                    {
+                        label si = R.lhs()[i].index;
+                        scalar sl = R.lhs()[i].stoichCoeff;
+                        
+                        if (si == sj)
+                        {
+                            dRRDi_[si][celli] -= sl*kf;
+                        }
+                    }
+                    forAll(R.rhs(), i)
+                    {
+                        label si = R.rhs()[i].index;
+                        scalar sr = R.rhs()[i].stoichCoeff;
+
+                        if (si == sj)
+                        {
+                            dRRDi_[si][celli] += sr*kf;
+                        }
+                    }
+                    //Info << "dRRDi_[sj][celli]" << dRRDi_[sj][celli] << endl;
+                }
+
+                forAll(R.rhs(), j)
+                {
+                    label sj = R.rhs()[j].index;
+                    scalar kr = kr0;
+                    forAll(R.rhs(), i)
+                    {
+                        label si = R.rhs()[i].index;
+                        scalar er = R.rhs()[i].exponent;
+                        if (i==j)
+                        {
+                            if (er<1.0)
+                            {
+                                if (c2[si]>ROOTVSMALL)
+                                {
+                                    kr *= er*pow(c2[si] + VSMALL, er - 1.0);
+                                }
+                                else
+                                {
+                                    kr = 0.0;
+                                }
+                            }
+                            else
+                            {
+                                kr *= er*pow(c2[si], er - 1.0);
+                            }
+                        }
+                        else
+                        {
+                            kr *= pow(c2[si], er);
+                        }   
+                    }
+
+                    forAll(R.lhs(), i)
+                    {
+                        label si = R.lhs()[i].index;
+                        scalar sl = R.lhs()[i].stoichCoeff;
+                        if (si == sj)
+                        {
+                            dRRDi_[si][celli] += sl*kr;    
+                        }
+                        
+                    }
+                    forAll(R.rhs(), i)
+                    {
+                        label si = R.rhs()[i].index;
+                        scalar sr = R.rhs()[i].stoichCoeff;
+                        if (si == sj)
+                        {
+                            dRRDi_[si][celli] -= sr*kr;    
+                        }
+                    }
+                }
+
 				if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
 				{
 				    scalar sl = R.lhs()[0].stoichCoeff;
 			    	eChemSource_[celli] += sl*omegai*R.deltaE()*5.48579E-4; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s, electron weight hard coded 
-				}
+				    dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*5.48579E-4;
+                }
 				if ((R.type() == "electronImpactElasticArrheniusReaction") || (R.type() == "electronImpactElasticTabularReaction"))
 				{
 				  // getting index of neutral species
@@ -954,6 +1250,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 					const label sie = R.lhs()[0].index; 
 					eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W(); //electron weight square
 					collFreq_[sie][celli] += omegai*5.48579E-4/Y_[sie][celli]/rhoi;
+                    dEChemSourceDTe_[celli] += 3.0*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
 				  // need to multiply by electron mass and divide by other species mass
 				}
 				if ((R.type() == "ionElasticArrheniusReaction"))
@@ -1029,6 +1326,7 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::solve
         for (label i=0; i<nSpecie_; i++)
         {
             RR_[i][celli] = 0.0;
+
         }
 
         scalar rhoi = rho[celli];

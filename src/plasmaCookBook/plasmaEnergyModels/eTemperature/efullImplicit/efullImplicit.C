@@ -81,6 +81,8 @@ Foam::scalar Foam::efullImplicit::correct
 
         volScalarField eeSource_SuSp = mspm().dElectronTempSourceDTe(chemistry);
 
+        //Info << eeSource_SuSp << endl;
+
 	   const volScalarField& Ne = mspm().N(eIndex_);
 
         fvScalarMatrix TeEqn

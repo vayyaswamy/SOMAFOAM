@@ -122,6 +122,7 @@ public:
                 //- Return const access to chemical source terms
                 virtual tmp<volScalarField> RR(const label i) const = 0;
 
+                virtual tmp<volScalarField> dRRDi(const label i) const = 0;
 
             // Chemistry solution
 

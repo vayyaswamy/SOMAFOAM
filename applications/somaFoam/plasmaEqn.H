@@ -1,20 +1,11 @@
-	int icorr = 1;
 
-	scalar initialResidual = 1.0;
-
-	while ((icorr++ <= 5) && (initialResidual >= 1e-5))
+	while (pimple.correct())
 	{
 		ionFlux = mspm().totalIonFlux();
-		initialResidual = mspm().correct(Y, E, chemistry, fields);
+		mspm().correct(Y, E, chemistry, fields);
 
 	}
 
-	//Info << "Done with number density" << endl;
-	
-
-	//ionFlux = mspm().totalIonFlux();
-	//mspm().correct(Y, E, chemistry, fields);	
-	
 
 	kappa_e = mspm().electronConductivity(chemistry);
 

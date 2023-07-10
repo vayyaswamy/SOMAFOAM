@@ -117,6 +117,40 @@ Foam::ODEChemistryModel<CompType, ThermoType>::RR
     return tRR;
 }
 
+
+template<class CompType, class ThermoType>
+inline Foam::tmp<Foam::volScalarField>
+Foam::ODEChemistryModel<CompType, ThermoType>::dRRDi
+(
+    const label i
+) const
+{
+    tmp<volScalarField> tRR
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "dRRDi(" + this->Y_[i].name() + ')',
+                this->time().timeName(),
+                this->mesh(),
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            this->mesh(),
+            dimensionedScalar("zero", dimMass/dimVolume/dimTime, 0.0),
+            zeroGradientFvPatchScalarField::typeName
+        )
+    );
+
+    if (this->chemistry_)
+    {
+        tRR().internalField() = dRRDi_[i];
+        tRR().correctBoundaryConditions();
+    }
+    return tRR;
+}
+
 template<class CompType, class ThermoType>
 inline Foam::tmp<Foam::volScalarField>
 Foam::ODEChemistryModel<CompType, ThermoType>::collFreq
