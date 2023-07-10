@@ -1,0 +1,3 @@
+OBJECTS = \
+$(OBJECTS_DIR)/edgeStats.o\
+$(OBJECTS_DIR)/selectCells.o

@@ -1,0 +1,10 @@
+LOCAL_OBJECTS = \
+decomposeMesh.o\
+decomposePar.o\
+domainDecomposition.o\
+distributeCells.o\
+faMeshDecomposition.o\
+fvFieldDecomposer.o\
+faFieldDecomposer.o\
+pointFieldDecomposer.o\
+lagrangianFieldDecomposer.o

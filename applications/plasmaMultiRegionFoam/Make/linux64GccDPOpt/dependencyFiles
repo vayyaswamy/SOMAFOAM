@@ -1,0 +1,9 @@
+DEPENDENCIES = \
+electroMagneticsControls/emcModels/emcModels.dep\
+electroMagneticsControls/emcModels/newEmcModels.dep\
+electroMagneticsControls/voltageControl/voltageControl.dep\
+electroMagneticsControls/powerControl/powerControl.dep\
+electroMagneticsControls/none/none.dep\
+regionProperties/regionProperties.dep\
+derivedFvPatchFields/plasmaDielectricWallCoupled/plasmaDielectricWallCoupledFvPatchScalarField.dep\
+plasmaMultiRegionFoam.dep

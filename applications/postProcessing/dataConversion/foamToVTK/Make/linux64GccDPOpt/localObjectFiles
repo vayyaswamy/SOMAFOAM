@@ -1,0 +1,13 @@
+LOCAL_OBJECTS = \
+foamToVTK.o\
+internalWriter.o\
+lagrangianWriter.o\
+patchWriter.o\
+faMeshWriter.o\
+writeFuns.o\
+writePatchGeom.o\
+writeFaceSet.o\
+writePointSet.o\
+writeSurfFields.o\
+vtkMesh.o\
+vtkTopo.o

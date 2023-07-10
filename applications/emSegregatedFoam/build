@@ -1,0 +1,300 @@
+SOURCE=emSegregatedFoam.C ;  g++ -std=c++11 -m64 -Dlinux64 -DWM_ARCH_OPTION=64 -DWM_DP -DWM_LABEL_SIZE=32 -Wall -Wextra -Wno-unused-parameter -Wold-style-cast -Wnon-virtual-dtor -O3  -DNoRepository -ftemplate-depth-200 -I/home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude -IlnInclude -I. -I/home/derek/foam/foam-extend-4.1/src/foam/lnInclude -I/home/derek/foam/foam-extend-4.1/src/OSspecific/POSIX/lnInclude   -fPIC -c $SOURCE -o Make/linux64GccDPInt32Opt/emSegregatedFoam.o
+In file included from emSegregatedFoam.C:135:0:
+createFields.H: In function ‘int main(int, char**)’:
+createFields.H:146:5: error: no matching function for call to ‘Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>::GeometricField(Foam::IOobject, Foam::fvMesh&, Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >)’
+     );
+     ^
+In file included from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.H:626:0,
+                 from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricScalarField.H:38,
+                 from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricFields.H:34,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/volFields.H:38,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolationScheme.C:30,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolationScheme.H:236,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolate.H:41,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/fvc.H:39,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/fvCFD.H:9,
+                 from emSegregatedFoam.C:61:
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:652:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:652:1: note:   no known conversion for argument 2 from ‘Foam::fvMesh’ to ‘const Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:617:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:617:1: note:   no known conversion for argument 2 from ‘Foam::fvMesh’ to ‘const Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:587:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::word&, const Foam::tmp<Foam::GeometricField<Type, PatchField, GeoMesh> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:587:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:554:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::word&, const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:554:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:522:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:522:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:491:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::tmp<Foam::GeometricField<Type, PatchField, GeoMesh> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:491:1: note:   candidate expects 1 argument, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:459:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:459:1: note:   candidate expects 1 argument, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:420:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dictionary&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:420:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dictionary&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:381:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, Foam::Istream&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:381:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘Foam::Istream&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:341:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:341:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:314:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const Foam::Field<Type>&, const Foam::PtrList<PatchField<Type> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:314:1: note:   candidate expects 5 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:285:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensioned<Type>&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:285:1: note:   candidate expects 4 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:256:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensioned<Type>&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:256:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dimensioned<Foam::Vector<double> >&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:229:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:229:1: note:   candidate expects 4 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:199:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:199:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dimensionSet&’
+In file included from emSegregatedFoam.C:135:0:
+createFields.H:160:5: error: no matching function for call to ‘Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>::GeometricField(Foam::IOobject, Foam::fvMesh&, Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >)’
+     );
+     ^
+In file included from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.H:626:0,
+                 from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricScalarField.H:38,
+                 from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricFields.H:34,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/volFields.H:38,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolationScheme.C:30,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolationScheme.H:236,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolate.H:41,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/fvc.H:39,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/fvCFD.H:9,
+                 from emSegregatedFoam.C:61:
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:652:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:652:1: note:   no known conversion for argument 2 from ‘Foam::fvMesh’ to ‘const Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:617:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:617:1: note:   no known conversion for argument 2 from ‘Foam::fvMesh’ to ‘const Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:587:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::word&, const Foam::tmp<Foam::GeometricField<Type, PatchField, GeoMesh> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:587:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:554:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::word&, const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:554:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:522:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:522:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:491:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::tmp<Foam::GeometricField<Type, PatchField, GeoMesh> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:491:1: note:   candidate expects 1 argument, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:459:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:459:1: note:   candidate expects 1 argument, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:420:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dictionary&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:420:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dictionary&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:381:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, Foam::Istream&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:381:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘Foam::Istream&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:341:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:341:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:314:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const Foam::Field<Type>&, const Foam::PtrList<PatchField<Type> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:314:1: note:   candidate expects 5 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:285:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensioned<Type>&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:285:1: note:   candidate expects 4 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:256:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensioned<Type>&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:256:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dimensioned<Foam::Vector<double> >&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:229:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:229:1: note:   candidate expects 4 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:199:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:199:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dimensionSet&’
+In file included from emSegregatedFoam.C:135:0:
+createFields.H:174:5: error: no matching function for call to ‘Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>::GeometricField(Foam::IOobject, Foam::fvMesh&, Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >)’
+     );
+     ^
+In file included from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.H:626:0,
+                 from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricScalarField.H:38,
+                 from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricFields.H:34,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/volFields.H:38,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolationScheme.C:30,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolationScheme.H:236,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolate.H:41,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/fvc.H:39,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/fvCFD.H:9,
+                 from emSegregatedFoam.C:61:
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:652:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:652:1: note:   no known conversion for argument 2 from ‘Foam::fvMesh’ to ‘const Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:617:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:617:1: note:   no known conversion for argument 2 from ‘Foam::fvMesh’ to ‘const Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:587:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::word&, const Foam::tmp<Foam::GeometricField<Type, PatchField, GeoMesh> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:587:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:554:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::word&, const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:554:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:522:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:522:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:491:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::tmp<Foam::GeometricField<Type, PatchField, GeoMesh> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:491:1: note:   candidate expects 1 argument, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:459:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:459:1: note:   candidate expects 1 argument, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:420:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dictionary&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:420:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dictionary&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:381:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, Foam::Istream&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:381:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘Foam::Istream&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:341:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:341:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:314:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const Foam::Field<Type>&, const Foam::PtrList<PatchField<Type> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:314:1: note:   candidate expects 5 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:285:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensioned<Type>&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:285:1: note:   candidate expects 4 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:256:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensioned<Type>&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:256:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dimensioned<Foam::Vector<double> >&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:229:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:229:1: note:   candidate expects 4 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:199:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:199:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dimensionSet&’
+In file included from emSegregatedFoam.C:135:0:
+createFields.H:188:5: error: no matching function for call to ‘Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>::GeometricField(Foam::IOobject, Foam::fvMesh&, Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >)’
+     );
+     ^
+In file included from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.H:626:0,
+                 from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricScalarField.H:38,
+                 from /home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricFields.H:34,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/volFields.H:38,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolationScheme.C:30,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolationScheme.H:236,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/surfaceInterpolate.H:41,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/fvc.H:39,
+                 from /home/derek/foam/foam-extend-4.1/src/finiteVolume/lnInclude/fvCFD.H:9,
+                 from emSegregatedFoam.C:61:
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:652:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:652:1: note:   no known conversion for argument 2 from ‘Foam::fvMesh’ to ‘const Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:617:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:617:1: note:   no known conversion for argument 2 from ‘Foam::fvMesh’ to ‘const Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh>&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:587:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::word&, const Foam::tmp<Foam::GeometricField<Type, PatchField, GeoMesh> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:587:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:554:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::word&, const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:554:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:522:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:522:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:491:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::tmp<Foam::GeometricField<Type, PatchField, GeoMesh> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:491:1: note:   candidate expects 1 argument, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:459:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::GeometricField<Type, PatchField, GeoMesh>&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:459:1: note:   candidate expects 1 argument, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:420:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dictionary&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:420:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dictionary&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:381:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, Foam::Istream&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:381:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘Foam::Istream&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:341:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:341:1: note:   candidate expects 2 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:314:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const Foam::Field<Type>&, const Foam::PtrList<PatchField<Type> >&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:314:1: note:   candidate expects 5 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:285:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensioned<Type>&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:285:1: note:   candidate expects 4 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:256:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensioned<Type>&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:256:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dimensioned<Foam::Vector<double> >&’
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:229:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const wordList&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh; Foam::wordList = Foam::List<Foam::word>]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:229:1: note:   candidate expects 4 arguments, 3 provided
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:199:1: note: candidate: Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField(const Foam::IOobject&, const Mesh&, const Foam::dimensionSet&, const Foam::word&) [with Type = Foam::Vector<double>; PatchField = Foam::fvPatchField; GeoMesh = Foam::volMesh; Foam::GeometricField<Type, PatchField, GeoMesh>::Mesh = Foam::fvMesh]
+ Foam::GeometricField<Type, PatchField, GeoMesh>::GeometricField
+ ^~~~
+/home/derek/foam/foam-extend-4.1/src/foam/lnInclude/GeometricField.C:199:1: note:   no known conversion for argument 3 from ‘Foam::tmp<Foam::GeometricField<Foam::Vector<double>, Foam::fvPatchField, Foam::volMesh> >’ to ‘const Foam::dimensionSet&’
+emSegregatedFoam.dep:733: recipe for target 'Make/linux64GccDPInt32Opt/emSegregatedFoam.o' failed
+make: *** [Make/linux64GccDPInt32Opt/emSegregatedFoam.o] Error 1

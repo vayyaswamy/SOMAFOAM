@@ -1,0 +1,3 @@
+OBJECTS = \
+$(OBJECTS_DIR)/cellSplitter.o\
+$(OBJECTS_DIR)/modifyMesh.o

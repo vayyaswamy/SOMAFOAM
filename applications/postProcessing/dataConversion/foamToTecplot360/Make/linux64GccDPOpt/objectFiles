@@ -1,0 +1,4 @@
+OBJECTS = \
+$(OBJECTS_DIR)/tecplotWriter.o\
+$(OBJECTS_DIR)/vtkMesh.o\
+$(OBJECTS_DIR)/foamToTecplot360.o

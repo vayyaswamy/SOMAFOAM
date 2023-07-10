@@ -1,0 +1,3 @@
+LOCAL_OBJECTS = \
+postChannel.o\
+channelIndex.o

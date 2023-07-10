@@ -1,0 +1,4 @@
+LOCAL_OBJECTS = \
+writeFluentScalarField.o\
+writeFluentVectorField.o\
+foamDataToFluent.o

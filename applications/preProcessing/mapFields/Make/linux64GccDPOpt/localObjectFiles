@@ -1,0 +1,3 @@
+LOCAL_OBJECTS = \
+mapLagrangian.o\
+mapFields.o

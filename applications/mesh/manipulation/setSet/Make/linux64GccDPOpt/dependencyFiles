@@ -1,0 +1,5 @@
+DEPENDENCIES = \
+writePointSet.dep\
+writeFuns.dep\
+writePatch.dep\
+setSet.dep

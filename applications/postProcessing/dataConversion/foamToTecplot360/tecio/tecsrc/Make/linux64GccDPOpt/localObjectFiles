@@ -1,0 +1,19 @@
+LOCAL_OBJECTS = \
+alloc.o\
+arrlist.o\
+auxdata.o\
+dataio4.o\
+dataio.o\
+dataset0.o\
+dataset.o\
+datautil.o\
+filestream.o\
+geom2.o\
+q_msg.o\
+q_unicode.o\
+set.o\
+strlist.o\
+strutil.o\
+tassert.o\
+tecxxx.o\
+TranslatedString.o

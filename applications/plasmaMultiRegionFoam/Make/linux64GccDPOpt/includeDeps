@@ -1,0 +1,8 @@
+include electroMagneticsControls/emcModels/emcModels.dep
+include electroMagneticsControls/emcModels/newEmcModels.dep
+include electroMagneticsControls/voltageControl/voltageControl.dep
+include electroMagneticsControls/powerControl/powerControl.dep
+include electroMagneticsControls/none/none.dep
+include regionProperties/regionProperties.dep
+include derivedFvPatchFields/plasmaDielectricWallCoupled/plasmaDielectricWallCoupledFvPatchScalarField.dep
+include plasmaMultiRegionFoam.dep

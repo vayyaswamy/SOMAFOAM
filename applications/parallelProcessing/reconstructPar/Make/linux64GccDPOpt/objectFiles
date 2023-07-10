@@ -1,0 +1,8 @@
+OBJECTS = \
+$(OBJECTS_DIR)/processorMeshes.o\
+$(OBJECTS_DIR)/processorFaMeshes.o\
+$(OBJECTS_DIR)/fvFieldReconstructor.o\
+$(OBJECTS_DIR)/faFieldReconstructor.o\
+$(OBJECTS_DIR)/pointFieldReconstructor.o\
+$(OBJECTS_DIR)/reconstructLagrangianPositions.o\
+$(OBJECTS_DIR)/reconstructPar.o

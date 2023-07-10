@@ -1,0 +1,3 @@
+LOCAL_OBJECTS = \
+cellSplitter.o\
+modifyMesh.o

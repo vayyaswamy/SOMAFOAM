@@ -1,0 +1,5 @@
+OBJECTS = \
+$(OBJECTS_DIR)/printMeshStats.o\
+$(OBJECTS_DIR)/checkTopology.o\
+$(OBJECTS_DIR)/checkGeometry.o\
+$(OBJECTS_DIR)/checkMesh.o

@@ -1,0 +1,8 @@
+OBJECTS = \
+$(OBJECTS_DIR)/emcModels.o\
+$(OBJECTS_DIR)/newEmcModels.o\
+$(OBJECTS_DIR)/voltageControl.o\
+$(OBJECTS_DIR)/powerControl.o\
+$(OBJECTS_DIR)/none.o\
+$(OBJECTS_DIR)/regionProperties.o\
+$(OBJECTS_DIR)/somaFoam.o

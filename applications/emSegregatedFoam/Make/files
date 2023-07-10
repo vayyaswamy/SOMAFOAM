@@ -1,0 +1,3 @@
+emSegregatedFoam.C
+
+EXE = $(FOAM_APPBIN)/emSegregatedFoam

@@ -1,0 +1,3 @@
+OBJECTS = \
+$(OBJECTS_DIR)/processorMeshes.o\
+$(OBJECTS_DIR)/decomposeSets.o

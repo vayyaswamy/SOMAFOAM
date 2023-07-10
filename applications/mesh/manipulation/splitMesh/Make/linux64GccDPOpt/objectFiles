@@ -1,0 +1,3 @@
+OBJECTS = \
+$(OBJECTS_DIR)/regionSide.o\
+$(OBJECTS_DIR)/splitMesh.o
