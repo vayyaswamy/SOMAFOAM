@@ -24,7 +24,7 @@ boundaryField
     electrode
     {
         type            electronTemperature;
-	seec		0.0;
+	seec		0.05;
 	Tse		1000.0;
 	Edepend		true;
 	TFN		1000.0;
@@ -35,7 +35,7 @@ boundaryField
     ground
     {
         type         	electronTemperature;
-	seec		0.0;
+	seec		0.05;
 	Tse		1000.0;
 	Edepend		true;
 	TFN		1000.0;

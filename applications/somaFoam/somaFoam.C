@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
 			    forAll(composition.Y(), i)
 			    {
-					volScalarField specN
+					/*volScalarField specN
 					(
 						IOobject
 						(
@@ -144,7 +144,8 @@ int main(int argc, char *argv[])
 						mspm().N(i),
 						Y[i].boundaryField().types()
 					);
-					specN.write();
+					specN.write();*/
+					mspm().N(i).write();
 			    }
 		    }
 		}
@@ -226,10 +227,10 @@ int main(int argc, char *argv[])
 							runTime.timeName(),
 							mesh
 						),
-						mspm().N(i),
-						Y[i].boundaryField().types()
+						mspm().N(i)
 					);
 					specN.write();
+					//mspm().N(i).write();
 				}
 		    }
 		}
