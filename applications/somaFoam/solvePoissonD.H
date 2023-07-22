@@ -197,7 +197,17 @@
 	&& ++iCorr <= 100
 	);
 
+	Info << "Calculating E " << endl;
+
+	Phi.correctBoundaryConditions();
+
 	E = -fvc::grad(Phi);
+
+	E.write();
+
+	Info << "Calculating E done " << endl;
+ 
+  //Pout << "I am doing E calc" << endl;
 
 	//Info << "ddt of E = " << fvc::ddt(E) << endl;
 

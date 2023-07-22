@@ -32,7 +32,7 @@ gradSchemes
     grad(T_Arp1)         Gauss linear;
     grad(N_Arp1)         Gauss linear;
     grad(Te)         Gauss linear;
-    grad(Phi)        Gauss linear orthogonal;
+    grad(Phi)        Gauss linear;
 }
 
 divSchemes

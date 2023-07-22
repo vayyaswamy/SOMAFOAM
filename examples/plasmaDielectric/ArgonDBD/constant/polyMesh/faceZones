@@ -20,14 +20,14 @@ FoamFile
 plasma_2_Zone
 {
     type faceZone;
-    faceLabels      List<label> 1(1999);
+    faceLabels      List<label> 1(999);
     flipMap         List<bool> 1(0);
 }
 
 plasma_1_Zone
 {
     type faceZone;
-    faceLabels      List<label> 1(2000);
+    faceLabels      List<label> 1(1000);
     flipMap         List<bool> 1(0);
 }
 )

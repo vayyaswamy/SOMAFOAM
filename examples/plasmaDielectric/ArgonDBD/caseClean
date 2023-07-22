@@ -21,4 +21,5 @@ rm -f decomposeParScript
 rm -f $(echo "${PWD##*/}").foam
 rm -rf *e-*
 rm -rf probes
+rm -rf processor*
 rm *.foam

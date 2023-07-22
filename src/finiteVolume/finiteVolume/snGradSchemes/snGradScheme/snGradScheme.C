@@ -144,17 +144,20 @@ snGradScheme<Type>::snGrad
 
     forAll(vf.boundaryField(), patchI)
     {
-        //const fvPatchField<Type>& pvf = vf.boundaryField()[patchI];
+        const fvPatchField<Type>& pvf = vf.boundaryField()[patchI];
 
-        //if (pvf.coupled())
-        //{
-        //    ssf.boundaryField()[patchI] = pvf.snGrad(tdeltaCoeffs().boundaryField()[patchI]);
-        //}
-        //else
-        //{
-        //Info << "doing snGrad " << endl;
-        ssf.boundaryField()[patchI] = vf.boundaryField()[patchI].snGrad();
-        //}
+        /*if (pvf.coupled())
+        {
+            ssf.boundaryField()[patchI] = pvf.snGrad(tdeltaCoeffs().boundaryField()[patchI]);
+        }
+        else
+        {
+            Info << "doing snGrad " << endl;
+            //ssf.boundaryField()[patchI] = vf.boundaryField()[patchI].snGrad();
+            ssf.boundaryField()[patchI] = pvf.snGrad();
+        }*/
+        ssf.boundaryField()[patchI] = pvf.snGrad();
+        //Info << "doing snGrad" << endl;
     }
 
     return tssf;

@@ -314,7 +314,11 @@ template<class Type>
 Foam::tmp<Foam::Field<Type> >
 Foam::processorFvPatchField<Type>::snGrad() const
 {
-    return this->patch().deltaCoeffs()*(*this - this->patchInternalField());
+    //Info << "patch().weights()" << this->patch().weights() << endl;
+    //Info << "deltaCoeffs = " << this->patch().deltaCoeffs() << endl;
+    //Info << "processor snGrad" << endl;
+    return this->patch().deltaCoeffs()*
+    (*this - this->patchInternalField());
 }
 
 

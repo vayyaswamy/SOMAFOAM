@@ -179,6 +179,8 @@ void Foam::driftDiffusionPositiveIonDensity::write(Ostream& os) const
     fvPatchField<scalar>::write(os);
     os.writeKeyword("seec")
         << seec_ << token::END_STATEMENT << nl;
+    os.writeKeyword("fieldName")
+        << fieldName_ << token::END_STATEMENT << nl;
     this->writeEntry("value", os);
 }
 

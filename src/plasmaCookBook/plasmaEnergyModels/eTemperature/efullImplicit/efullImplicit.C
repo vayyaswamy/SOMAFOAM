@@ -65,7 +65,7 @@ Foam::scalar Foam::efullImplicit::correct
 
     int icorr = 0;
 
-    while ((icorr++ <= 5) & (initialResidual >= 1e-6))
+    while ((icorr++ <= 5) & (initialResidual >= 1e-5))
 
     {
 
@@ -118,7 +118,11 @@ Foam::scalar Foam::efullImplicit::correct
 
     mspm().updateChemistryCollFreq(chemistry);
 
-    return 0;
+    volScalarField divEeFlux = mag(0.5*fvc::div(eeFlux));
+
+    scalar maxDivEeFlux = gMax(divEeFlux);
+
+    return maxDivEeFlux;
 }
 
 

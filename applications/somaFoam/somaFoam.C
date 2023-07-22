@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
 				eps.write();
 
-				E.write();
+				//E.write();
 
 				surfC.write();
 
@@ -169,7 +169,11 @@ int main(int argc, char *argv[])
 				#include "solvePoisson.H"	
 			}*/
 
-		    #include "solvePoisson.H"
+		    while (pimple.correct())
+		    {
+		   		#include "solvePoisson.H" 	
+		    }
+		    
 
 			#include "plasmaEqn.H"	
 			
@@ -189,9 +193,17 @@ int main(int argc, char *argv[])
 			
 			
 
-		    scalar Cofactor = mspm().divFe();
+		    scalar Cofactor1 = mspm().divFe();
+      
+        scalar Cofactor2 = pem.ecorrect(chemistry, E);
+            
+        scalar Cofactor = max(Cofactor1,Cofactor2);
 
-		    //Info << "Courant = " << Cofactor << endl;
+		    Info << "Cofactor1 = " << Cofactor1 << endl;
+            
+        Info << "Cofactor2 = " << Cofactor2 << endl;
+        
+        Info << "Cofactor = " << Cofactor << endl;
 
 		    scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 
@@ -201,9 +213,9 @@ int main(int argc, char *argv[])
 
 		    runTime.setDeltaT(deltaTNew);
 
-		    //Info << "New timestep = " << runTime.deltaTValue() << endl;
+		    Info << "New timestep = " << runTime.deltaTValue() << endl;
 
-		    //Info << "Courant = " << Cofactor*runTime.deltaTValue() << endl;
+		    Info << "Courant = " << Cofactor*runTime.deltaTValue() << endl;
 
 		    if (runTime.write() && restartCapabale)
 		    {   

@@ -116,7 +116,7 @@ tmp<Field<Type> > coupledFvPatchField<Type>::snGrad() const
     //return
     //    (this->patchNeighbourField() - this->patchInternalField())
     //   *this->patch().deltaCoeffs();
-    //Info << "using coupled snGrad " << endl;
+    //Pout << "using coupled snGrad " << endl;
     return
         (*this - this->patchInternalField())
        *this->patch().deltaCoeffs()/(1.0 - this->patch().weights());

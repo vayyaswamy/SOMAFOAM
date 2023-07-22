@@ -52,7 +52,7 @@ solvers
 PIMPLE
 {
     momentumPredictor no;
-    nOuterCorrectors 5; // used by pimple.loop()
+    nOuterCorrectors 1; // used by pimple.loop()
     nCorrectors    1; // used by pimple.correct()
     nNonOrthogonalCorrectors 0; // used by pimple.correct()
 

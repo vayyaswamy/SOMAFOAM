@@ -14,9 +14,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "$FOAM_CASE/system/initialConditions";
-
-numberOfSubdomains $processors;
+numberOfSubdomains 4;
 
 method          metis;
 

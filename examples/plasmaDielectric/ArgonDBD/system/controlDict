@@ -22,13 +22,13 @@ libs (
 
 application     somaFoam;
 
-startFrom       latestTime;
+startFrom       startTime;
 
 startTime       0;
 
 stopAt          endTime;
 
-endTime         1E-4;
+endTime         1E-9;
 
 deltaT          1E-10;
 
@@ -36,11 +36,11 @@ MaxCo		100.0;
 
 deltaTMax	1e-10;
 
-deltaTMin	1e-11;
+deltaTMin	1e-10;
 
 writeControl    runTime;
 
-writeInterval   1E-7;
+writeInterval   1E-9;
 
 purgeWrite      0;
 
@@ -66,6 +66,8 @@ OptimisationSwitches
 DebugSwitches
 {
     dimensionSet    0;
+    blockLduMatrix 1;
+    coupledLduMatrix 0;
 }
 
 functions

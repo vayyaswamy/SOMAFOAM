@@ -1,15 +1,14 @@
 
-	while (pimple.correct())
-	{
-		ionFlux = mspm().totalIonFlux();
-		mspm().correct(Y, E, chemistry, fields);
+	
+	ionFlux = mspm().totalIonFlux();
+	mspm().correct(Y, E, chemistry, fields);
 
-	}
+	
 
 
 	kappa_e = mspm().electronConductivity(chemistry);
 
-	pem.ecorrect(chemistry, E);	
+		
 
 	//Info << "Done with electron temperature" << endl;
 

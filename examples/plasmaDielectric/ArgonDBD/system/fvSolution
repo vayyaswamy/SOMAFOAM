@@ -44,13 +44,50 @@ solvers
     {
         solver           BiCGStab;
         preconditioner   Cholesky;
-        relTol           0.0;
-        minIter          1;
+        relTol           0;
+        minIter		 1;
     };
 }
 
 PIMPLE
 {
+    momentumPredictor no;
+    nOuterCorrectors 1; // used by pimple.loop()
+    nCorrectors    1; // used by pimple.correct()
+    nNonOrthogonalCorrectors 0; // used by pimple.correct()
+
+
+    residualControl
+    {
+        Phi
+        {
+                tolerance  1e-5;
+                relTol      0;
+        }
+    N_electron
+    {
+        tolerance 1e-4;
+        relTol  0;
+
+    }
+    N_Arp1
+    {
+        tolerance 1e-4;
+        relTol  0;
+
+    }
+    //N_Arm
+    //{
+     //   tolerance 1e-4;
+      //  relTol  0;
+
+    //}
+    Te
+    {
+        tolerance 1e-4 ;
+        relTol 0;
+    }
+     }
     
 }
 
@@ -58,11 +95,16 @@ relaxationFactors
 {
     fields
     {
-	N_electron	0.7;
-	Te		0.7;
+	".*"	0.8;
+    ".*Final" 1.0;
     }
     equations
     {
 		”.*”           1; 
     }
 }
+
+/*PIMPLE
+{
+    
+}*/

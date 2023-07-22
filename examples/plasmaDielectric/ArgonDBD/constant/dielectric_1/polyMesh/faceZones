@@ -20,7 +20,7 @@ FoamFile
 dielectric_1_Zone
 {
     type faceZone;
-    faceLabels      List<label> 1(40);
+    faceLabels      List<label> 1(10);
     flipMap         List<bool> 1(0);
 }
 )

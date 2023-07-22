@@ -98,8 +98,10 @@ gaussGrad<Type>::gradf
         igGrad[owner[facei]] += Sfssf;
         igGrad[neighbour[facei]] -= Sfssf;
 
-        //Info << "igGrad = " << igGrad << endl;
+        //Info << facei << "igGrad = " << igGrad << endl;
     }
+
+    //Info << "igGrad = " << igGrad << endl;
 
     forAll(mesh.boundary(), patchi)
     {
@@ -109,10 +111,19 @@ gaussGrad<Type>::gradf
         const vectorField& pSf = mesh.Sf().boundaryField()[patchi];
 
         const fvsPatchField<Type>& pssf = ssf.boundaryField()[patchi];
+        //Info << "patch type = " << mesh.boundary()[patchi].patch().type() << endl;
 
-        forAll(mesh.boundary()[patchi], facei)
+        if (mesh.boundary()[patchi].patch().type() != "processor")
         {
-            igGrad[pFaceCells[facei]] += pSf[facei]*pssf[facei];
+            //Info << "Went inside" << endl;
+            forAll(mesh.boundary()[patchi], facei)
+            {
+                //Info << "pFaceCells = " << pFaceCells[facei] << endl;
+                igGrad[pFaceCells[facei]] += pSf[facei]*pssf[facei];    
+            
+            }
+        //Info << "igGrad = " << igGrad << endl;
+
         }
 
         //Info << "igGrad = " << igGrad << endl;

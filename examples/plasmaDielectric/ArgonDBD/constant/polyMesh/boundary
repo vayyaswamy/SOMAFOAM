@@ -21,7 +21,7 @@ FoamFile
     {
         type            regionCouple;
         nFaces          1;
-        startFace       1999;
+        startFace       999;
         shadowRegion    dielectric_2;
         shadowPatch     plasma_2;
         zone            plasma_2_Zone;
@@ -34,7 +34,7 @@ FoamFile
     {
         type            regionCouple;
         nFaces          1;
-        startFace       2000;
+        startFace       1000;
         shadowRegion    dielectric_1;
         shadowPatch     plasma_1;
         zone            plasma_1_Zone;
@@ -46,8 +46,8 @@ FoamFile
     otherfaces
     {
         type            empty;
-        nFaces          8000;
-        startFace       2001;
+        nFaces          4000;
+        startFace       1001;
     }
 )
 
