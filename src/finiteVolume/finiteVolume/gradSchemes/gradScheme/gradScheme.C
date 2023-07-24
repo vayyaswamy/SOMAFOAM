@@ -288,33 +288,6 @@ void gradScheme<Type>::correctBoundaryConditions
 
     forAll (vsf.boundaryField(), patchi)
     {
-    
-        if (!vsf.boundaryField()[patchi].coupled())
-        {
-            vectorField n = vsf.mesh().boundary()[patchi].nf();
-
-            gGrad.boundaryField()[patchi] += n*
-            (
-                vsf.boundaryField()[patchi].snGrad()
-              - (n & gGrad.boundaryField()[patchi])
-            );
-            //Info << n* (n & gGrad.boundaryField()[patchi]) << endl;
-        }
-        else
-        {
-            vectorField n = vsf.mesh().boundary()[patchi].nf();
-
-            gGrad.boundaryField()[patchi] += n*
-            (
-                vsf.boundaryField()[patchi].snGrad()
-              - (n & gGrad.boundaryField()[patchi])
-            );
-
-            //Info << "coupled " << endl;
-            //Info << n* (n & gGrad.boundaryField()[patchi]) << endl;
-        }
-        //Info << "gGrad.boundaryField() = " << gGrad.boundaryField() << endl;
-
         // special treatment for processor boundaries since 
         // neighbour cell value is stored in patch that results in wrong
         // gradient value if not done this way. 
@@ -342,9 +315,39 @@ void gradScheme<Type>::correctBoundaryConditions
 
 
     }
+
+    gGrad.correctBoundaryConditions();
+    forAll (vsf.boundaryField(), patchi)
+    {
+    
+        if (!vsf.boundaryField()[patchi].coupled())
+        {
+            vectorField n = vsf.mesh().boundary()[patchi].nf();
+
+            gGrad.boundaryField()[patchi] += n*
+            (
+                vsf.boundaryField()[patchi].snGrad()
+              - (n & gGrad.boundaryField()[patchi])
+            );
+            //Info << n* (n & gGrad.boundaryField()[patchi]) << endl;
+        }
+        else
+        {
+            vectorField n = vsf.mesh().boundary()[patchi].nf();
+
+            gGrad.boundaryField()[patchi] += n*
+            (
+                vsf.boundaryField()[patchi].snGrad()
+              - (n & gGrad.boundaryField()[patchi])
+            );
+
+            //Info << "coupled " << endl;
+            //Info << n* (n & gGrad.boundaryField()[patchi]) << endl;
+        }
+    }
     
     // calling it again since the above part updates boundary cells the right way
-    gGrad.correctBoundaryConditions();
+    
     
 
     //Info << "gGrad before evaluateCoupled " << gGrad << endl;
@@ -352,7 +355,7 @@ void gradScheme<Type>::correctBoundaryConditions
     // updated on correct boundary conditions.  Therefore, evaluateCoupled()
     // should be called here. HJ, Apr/2013
     
-    gGrad.boundaryField().evaluateCoupled();
+    //gGrad.boundaryField().evaluateCoupled();
 
     //Info << "gGrad = " << gGrad << endl;
 }
