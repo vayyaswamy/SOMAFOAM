@@ -125,7 +125,9 @@ gaussGrad<Type>::gradf
         //Info << "igGrad = " << igGrad << endl;
 
         }
-
+        
+        //if (mesh.boundaryField()[patchi].patch().type() == "processor")
+        
         //Info << "igGrad = " << igGrad << endl;
     }
 
@@ -137,6 +139,8 @@ gaussGrad<Type>::gradf
     //Info << "in gradf " << endl;
 
     gGrad.correctBoundaryConditions();
+    
+    //Info << "igGrad after correct = " << igGrad << endl;
 
     return tgGrad;
 }

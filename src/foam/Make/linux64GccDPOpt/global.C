@@ -36,7 +36,7 @@ Description
 #include "foamVersion.H"
 
 const char* const Foam::FOAMversion = "4.0";
-const char* const Foam::FOAMbuild = "4.0-acb7dee3ecc7";
+const char* const Foam::FOAMbuild = "4.0-a8954eb74972";
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

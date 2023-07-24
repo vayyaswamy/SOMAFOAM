@@ -288,6 +288,7 @@ void gradScheme<Type>::correctBoundaryConditions
 
     forAll (vsf.boundaryField(), patchi)
     {
+    
         if (!vsf.boundaryField()[patchi].coupled())
         {
             vectorField n = vsf.mesh().boundary()[patchi].nf();
@@ -297,7 +298,7 @@ void gradScheme<Type>::correctBoundaryConditions
                 vsf.boundaryField()[patchi].snGrad()
               - (n & gGrad.boundaryField()[patchi])
             );
-            
+            //Info << n* (n & gGrad.boundaryField()[patchi]) << endl;
         }
         else
         {
@@ -306,13 +307,13 @@ void gradScheme<Type>::correctBoundaryConditions
             gGrad.boundaryField()[patchi] += n*
             (
                 vsf.boundaryField()[patchi].snGrad()
-              //- (n & gGrad.boundaryField()[patchi])
+              - (n & gGrad.boundaryField()[patchi])
             );
 
             //Info << "coupled " << endl;
             //Info << n* (n & gGrad.boundaryField()[patchi]) << endl;
         }
-
+        //Info << "gGrad.boundaryField() = " << gGrad.boundaryField() << endl;
 
         // special treatment for processor boundaries since 
         // neighbour cell value is stored in patch that results in wrong
@@ -341,6 +342,9 @@ void gradScheme<Type>::correctBoundaryConditions
 
 
     }
+    
+    // calling it again since the above part updates boundary cells the right way
+    gGrad.correctBoundaryConditions();
     
 
     //Info << "gGrad before evaluateCoupled " << gGrad << endl;
