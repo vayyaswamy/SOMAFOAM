@@ -26,7 +26,7 @@ gradSchemes
 
 divSchemes
 {
-    default         none;
+    default         Gauss linear;
 //    div(F,Yi)       Gauss limitedLinear01 1;
     div(F,Ni)       Gauss limitedLinear 1;
 
