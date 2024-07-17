@@ -1,0 +1,8 @@
+DEPENDENCIES = \
+boundaryConditions/plasmaPotential/plasmaPotential.dep\
+boundaryConditions/driftDiffusionElectronDensity/driftDiffusionElectronDensity.dep\
+boundaryConditions/driftDiffusionElectronEnergy/driftDiffusionElectronEnergy.dep\
+boundaryConditions/driftDiffusionElectronTemperature/driftDiffusionElectronTemperature.dep\
+boundaryConditions/driftDiffusionPositiveIonDensity/driftDiffusionPositiveIonDensity.dep\
+boundaryConditions/electronTemperature/electronTemperature.dep\
+plasmaFoamLite2.dep

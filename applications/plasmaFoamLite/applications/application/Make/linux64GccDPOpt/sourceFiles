@@ -1,0 +1,10 @@
+SOURCE = \
+boundaryConditions/plasmaPotential/plasmaPotential.C\
+boundaryConditions/driftDiffusionElectronDensity/driftDiffusionElectronDensity.C\
+boundaryConditions/driftDiffusionElectronEnergy/driftDiffusionElectronEnergy.C\
+boundaryConditions/driftDiffusionPositiveIonDensity/driftDiffusionPositiveIonDensity.C\
+boundaryConditions/momentumElectronDensity/momentumElectronDensity.C\
+boundaryConditions/momentumElectronEnergy/momentumElectronEnergy.C\
+boundaryConditions/momentumPositiveIonDensity/momentumPositiveIonDensity.C\
+boundaryConditions/electronTemperature/electronTemperature.C\
+plasmaFoamLite.C

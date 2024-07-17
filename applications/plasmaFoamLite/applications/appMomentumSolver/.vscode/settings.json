@@ -1,0 +1,20 @@
+{
+    "files.associations": {
+        "electronThermalVelocity.C": "cpp",
+        "driftDiffusionElectronTemperature.C": "cpp",
+        "driftDiffusionPositiveIonDensity.C": "cpp",
+        "driftDiffusionElectronDensity.C": "cpp",
+        "driftDiffusionElectronEnergy.C": "cpp",
+        "momentumElectronEnergy.C": "cpp",
+        "momentumElectronDensity.C": "cpp",
+        "momentumPositiveIonDensity.C": "cpp",
+        "createFields.H": "cpp",
+        "interpolateFields.H": "cpp",
+        "solvePoisson.H": "cpp",
+        "plasmaFoamLite.C": "cpp",
+        "readSpeciesProperties.H": "cpp",
+        "solveTransportEquations.H": "cpp",
+        "plasmaFoamMomentum.C": "cpp",
+        "electronTemperature.C": "cpp"
+    }
+}

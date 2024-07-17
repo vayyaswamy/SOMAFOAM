@@ -1,0 +1,140 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+
+    blockT
+    {
+        solver           BiCGStab;
+        preconditioner   Cholesky;
+
+        tolerance        1e-09;
+        relTol           0.01;
+
+        minIter          1;
+        maxIter          1000;
+    }
+
+
+
+
+    nDensity
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+
+    electron
+    {   
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+
+    Arp1
+    {   
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+    Arm
+    {   
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+
+    velocityelectron
+    {
+        solver          smoothSolver;
+        smoother  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+
+    velocityArp1
+    {
+        solver          smoothSolver;
+        smoother  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+
+    Ar
+    {   
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+
+    eDensity
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+
+
+    eTemp
+    {
+        solver          BiCGStab;
+        preconditioner  DILU;
+        relTol           0.0;
+        minIter          1;
+    }
+
+    EPotential
+    {
+       solver          BICCG;
+        preconditioner  DILU;
+        relTol           1e-7;
+        minIter          1;
+    }
+}
+
+relaxationFactors
+{
+    fields
+    {
+    }
+    equations
+    {
+		”.*”           1; 
+    }
+}
+
+plasma
+{
+	nCorrectors 10;
+	poissonTolerance 1E-4;
+}
+

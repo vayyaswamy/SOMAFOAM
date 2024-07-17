@@ -1,0 +1,39 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  dev
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      gasVelocity;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform ( 0 0 0 );
+
+boundaryField
+{
+    ground
+    {
+        type            ionVelocityBC;//zeroGradient;
+	Tion		300;//
+	mass		6.6335209e-26;	
+    }
+    electrode
+    {
+        type            ionVelocityBC;//zeroGradient;
+        Tion             300;//
+	mass		6.6335209e-26;
+    }
+}
+
+
+// ************************************************************************* //

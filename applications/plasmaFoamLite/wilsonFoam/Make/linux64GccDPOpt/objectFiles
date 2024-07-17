@@ -1,0 +1,22 @@
+OBJECTS = \
+$(OBJECTS_DIR)/plasmaPotential.o\
+$(OBJECTS_DIR)/driftDiffusionElectronDensity.o\
+$(OBJECTS_DIR)/driftDiffusionElectronEnergy.o\
+$(OBJECTS_DIR)/driftDiffusionElectronTemperature.o\
+$(OBJECTS_DIR)/driftDiffusionPositiveIonDensity.o\
+$(OBJECTS_DIR)/momentumElectronDensity.o\
+$(OBJECTS_DIR)/noInletFlux.o\
+$(OBJECTS_DIR)/electronTemperatureMomentum.o\
+$(OBJECTS_DIR)/momentumElectronTemperature.o\
+$(OBJECTS_DIR)/electronThermalVelocity.o\
+$(OBJECTS_DIR)/zeroFluxElectronDensity.o\
+$(OBJECTS_DIR)/ionVelocity.o\
+$(OBJECTS_DIR)/plasmaPower.o\
+$(OBJECTS_DIR)/ionVelocityBC.o\
+$(OBJECTS_DIR)/electronDensity_wilsonBC5.o\
+$(OBJECTS_DIR)/energyDensity_wilsonBC5.o\
+$(OBJECTS_DIR)/electronDensity_wilsonBC2.o\
+$(OBJECTS_DIR)/energyDensity_wilsonBC2.o\
+$(OBJECTS_DIR)/electronDensity_wilsonBC3.o\
+$(OBJECTS_DIR)/energyDensity_wilsonBC3.o\
+$(OBJECTS_DIR)/plasmaFoam.o

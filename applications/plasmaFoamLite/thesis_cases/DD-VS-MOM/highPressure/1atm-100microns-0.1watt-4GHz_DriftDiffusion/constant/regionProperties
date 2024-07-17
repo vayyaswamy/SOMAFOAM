@@ -1,0 +1,56 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      regionProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solutionDomain  plasmaDielectric;
+
+maxIterations	1;
+
+dielectricRegionNames
+(
+);
+
+inletAndOutletBoundaryNames
+(
+    inlet
+    //electrode
+    //ground
+);
+
+metallicBoundaryNames
+(
+    electrode
+    ground
+);
+
+dielectricRegionSecondaryElectronEmissionCoefficients
+(
+0
+0
+);
+
+metallicBoundarySecondaryElectronEmissionCoefficients
+(
+);
+
+
+secondaryElectronEmissionCoefficient	0.0;
+
+poissonConvergenceDeltaValue	1E-4;
+
+boundaryThermalTemperatureType	variable;
+boundaryThermalTemperatureValue	11000;
+
+// ************************************************************************* //

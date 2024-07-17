@@ -1,0 +1,11 @@
+OBJECTS = \
+$(OBJECTS_DIR)/plasmaPotential.o\
+$(OBJECTS_DIR)/driftDiffusionElectronDensity.o\
+$(OBJECTS_DIR)/driftDiffusionElectronEnergy.o\
+$(OBJECTS_DIR)/driftDiffusionPositiveIonDensity.o\
+$(OBJECTS_DIR)/momentumElectronDensity.o\
+$(OBJECTS_DIR)/momentumElectronEnergy.o\
+$(OBJECTS_DIR)/momentumPositiveIonDensity.o\
+$(OBJECTS_DIR)/electronTemperature.o\
+$(OBJECTS_DIR)/electronThermalVelocity.o\
+$(OBJECTS_DIR)/plasmaFoamMomentum.o

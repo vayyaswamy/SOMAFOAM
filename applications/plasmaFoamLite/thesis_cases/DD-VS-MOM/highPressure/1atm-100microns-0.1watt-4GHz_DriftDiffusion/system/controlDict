@@ -1,0 +1,206 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2006                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+libs (
+      "libfoam.so"
+      "liblduSolvers.so"
+     );
+
+application     icoFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+maxCo		0.5;
+
+deltaTMax	0.5e-13;
+
+deltaTMin	0.5e-13;
+
+endTime         2E-3;
+
+deltaT          1E-13;
+
+writeControl    runTime;
+
+writeInterval   5e-9;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  15;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   15;
+
+runTimeModifiable true;
+
+functions{
+
+
+        boundTemperature
+        {
+                type boundField;
+                functionObjectLibs ("libsampling.so");
+                name eTemp;
+                minValue        20;
+                maxValue        220000;
+        }
+
+	dumpObjects
+	{
+		type            writeRegisteredObject;
+		functionObjectLibs ("libIOFunctionObjects.so");
+		outputControl   outputTime;
+		objectNames    ("power" "powerDissipated" "powerDissipatedElectron" "powerDissipatedIon" "jouleHeating" "Flux_electron" "Flux_Arp1" "velocityelectron" "velocityArp1");
+	}
+
+
+
+    fieldAverage1
+    {
+        type            fieldAverage;
+        functionObjectLibs ( "libfieldFunctionObjects.so" );
+        enabled         true;
+        cleanRestart        true;
+        outputControl   timeStep;
+        outputControl   outputTime;
+        //outputInterval  10000;
+        fields
+        (
+
+
+            jouleHeating
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+
+            eTemp
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+            electron
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+            Arp1
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+        
+
+
+            Flux_electron
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+
+            Flux_Arp1
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+ 	    }
+
+
+           electron
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+
+            Arp1
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+
+            powerDissipated
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }         
+
+          powerDissipatedElectron
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+          powerDissipatedIon
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+
+            power
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+
+
+            velocityelectron
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+
+
+	);
+
+
+    }
+
+
+
+
+}
+
+// *************************************************************************

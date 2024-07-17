@@ -1,0 +1,24 @@
+LOCAL_OBJECTS = \
+plasmaPotential.o\
+driftDiffusionElectronDensity.o\
+driftDiffusionElectronEnergy.o\
+driftDiffusionElectronTemperature.o\
+driftDiffusionPositiveIonDensity.o\
+momentumElectronDensity.o\
+noInletFlux.o\
+electronTemperatureMomentum.o\
+electronTemperature.o\
+momentumElectronTemperature.o\
+electronThermalVelocity.o\
+zeroFluxElectronDensity.o\
+ionVelocity.o\
+plasmaPower.o\
+ionVelocityBC.o\
+electronDensity_wilsonBC5.o\
+electronTemperatureWilsonBC5.o\
+energyDensity_wilsonBC5.o\
+electronDensity_wilsonBC2.o\
+energyDensity_wilsonBC2.o\
+electronDensity_wilsonBC3.o\
+energyDensity_wilsonBC3.o\
+plasmaFoam2.o

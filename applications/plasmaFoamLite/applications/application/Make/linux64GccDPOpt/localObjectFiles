@@ -1,0 +1,10 @@
+LOCAL_OBJECTS = \
+plasmaPotential.o\
+driftDiffusionElectronDensity.o\
+driftDiffusionElectronEnergy.o\
+driftDiffusionPositiveIonDensity.o\
+momentumElectronDensity.o\
+momentumElectronEnergy.o\
+momentumPositiveIonDensity.o\
+electronTemperature.o\
+plasmaFoamLite.o

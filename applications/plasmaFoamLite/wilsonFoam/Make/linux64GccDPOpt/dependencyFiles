@@ -1,0 +1,22 @@
+DEPENDENCIES = \
+boundaryConditions/plasmaPotential/plasmaPotential.dep\
+boundaryConditions/driftDiffusionElectronDensity/driftDiffusionElectronDensity.dep\
+boundaryConditions/driftDiffusionElectronEnergy/driftDiffusionElectronEnergy.dep\
+boundaryConditions/driftDiffusionElectronTemperature/driftDiffusionElectronTemperature.dep\
+boundaryConditions/driftDiffusionPositiveIonDensity/driftDiffusionPositiveIonDensity.dep\
+boundaryConditions/momentumElectronDensity/momentumElectronDensity.dep\
+boundaryConditions/noInletFlux/noInletFlux.dep\
+boundaryConditions/electronTemperatureMomentum/electronTemperatureMomentum.dep\
+boundaryConditions/momentumElectronTemperature/momentumElectronTemperature.dep\
+boundaryConditions/electronThermalVelocity/electronThermalVelocity.dep\
+boundaryConditions/zeroFluxElectronDensity/zeroFluxElectronDensity.dep\
+boundaryConditions/ionVelocity/ionVelocity.dep\
+boundaryConditions/plasmaPower/plasmaPower.dep\
+boundaryConditions/ionVelocityBC/ionVelocityBC.dep\
+boundaryConditions/wilsonBC/BC5-ne/electronDensity_wilsonBC5.dep\
+boundaryConditions/wilsonBC/BC5-eE/energyDensity_wilsonBC5.dep\
+boundaryConditions/wilsonBC/BC2-ne/electronDensity_wilsonBC2.dep\
+boundaryConditions/wilsonBC/BC2-eE/energyDensity_wilsonBC2.dep\
+boundaryConditions/wilsonBC/BC3-ne/electronDensity_wilsonBC3.dep\
+boundaryConditions/wilsonBC/BC3-eE/energyDensity_wilsonBC3.dep\
+plasmaFoam.dep

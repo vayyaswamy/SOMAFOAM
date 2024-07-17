@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "createFields.H": "cpp",
+        "interpolateFields.H": "cpp",
+        "plasmaFoamLite2.C": "cpp",
+        "electronTemperature.C": "cpp",
+        "driftDiffusionElectronDensity.C": "cpp",
+        "driftDiffusionElectronEnergy.C": "cpp",
+        "driftDiffusionElectronTemperature.C": "cpp",
+        "driftDiffusionElectronEnergy.H": "cpp",
+        "momentumElectronEnergy.C": "cpp"
+    }
+}
