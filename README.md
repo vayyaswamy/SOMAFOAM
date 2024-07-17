@@ -11,7 +11,7 @@ Date:   Thu Apr 12 14:05:28 2018 +0100
 
 Contributors:
 1) Venkattraman Ayyaswamy (https://me.ucmerced.edu/content/venkattraman-venkatt-ayyaswamy)
-2) Abhishek Kumar Verma ()
+2) Abhishek Kumar Verma 
 3) Saurav Gautam (https://me.ucmerced.edu/content/saurav-gautam)
 4) Jose Alfredo Millan Higuera (https://www.linkedin.com/in/jmillanhiguera/)
 
