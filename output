@@ -1,0 +1,42 @@
+*---------------------------*LTPS Installation Initiated*--------------------------------*
+
+make: Nothing to be done for 'all'.
+
+This system rpm command: rpm 
+
+Building cmake 3.2.2
+Package name      : cmake-3.2.2
+Package URL       : http://www.cmake.org/files/v3.2/cmake-3.2.2.tar.gz
+RPM spec file name: cmake-3.2.2.spec
+RPM file name     : 
+Additional flags  : 
+Updating the ThirdParty environment variables before building package cmake-3.2.2
+RPM file name     : /home/venkattraman/SOMAFOAM/etc/../metis/rpmBuild/RPMS//cmake-3.2.2-linux64GccDPOpt..rpm
+Making package cmake-3.2.2 using RPM.
+Building package cmake-3.2.2 using SPEC file : cmake-3.2.2.spec. Optional args: 
+Package cmake-3.2.2 is already installed
+Done installing package 
+
+Building metis 5.1.0
+Package name      : metis-5.1.0
+Package URL       : http://downloads.sourceforge.net/project/foam-extend/ThirdParty/metis-5.1.0.tar.gz
+RPM spec file name: metis-5.1.0.spec
+RPM file name     : 
+Additional flags  : 
+Updating the ThirdParty environment variables before building package metis-5.1.0
+RPM file name     : /home/venkattraman/SOMAFOAM/etc/../metis/rpmBuild/RPMS//metis-5.1.0-linux64GccDPOpt..rpm
+Making package metis-5.1.0 using RPM.
+Building package metis-5.1.0 using SPEC file : metis-5.1.0.spec. Optional args: 
+Package metis-5.1.0 is already installed
+Done installing package 
+
+same version as previous build
+'/home/venkattraman/SOMAFOAM/etc/../lib/linux64GccDPOpt/libOSspecific.o' is up to date.
+SOURCE=global/global.Cver ; sed -e 's/VERSION_STRING/4.0/' -e 's/BUILD_STRING/4.0-d7d53c796355/' $SOURCE > Make/linux64GccDPOpt/global.C; g++ -m64 -Dlinux64 -DWM_DP -Wall -Wextra -Wno-unused-parameter -Wold-style-cast -Wnon-virtual-dtor -O3  -DNoRepository -ftemplate-depth-200 -DOMPI_SKIP_MPICXX -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -pthread -IlnInclude -I. -I/home/venkattraman/SOMAFOAM/etc/../src/foam/lnInclude -I/home/venkattraman/SOMAFOAM/etc/../src/OSspecific/POSIX/lnInclude   -fPIC -c Make/linux64GccDPOpt/global.C -o Make/linux64GccDPOpt/global.o
+'/home/venkattraman/SOMAFOAM/etc/../lib/linux64GccDPOpt/libfoam.so' is up to date.
+'/home/venkattraman/SOMAFOAM/etc/../lib/linux64GccDPOpt/libdecompositionMethods.so' is up to date.
+'/home/venkattraman/SOMAFOAM/etc/../lib/linux64GccDPOpt/libmetisDecomp.so' is up to date.
+'/home/venkattraman/SOMAFOAM/etc/../lib/linux64GccDPOpt/liblagrangian.so' is up to date.
+'/home/venkattraman/SOMAFOAM/etc/../lib/linux64GccDPOpt/libedgeMesh.so' is up to date.
+SOURCE=surfaceFormats/stl/STLsurfaceFormatASCII.L ; flex -+ -f $SOURCE ; mv lex.yy.cc Make/linux64GccDPOpt/STLsurfaceFormatASCII.C ; g++ -m64 -Dlinux64 -DWM_DP -Wall -Wextra -Wno-unused-parameter -Wold-style-cast -Wnon-virtual-dtor -O3  -DNoRepository -ftemplate-depth-200  -IlnInclude -I. -I/home/venkattraman/SOMAFOAM/etc/../src/foam/lnInclude -I/home/venkattraman/SOMAFOAM/etc/../src/OSspecific/POSIX/lnInclude   -fPIC -c Make/linux64GccDPOpt/STLsurfaceFormatASCII.C -o Make/linux64GccDPOpt/STLsurfaceFormatASCII.o
+SOURCE=surfaceFormats/tri/TRIsurfaceFormatRunTime.C ;  g++ -m64 -Dlinux64 -DWM_DP -Wall -Wextra -Wno-unused-parameter -Wold-style-cast -Wnon-virtual-dtor -O3  -DNoRepository -ftemplate-depth-200  -IlnInclude -I. -I/home/venkattraman/SOMAFOAM/etc/../src/foam/lnInclude -I/home/venkattraman/SOMAFOAM/etc/../src/OSspecific/POSIX/lnInclude   -fPIC -c $SOURCE -o Make/linux64GccDPOpt/TRIsurfaceFormatRunTime.o
