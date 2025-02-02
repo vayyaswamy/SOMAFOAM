@@ -7,7 +7,8 @@ The foam-extend snapshot used in this project corresponds to following,
 commit efcc2b1b7df8543c7873f89a6f50c30e047b1b11
 Date:   Thu Apr 12 14:05:28 2018 +0100
 ```
-
+There were certain changes made to the foam-extend base depending on our needs.
+The code compiles on newer gcc versions (including 10.2.1)
 
 Contributors:
 1) Venkattraman Ayyaswamy (https://me.ucmerced.edu/content/venkattraman-venkatt-ayyaswamy)
