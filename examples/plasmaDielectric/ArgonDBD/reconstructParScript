@@ -1,0 +1,4 @@
+#!/bin/sh 
+reconstructPar $@
+reconstructPar -region dielectric_1 $@
+reconstructPar -region dielectric_2 $@

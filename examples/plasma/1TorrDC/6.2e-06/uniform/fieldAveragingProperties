@@ -1,0 +1,37 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "6.2e-06/uniform";
+    object      fieldAveragingProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+Te
+{
+    totalIter       62001;
+    totalTime       6.20010000000147e-06;
+}
+
+N_electron
+{
+    totalIter       62001;
+    totalTime       6.20010000000147e-06;
+}
+
+Phi
+{
+    totalIter       62001;
+    totalTime       6.20010000000147e-06;
+}
+
+
+// ************************************************************************* //

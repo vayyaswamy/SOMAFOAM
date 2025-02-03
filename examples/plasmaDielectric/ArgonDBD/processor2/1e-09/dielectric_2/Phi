@@ -1,0 +1,53 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "1e-09";
+    object      Phi;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   nonuniform List<scalar> 10(0.0445306200096102 0.0430213027922801 0.0415119855749501 0.0400026683576209 0.0384933511402909 0.0369840339229608 0.0354747167056308 0.0339653994883011 0.0324560822709712 0.0309467650536405);
+
+boundaryField
+{
+    electrode
+    {
+        type            fixedValue;
+        value           nonuniform 0();
+    }
+    plasma_2
+    {
+        type            coupledPotential;
+        surfaceCharge   false;
+        remoteField     Phi;
+        value           nonuniform 0();
+    }
+    otherfaces
+    {
+        type            empty;
+    }
+    procBoundary2to3
+    {
+        type            processor;
+        value           uniform 0.0460402565854207;
+    }
+    procBoundary2to1
+    {
+        type            processor;
+        value           uniform 0.0294373557210584;
+    }
+}
+
+
+// ************************************************************************* //

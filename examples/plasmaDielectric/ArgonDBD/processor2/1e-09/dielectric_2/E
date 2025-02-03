@@ -1,0 +1,51 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "1e-09";
+    object      E;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   nonuniform List<vector> 10((-0 4528.59036895065 -0) (-0 3018.63443466009 -0) (-0 3018.6344346594 -0) (-0 3018.63443465942 -0) (-0 3018.63443466014 -0) (-0 3018.63443465971 -0) (-0 3018.63443465933 -0) (-0 3018.63443466039 -0) (-0 3018.63443466055 -0) (-0 4528.13588249487 -0));
+
+boundaryField
+{
+    electrode
+    {
+        type            calculated;
+        value           nonuniform 0();
+    }
+    plasma_2
+    {
+        type            calculated;
+        value           nonuniform 0();
+    }
+    otherfaces
+    {
+        type            empty;
+    }
+    procBoundary2to3
+    {
+        type            processor;
+        value           uniform (-0 4529.27445370604 -0);
+    }
+    procBoundary2to1
+    {
+        type            processor;
+        value           uniform (-0 4528.24005480647 -0);
+    }
+}
+
+
+// ************************************************************************* //

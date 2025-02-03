@@ -1,0 +1,2 @@
+faceSet dielectric_2_Zone new patchToFace plasma_2;
+quit;

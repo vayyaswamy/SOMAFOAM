@@ -1,0 +1,56 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       polyBoundaryMesh;
+    location    "constant/polyMesh";
+    object      boundary;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+4
+(
+    electrode
+    {
+        type            patch;
+        nFaces          0;
+        startFace       9;
+    }
+    plasma_2
+    {
+        type            regionCouple;
+        nFaces          1;
+        startFace       9;
+        shadowRegion    region0;
+        shadowPatch     dielectric_2;
+        zone            dielectric_2_Zone;
+        attached        off;
+        master          off;
+        isWall          on;
+        bridgeOverlap   off;
+    }
+    otherfaces
+    {
+        type            empty;
+        nFaces          40;
+        startFace       10;
+    }
+    procBoundary3to2
+    {
+        type            processor;
+        nFaces          1;
+        startFace       50;
+        myProcNo        3;
+        neighbProcNo    2;
+    }
+)
+
+
+// ************************************************************************* //

@@ -1,0 +1,53 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      Arp1;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 1 0 0 0];
+
+internalField   uniform 10000000000;
+
+boundaryField
+{
+    dielectric_2
+    {
+        type            driftDiffusionPositiveIonDensity;
+        seec            0;
+        value           nonuniform 0();
+    }
+    dielectric_1
+    {
+        type            driftDiffusionPositiveIonDensity;
+        seec            0;
+        value           nonuniform 0();
+    }
+    otherfaces
+    {
+        type            empty;
+    }
+    procBoundary0to1
+    {
+        type            processor;
+        value           uniform 10000000000;
+    }
+    procBoundary0to2
+    {
+        type            processor;
+        value           uniform 10000000000;
+    }
+}
+
+
+// ************************************************************************* //

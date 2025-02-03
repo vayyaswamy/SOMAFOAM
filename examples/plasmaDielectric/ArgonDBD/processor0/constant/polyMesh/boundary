@@ -1,0 +1,71 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       polyBoundaryMesh;
+    location    "constant/polyMesh";
+    object      boundary;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+5
+(
+    dielectric_2
+    {
+        type            regionCouple;
+        nFaces          0;
+        startFace       248;
+        shadowRegion    dielectric_2;
+        shadowPatch     plasma_2;
+        zone            plasma_2_Zone;
+        attached        off;
+        master          on;
+        isWall          on;
+        bridgeOverlap   off;
+    }
+    dielectric_1
+    {
+        type            regionCouple;
+        nFaces          0;
+        startFace       248;
+        shadowRegion    dielectric_1;
+        shadowPatch     plasma_1;
+        zone            plasma_1_Zone;
+        attached        off;
+        master          on;
+        isWall          on;
+        bridgeOverlap   off;
+    }
+    otherfaces
+    {
+        type            empty;
+        nFaces          996;
+        startFace       248;
+    }
+    procBoundary0to1
+    {
+        type            processor;
+        nFaces          1;
+        startFace       1244;
+        myProcNo        0;
+        neighbProcNo    1;
+    }
+    procBoundary0to2
+    {
+        type            processor;
+        nFaces          1;
+        startFace       1245;
+        myProcNo        0;
+        neighbProcNo    2;
+    }
+)
+
+
+// ************************************************************************* //

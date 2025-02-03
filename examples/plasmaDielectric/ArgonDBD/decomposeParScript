@@ -1,0 +1,4 @@
+#!/bin/sh 
+decomposePar
+decomposePar -region dielectric_1
+decomposePar -region dielectric_2

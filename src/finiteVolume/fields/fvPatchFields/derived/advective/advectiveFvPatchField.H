@@ -219,7 +219,7 @@ public:
 
             //- Return reference to inlet-outlet treatment switch
             //  to allow adjustment
-            bool& inletOutlet()
+            Switch& inletOutlet()
             {
                 return inletOutlet_;
             }
@@ -232,7 +232,7 @@ public:
 
             //- Return reference to supercritical treatment switch
             //  to allow adjustment
-            bool& correctSupercritical()
+            Switch& correctSupercritical()
             {
                 return correctSupercritical_;
             }
