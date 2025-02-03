@@ -19,6 +19,7 @@ plasmaEnergyModels/gTemperature/gfullImplicit/gfullImplicit.C\
 plasmaEnergyModels/gTemperature/none/none.C\
 plasmaBoundaryConditions/plasmaPotential/plasmaPotential.C\
 plasmaBoundaryConditions/driftDiffusionElectronDensity/driftDiffusionElectronDensity.C\
+plasmaBoundaryConditions/dielectricSideWall/dielectricSideWall.C\
 plasmaBoundaryConditions/driftDiffusionPositiveIonDensity/driftDiffusionPositiveIonDensity.C\
 plasmaBoundaryConditions/driftDiffusionOpenBoundary/driftDiffusionOpenBoundary.C\
 plasmaBoundaryConditions/electronTemperature/electronTemperature.C\

@@ -74,20 +74,28 @@ void Foam::gfullImplicit::correct
 {
 	volScalarField& Tc = thermo().T();
 
-    if(tavesource == "frequency")
-    {
-        gasTempSourcetemp += mspm().ionTempSource(chemistry, E) + chemistry.Sh()();
-        timeCountn++;
-        if(runTime().value()-timeCount > cycleavevalue)
-		{
-            timeCount = runTime().value();
-            gasTempSource = gasTempSourcetemp/timeCountn;
-            gasTempSourcetemp = 0.0*gasTempSource;
-            timeCountn = 0.0;
-        }
-    }
+    //if(tavesource == "frequency")
+    //{
+    //    gasTempSourcetemp += mspm().ionTempSource(chemistry, E) + chemistry.Sh()();
+    //    timeCountn++;
+    //    if(runTime().value()-timeCount > cycleavevalue)
+		//{
+    //        timeCount = runTime().value();
+    //        gasTempSource = gasTempSourcetemp/timeCountn;
+    //        gasTempSourcetemp = 0.0*gasTempSource;
+    //        timeCountn = 0.0;
+    //    }
+    //}
 
+    gasTempSource = mspm().ionTempSource(chemistry, E);
     volScalarField kappa = thermo().Cp()*thermo().rho()*thermo().alpha();
+    volScalarField rhoCp = thermo().Cp()*thermo().rho();
+    
+    //Info << "Cp = " << thermo().Cp() << endl;
+    //Info << "rho = " << thermo().rho() << endl;
+    //Info << "alpha = " << thermo().alpha() << endl;
+    //Info << "chemistry = " << chemistry.Sh() << endl;
+
 
     fvScalarMatrix TEqn
     (
@@ -99,6 +107,8 @@ void Foam::gfullImplicit::correct
     TEqn.relax();
 
 	TEqn.solve();
+ 
+    Tc.relax();
 }
 
 

@@ -176,6 +176,7 @@ int main(int argc, char *argv[])
 		    
 
 			#include "plasmaEqn.H"	
+			#include "surfaceCharge_new.H"
 			
 			
 			
@@ -199,11 +200,15 @@ int main(int argc, char *argv[])
             
         scalar Cofactor = max(Cofactor1,Cofactor2);
 
+        scalar meshParameter = mspm().meshParameter();
+
 		    Info << "Cofactor1 = " << Cofactor1 << endl;
             
         Info << "Cofactor2 = " << Cofactor2 << endl;
         
         Info << "Cofactor = " << Cofactor << endl;
+
+        Info << "Mesh Parameter = " << meshParameter << endl;
 
 		    scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 

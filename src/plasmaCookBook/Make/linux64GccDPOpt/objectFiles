@@ -19,6 +19,7 @@ $(OBJECTS_DIR)/gfullImplicit.o\
 $(OBJECTS_DIR)/none.o\
 $(OBJECTS_DIR)/plasmaPotential.o\
 $(OBJECTS_DIR)/driftDiffusionElectronDensity.o\
+$(OBJECTS_DIR)/dielectricSideWall.o\
 $(OBJECTS_DIR)/driftDiffusionPositiveIonDensity.o\
 $(OBJECTS_DIR)/driftDiffusionOpenBoundary.o\
 $(OBJECTS_DIR)/electronTemperature.o\

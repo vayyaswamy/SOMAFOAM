@@ -223,6 +223,8 @@ public:
 		);
 
         scalar divFe();
+        
+        scalar meshParameter();
 
         tmp<volVectorField> gradTe();
 

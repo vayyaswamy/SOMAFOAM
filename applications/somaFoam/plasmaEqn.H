@@ -22,7 +22,7 @@
 
 	pem.icorrect(chemistry);
 
-	//Info << "About to gcorrect " << endl;
+	Info << "About to gcorrect " << endl;
 
 	pem.gcorrect(chemistry, E);
 

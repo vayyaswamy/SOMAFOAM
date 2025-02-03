@@ -19,6 +19,7 @@ gfullImplicit.o\
 none.o\
 plasmaPotential.o\
 driftDiffusionElectronDensity.o\
+dielectricSideWall.o\
 driftDiffusionPositiveIonDensity.o\
 driftDiffusionOpenBoundary.o\
 electronTemperature.o\

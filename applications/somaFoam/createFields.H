@@ -235,6 +235,21 @@
 		mesh,
 		dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
 	);
+ 
+ volScalarField surfC
+	(
+		IOobject
+		(
+		    "surfC",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::READ_IF_PRESENT,
+		    IOobject::NO_WRITE
+		),
+		mesh,
+		dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
+	);
+
 
 	
 
