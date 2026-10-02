@@ -1,5 +1,0 @@
-LOCAL_OBJECTS = \
-writePointSet.o\
-writeFuns.o\
-writePatch.o\
-setSet.o

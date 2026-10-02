@@ -1,1 +1,0 @@
-../sampledSet/uniform/uniformSet.C

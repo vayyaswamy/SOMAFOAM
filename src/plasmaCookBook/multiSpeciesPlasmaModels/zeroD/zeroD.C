@@ -32,46 +32,46 @@ template<class ThermoType>
 inline Foam::scalar Foam::zeroD<ThermoType>::correct
 (
     psiChemistryModel& chemistry,
-	const volVectorField& E,
+    const volVectorField& E,
     multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
 )
 {
     volScalarField yt = 0.0*thermo_.composition().Y(0);
 
-	updateChemistryCollFreq(chemistry);
+    updateChemistryCollFreq(chemistry);
 
-	if (multiTimeStep)
-	{
-		FatalError << "0-D model not implemented for multiple time scales" << nl << abort(FatalError);
-	}
-	else
-	{
-		forAll(species(), i)
-		{  
-			if (i != bIndex_ && speciesSolution_[i])
-			{
-				volScalarField& yi = thermo_.composition().Y(i);
+    if (multiTimeStep)
+    {
+        FatalError << "0-D model not implemented for multiple time scales" << nl << abort(FatalError);
+    }
+    else
+    {
+        forAll(species(), i)
+        {
+            if (i != bIndex_ && speciesSolution_[i])
+            {
+                volScalarField& yi = thermo_.composition().Y(i);
 
-				tmp<fvScalarMatrix> yEqn
-				(   
-					fvm::ddt(thermo_.rho(),yi) == Sy_[i]
-				);
+                tmp<fvScalarMatrix> yEqn
+                (
+                    fvm::ddt(thermo_.rho(),yi) == Sy_[i]
+                );
 
-				yEqn->solve(mesh_.solutionDict().solver("Yi"));
-	
-				yi.max(0.0);
+                yEqn->solve(mesh_.solutionDict().solver("Yi"));
 
-		        yt += yi;  
+                yi.max(0.0);
 
-				N_[i] == thermo_.rho()*thermo_.composition().Y(i)*plasmaConstants::A/W(i);
-			}
-		}
-		volScalarField& yBgas = thermo_.composition().Y()[bIndex_];
+                yt += yi;
 
-		yBgas == 1 - yt;
+                N_[i] == thermo_.rho()*thermo_.composition().Y(i)*plasmaConstants::A/W(i);
+            }
+        }
+        volScalarField& yBgas = thermo_.composition().Y()[bIndex_];
 
-		N_[bIndex_] == thermo_.rho()*thermo_.composition().Y(bIndex_)*plasmaConstants::A/W(bIndex_);
-	}
+        yBgas == 1 - yt;
+
+        N_[bIndex_] == thermo_.rho()*thermo_.composition().Y(bIndex_)*plasmaConstants::A/W(bIndex_);
+    }
     return 0;
 }
 

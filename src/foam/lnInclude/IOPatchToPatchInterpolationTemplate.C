@@ -1,1 +1,0 @@
-../interpolations/patchToPatchInterpolation/IOpatchToPatchInterpolation/IOPatchToPatchInterpolationTemplate.C

@@ -1,1 +1,0 @@
-../polyTopoChange/polyTopoChange/actions/removeObject/polyRemovePoint.H

@@ -52,7 +52,7 @@
                     IOobject::NO_WRITE
                 ),
                 dielectricRegions[i],
-			    dimensionedVector("E", dimensionSet(0, 0, 0, 1, 0), vector(0.0, 0.0, 0.0))
+                dimensionedVector("E", dimensionSet(0, 0, 0, 1, 0), vector(0.0, 0.0, 0.0))
             )
         );
 
@@ -70,39 +70,38 @@
                     IOobject::NO_WRITE
                 ),
                 dielectricRegions[i],
-			    dimensionedScalar("eps", dimensionSet(0, 0, 0, 1, 0), dielectricProperties[i].lookup("epsilon"))
+                dimensionedScalar("eps", dimensionSet(0, 0, 0, 1, 0), dielectricProperties[i].lookup("epsilon"))
             )
         );
-	}
+    }
 
-	const fvPatchList& patcha = mesh.boundary();
+    const fvPatchList& patcha = mesh.boundary();
 
-	volScalarField Ft
-	(
-		IOobject
-		(
-		    "Ft",
-		    runTime.timeName(),
-		    mesh,
-		    IOobject::NO_READ,
-		    IOobject::NO_WRITE
-		),
-		mesh,
-	   dimensionedScalar("Ft", dimLength/dimTime, 0.0)
-	);
+    volScalarField Ft
+    (
+        IOobject
+        (
+            "Ft",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+       dimensionedScalar("Ft", dimLength/dimTime, 0.0)
+    );
 
-	volScalarField surfC
-	(
-		IOobject
-		(
-		    "surfC",
-		    runTime.timeName(),
-		    mesh,
-		    IOobject::NO_READ,
-		    IOobject::NO_WRITE
-		),
-		mesh,
-		dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0),
-		zeroGradientFvPatchScalarField::typeName
-	);
-
+    volScalarField surfC
+    (
+        IOobject
+        (
+            "surfC",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0),
+        zeroGradientFvPatchScalarField::typeName
+    );

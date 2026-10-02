@@ -1,1 +1,0 @@
-../fields/pointPatchFields/derived/global/globalPointPatchFields.H

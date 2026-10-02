@@ -1,1 +1,0 @@
-../meshes/primitiveMesh/primitiveMeshCheck/primitiveMeshCheckPointNearness.C

@@ -1,8 +1,0 @@
-SOURCE = \
-$(pdf)/pdf.C\
-$(pdf)/newPdf.C\
-$(uniform)/uniform.C\
-$(normal)/normal.C\
-$(general)/general.C\
-$(exponential)/exponential.C\
-$(RosinRammler)/RosinRammler.C

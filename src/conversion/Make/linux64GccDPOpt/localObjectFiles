@@ -1,9 +1,0 @@
-LOCAL_OBJECTS = \
-boundaryRegion.o\
-cellTable.o\
-meshReader.o\
-meshReaderAux.o\
-calcPointCells.o\
-createPolyCells.o\
-createPolyBoundary.o\
-polyDualMesh.o

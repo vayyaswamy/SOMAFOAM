@@ -1,1 +1,0 @@
-../directMapped/directMappedPolyPatch/directMappedPolyPatch.C

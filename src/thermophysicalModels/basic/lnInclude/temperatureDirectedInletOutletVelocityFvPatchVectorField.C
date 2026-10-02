@@ -1,1 +1,0 @@
-../derivedFvPatchFields/temperatureDirectedInletOutletVelocity/temperatureDirectedInletOutletVelocityFvPatchVectorField.C

@@ -1,1 +1,0 @@
-../sigmaRadial/sigmaRadial.C

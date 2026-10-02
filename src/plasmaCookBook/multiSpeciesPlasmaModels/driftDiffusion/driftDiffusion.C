@@ -13,20 +13,19 @@ look for license file include with distribution.
 template<class ThermoType>
 inline void Foam::driftDiffusion<ThermoType>::updateFlux
 (
-	const label i,
-	const volVectorField& E
+    const label i,
+    const volVectorField& E
 )
-{     
-	volVectorField& Fi = F_[i];
+{
+    volVectorField& Fi = F_[i];
 
-	Fi = thermo_.rho()*mu_[i]*z_[i]*E;
+    // Drift velocity (electric field + thermal drift) per unit density
+    Fi = mu_[i]*(z_[i]*E - plasmaConstants::KBE*fvc::grad(T_[i]));
 
-	Fi.correctBoundaryConditions();
-
-	if (restartcapabale && runTime_.write())
-	{
-		Fi.write();
-	}
+    if (restartcapabale && runTime_.outputTime())
+    {
+        Fi.write();
+    }
 }
 
 template<class ThermoType>
@@ -35,76 +34,76 @@ inline void Foam::driftDiffusion<ThermoType>::transportCoeffInterpolate
     const label i
 )
 {
-	if(diffusionModel_[i] == "eTemp")
-	{		
-		D_[i].field() = (1/NG_)*plasmaInterpolateXY
-		(
-			thermo_.Te().field(),
-			graphDiffData_[i].x(),
-			graphDiffData_[i].y()
-		);
+    if(diffusionModel_[i] == "eTemp")
+    {
+        D_[i].field() = (1/NG_)*plasmaInterpolateXY
+        (
+            thermo_.Te().field(),
+            graphDiffData_[i].x(),
+            graphDiffData_[i].y()
+        );
 
-		D_[i].correctBoundaryConditions();
-	}
-	else if(diffusionModel_[i] == "EON")
-	{		
-		D_[i].field() = (1/NG_)*plasmaInterpolateXY
-		(
-			EON.field(),
-			graphDiffData_[i].x(),
-			graphDiffData_[i].y()
-		);
+        D_[i].correctBoundaryConditions();
+    }
+    else if(diffusionModel_[i] == "EON")
+    {
+        D_[i].field() = (1/NG_)*plasmaInterpolateXY
+        (
+            EON.field(),
+            graphDiffData_[i].x(),
+            graphDiffData_[i].y()
+        );
 
-		D_[i].correctBoundaryConditions();
-	}
+        D_[i].correctBoundaryConditions();
+    }
 
     if ( i < activeSpecies_)
-	{
-		if (mobilityModel_[i] == "eTemp")
-		{	
-			mu_[i].field() = (1/NG_)*plasmaInterpolateXY
-			(
-				thermo_.Te().field(),
-				graphMuData_[i].x(),
-				graphMuData_[i].y()
-			);
+    {
+        if (mobilityModel_[i] == "eTemp")
+        {
+            mu_[i].field() = (1/NG_)*plasmaInterpolateXY
+            (
+                thermo_.Te().field(),
+                graphMuData_[i].x(),
+                graphMuData_[i].y()
+            );
 
-			forAll(mu_[i].boundaryField(), patchI)
-			{
-				mu_[i].boundaryField()[patchI] = (1/NG_.boundaryField()[patchI])*plasmaInterpolateXY
-				(
-					thermo_.Te().boundaryField()[patchI],
-					graphMuData_[i].x(),
-					graphMuData_[i].y()
-				);
-			}
-		}
-		else if(mobilityModel_[i] == "EON")
-		{	
-			mu_[i].field() = (1/NG_)*plasmaInterpolateXY
-			(
-				EON.field(),
-				graphMuData_[i].x(),
-				graphMuData_[i].y()
-			);
+            forAll(mu_[i].boundaryField(), patchI)
+            {
+                mu_[i].boundaryField()[patchI] = (1/NG_.boundaryField()[patchI])*plasmaInterpolateXY
+                (
+                    thermo_.Te().boundaryField()[patchI],
+                    graphMuData_[i].x(),
+                    graphMuData_[i].y()
+                );
+            }
+        }
+        else if(mobilityModel_[i] == "EON")
+        {
+            mu_[i].field() = (1/NG_)*plasmaInterpolateXY
+            (
+                EON.field(),
+                graphMuData_[i].x(),
+                graphMuData_[i].y()
+            );
 
-			forAll(mu_[i].boundaryField(), patchI)
-			{
-				mu_[i].boundaryField()[patchI] = (1/NG_.boundaryField()[patchI])*plasmaInterpolateXY
-				(
-					EON.boundaryField()[patchI],
-					graphMuData_[i].x(),
-					graphMuData_[i].y()
-				);
-			}
-		}
-		if(diffusionModel_[i] == "einsteinRelation")
-		{		
-			D_[i] = mu_[i]*plasmaConstants::KBE*T_[i];
+            forAll(mu_[i].boundaryField(), patchI)
+            {
+                mu_[i].boundaryField()[patchI] = (1/NG_.boundaryField()[patchI])*plasmaInterpolateXY
+                (
+                    EON.boundaryField()[patchI],
+                    graphMuData_[i].x(),
+                    graphMuData_[i].y()
+                );
+            }
+        }
+        if(diffusionModel_[i] == "einsteinRelation")
+        {
+            D_[i] = mu_[i]*plasmaConstants::KBE*T_[i];
 
-			D_[i].correctBoundaryConditions();
-		}
-	}
+            D_[i].correctBoundaryConditions();
+        }
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -125,256 +124,194 @@ Foam::driftDiffusion<ThermoType>::driftDiffusion
 
     EON
     (
-		IOobject
-		(
-			"EON",
-			mesh_.time().timeName(),
-			mesh_,
-			IOobject::NO_READ,
-			IOobject::NO_WRITE
-		),
-		mesh_,
-		dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0), 0.0)
-    )
-{    
-    F_.setSize(activeSpecies_);
-
-	updateTemperature();
-    
-    forAll(F_, i)
-    {
-        IOobject header
+        IOobject
         (
-			"F_" + species()[i],
+            "EON",
             mesh_.time().timeName(),
             mesh_,
-            IOobject::NO_READ
-        );
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0), 0.0)
+    )
+{
+    F_.setSize(activeSpecies_);
 
-        if (header.headerOk())
-        {
-		    F_.set
-		    (
-		        i, new volVectorField
-		        (
-		            IOobject
-		            (
-		                "F_" + species()[i],
-		                mesh_.time().timeName(),
-		                mesh_,
-		                IOobject::MUST_READ,
-		                IOobject::NO_WRITE
-		            ),
-		            mesh_
-		        )
-		    );
-		}
-		else
-		{
-            volVectorField Fdefault
+    updateTemperature();
+
+    forAll(F_, i)
+    {
+        F_.set
+        (
+            i, new volVectorField
             (
                 IOobject
                 (
-                    "Fdefault",
+                    "F_" + species()[i],
                     mesh_.time().timeName(),
                     mesh_,
-                    IOobject::MUST_READ,
+                    IOobject::NO_READ,
                     IOobject::NO_WRITE
                 ),
-                mesh_
-            );
-
-		    F_.set
-		    (
-		        i, new volVectorField
-		        (
-		            IOobject
-		            (
-		                "F_" + species()[i],
-		                mesh_.time().timeName(),
-		                mesh_,
-		                IOobject::NO_READ,
-		                IOobject::NO_WRITE
-		            ),
-		            Fdefault
-		        )
-		    );
-		}
-    } 
+                mesh_,
+                dimensionedVector("zero", dimensionSet(0, 1, -1, 0, 0), vector::zero)
+            )
+        );
+    }
 }
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
 template<class ThermoType>
+void Foam::driftDiffusion<ThermoType>::solveSpecie
+(
+    const label i,
+    psiChemistryModel& chemistry,
+    const volVectorField& E
+)
+{
+    volScalarField& yi = thermo_.composition().Y(i);
+    volScalarField& Ni = N_[i];
+
+    transportCoeffInterpolate(i);
+
+    const bool charged = (i < activeSpecies_);
+
+    if (charged)
+    {
+        updateFlux(i, E);
+    }
+
+    const word solverName(charged ? "Ni" : "Nin");
+    const label nCorr = charged ? 3 : 1;
+
+    Ni.storePrevIter();
+
+    // Chemistry source linearised in Ni and updated each corrector
+    scalar initialResidual = 1.0;
+    label iCorr = 0;
+
+    while ((initialResidual >= 1e-5) && (iCorr++ <= nCorr))
+    {
+        fvScalarMatrix NEqn
+        (
+            fvm::ddt(Ni)
+          - chemistry.RR(i)*plasmaConstants::A/W(i)
+          + chemistry.dRRDi(i)*Ni
+          - fvm::Sp(chemistry.dRRDi(i), Ni)
+        );
+
+        if (charged)
+        {
+            NEqn +=
+                fvm::div((fvc::interpolate(F_[i]) & mesh_.Sf()), Ni, "div(F,Ni)")
+              - fvm::laplacian(D_[i], Ni, "laplacian(D,Ni)");
+        }
+        else
+        {
+            NEqn -= fvm::laplacian(D_[i], Ni, "laplacian(D,Nin)");
+        }
+
+        initialResidual =
+            NEqn.solve(mesh_.solutionDict().solver(solverName)).initialResidual();
+
+        if (!charged)
+        {
+            Ni.max(1e4);
+        }
+
+        yi = Ni*W(i)/thermo_.rho()/plasmaConstants::A;
+
+        updateChemistryCollFreq(chemistry);
+    }
+
+    Ni.relax();
+
+    Ni.max(1e4);
+
+    yi = Ni*W(i)/thermo_.rho()/plasmaConstants::A;
+
+    updateChemistryCollFreq(chemistry);
+
+    if (charged)
+    {
+        const volScalarField& Ti = T_[i];
+
+        if (diffusionModel_[i] == "einsteinRelation")
+        {
+            J_[i] == -mu_[i]*
+            (
+                Ti*fvc::grad(plasmaConstants::KBE*Ni)
+              + plasmaConstants::KBE*Ni*fvc::grad(Ti)
+              - Ni*z_[i]*E
+            );
+        }
+        else
+        {
+            J_[i] ==
+              - D_[i]*fvc::grad(Ni)
+              - plasmaConstants::KBE*mu_[i]*Ni*fvc::grad(Ti)
+              + Ni*mu_[i]*z_[i]*E;
+        }
+    }
+}
+
+
+template<class ThermoType>
 inline Foam::scalar Foam::driftDiffusion<ThermoType>::correct
 (
     psiChemistryModel& chemistry,
-	const volVectorField& E,
+    const volVectorField& E,
     multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
 )
 {
-	updateTemperature();
+    updateTemperature();
 
-	updateChemistryCollFreq(chemistry);
+    if (eonCalculation)
+    {
+        EON = mag(E)*1E21/NG_;
 
-	if(eonCalculation)
-	{	
-		EON = mag(E)*1E21/NG_;
+        EON.correctBoundaryConditions();
+    }
 
-		EON.correctBoundaryConditions();
-	}
-	
     volScalarField yt = 0.0*thermo_.composition().Y(0);
 
-	if (multiTimeStep)
-	{
-		forAll(species(), i)
-		{  
-			if (i != bIndex_ && speciesSolution_[i])
-			{
-				if ((timeS_[i] == "LTS") && (fmod(runTime_.deltaT().value(),LTScounter) < SMALL))
-				{
-					LTSset();
-				}
+    forAll(species(), i)
+    {
+        if (i != bIndex_ && speciesSolution_[i])
+        {
+            if (multiTimeStep)
+            {
+                if ((timeS_[i] == "LTS") && (fmod(runTime_.deltaT().value(),LTScounter) < SMALL))
+                {
+                    LTSset();
+                }
+                else if ((timeS_[i] == "MTS") && (fmod(runTime_.deltaT().value(),MTScounter) < SMALL))
+                {
+                    MTSset();
+                }
+            }
 
-				else if ((timeS_[i] == "MTS") && (fmod(runTime_.deltaT().value(),MTScounter) < SMALL))
-				{
-					MTSset();
-				}
+            solveSpecie(i, chemistry, E);
 
-				volScalarField& yi = thermo_.composition().Y(i);
+            yt += thermo_.composition().Y(i);
 
-				transportCoeffInterpolate(i);
+            if (multiTimeStep)
+            {
+                STSset();
+            }
+        }
+    }
 
-				if (i < activeSpecies_)
-				{
-					updateFlux(i, E);
+    volScalarField& yBgas = thermo_.composition().Y()[bIndex_];
 
-					const volScalarField& Ti = T_[i];
+    yBgas = scalar(1.0) - yt;
 
-					tmp<fvScalarMatrix> yEqn
-					(   
-						fvm::ddt(thermo_.rho(),yi)
-				   		+ fvm::div((fvc::interpolate(F_[i]) & mesh_.Sf()), yi, "div(F,Yi)")
-						- fvm::laplacian((thermo_.rho()*D_[i]), yi, "laplacian(D,Yi)")
-						- fvc::laplacian((thermo_.rho()*mu_[i]*plasmaConstants::KBE*yi), Ti, "laplacian(D,T)")
-						+ fvm::SuSp((-Sy_[i]/yi), yi)
-					);
+    N_[bIndex_] == thermo_.rho()*yBgas*plasmaConstants::A/W(bIndex_);
 
-					yEqn->relax();
+    updateChemistryCollFreq(chemistry);
 
-					yEqn->solve(mesh_.solutionDict().solver("Yi"));
-
-
-					yi.max(1e-25);
-
-					N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
-
-					if(diffusionModel_[i] == "einsteinRelation")
-					{
-						J_[i] == (-mu_[i]*(Ti*fvc::grad(plasmaConstants::KBE*N_[i]) + plasmaConstants::KBE*N_[i]*fvc::grad(Ti) - N_[i]*z_[i]*E));
-					}
-					else
-					{
-						J_[i] == (-D_[i]*fvc::grad(N_[i]) - plasmaConstants::KBE*mu_[i]*N_[i]*fvc::grad(Ti) + N_[i]*mu_[i]*z_[i]*E);
-					}
-				}
-				else
-				{
-					tmp<fvScalarMatrix> ynEqn
-					(   
-						fvm::ddt(thermo_.rho(),yi)
-				  		- fvm::laplacian((D_[i]*thermo_.rho()),yi, "laplacian(D,Yin)")
-						+ fvm::SuSp((-Sy_[i]/yi), yi)
-					);
-
-					ynEqn->relax();
-
-					ynEqn->solve(mesh_.solutionDict().solver("Yin"));
-
-					yi.max(1e-25);
-
-					N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
-				}
-		        yt += yi;  
-			}
-			STSset();
-		}
-		volScalarField& yBgas = thermo_.composition().Y()[bIndex_];
-
-		yBgas = scalar(1.0) - yt;
-
-		N_[bIndex_] == thermo_.rho()*thermo_.composition().Y(bIndex_)*plasmaConstants::A/W(bIndex_);
-	}
-	else
-	{
-		forAll(species(), i)
-		{  
-			if (i != bIndex_ && speciesSolution_[i])
-			{
-				volScalarField& yi = thermo_.composition().Y(i);
-
-				transportCoeffInterpolate(i);
-
-				if (i < activeSpecies_)
-				{
-					updateFlux(i, E);
-
-					const volScalarField& Ti = T_[i];
-
-					tmp<fvScalarMatrix> yEqn
-					(   
-						fvm::ddt(thermo_.rho(),yi)
-				   		+ fvm::div((fvc::interpolate(F_[i]) & mesh_.Sf()), yi, "div(F,Yi)")
-						- fvm::laplacian((thermo_.rho()*D_[i]), yi, "laplacian(D,Yi)")
-						- fvc::laplacian((thermo_.rho()*mu_[i]*plasmaConstants::KBE*yi), Ti, "laplacian(D,T)")
-						+ fvm::SuSp((-Sy_[i]/yi), yi)
-					);
-
-					yEqn->relax();
-
-					yEqn->solve(mesh_.solutionDict().solver("Yi"));
-
-					yi.max(1e-25);
-
-					N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
-
-					if(diffusionModel_[i] == "einsteinRelation")
-					{
-						J_[i] == (-mu_[i]*(Ti*fvc::grad(plasmaConstants::KBE*N_[i]) + plasmaConstants::KBE*N_[i]*fvc::grad(Ti) - N_[i]*z_[i]*E));
-					}
-					else
-					{
-						J_[i] == (-D_[i]*fvc::grad(N_[i]) - plasmaConstants::KBE*mu_[i]*N_[i]*fvc::grad(Ti) + N_[i]*mu_[i]*z_[i]*E);
-					}
-				}
-				else
-				{
-					tmp<fvScalarMatrix> ynEqn
-					(   
-						fvm::ddt(thermo_.rho(),yi)
-				  		- fvm::laplacian((D_[i]*thermo_.rho()),yi, "laplacian(D,Yin)")
-						+ fvm::SuSp((-Sy_[i]/yi), yi)
-					);
-
-					ynEqn->relax();
-
-					ynEqn->solve(mesh_.solutionDict().solver("Yin"));
-
-					yi.max(1e-25);
-
-					N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
-				}
-		        yt += yi;  
-			}
-		}
-
-		volScalarField& yBgas = thermo_.composition().Y()[bIndex_];
-
-		yBgas = scalar(1.0) - yt;
-
-		N_[bIndex_] == thermo_.rho()*thermo_.composition().Y(bIndex_)*plasmaConstants::A/W(bIndex_);
-	}
     return 0;
 }
 

@@ -1,1 +1,0 @@
-../meshes/primitiveShapes/pyramid/pyramidI.H

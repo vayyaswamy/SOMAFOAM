@@ -1,1 +1,0 @@
-../sets/pointSources/nearestToPoint/nearestToPoint.H

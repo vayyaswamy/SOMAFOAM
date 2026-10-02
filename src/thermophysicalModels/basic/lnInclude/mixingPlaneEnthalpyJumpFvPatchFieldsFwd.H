@@ -1,1 +1,0 @@
-../derivedFvPatchFields/mixingPlaneEnthalpyJump/mixingPlaneEnthalpyJumpFvPatchFieldsFwd.H

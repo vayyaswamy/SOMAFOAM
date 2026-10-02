@@ -10,7 +10,7 @@ Class
 
 Description
     driftDiffusionOS equation - includes temperature in flux, fully implicit, goudonov splitter.
-  
+
 SourceFiles
     driftDiffusionOS.C
 
@@ -25,7 +25,7 @@ SourceFiles
 
 namespace Foam
 {
-  
+
 /*---------------------------------------------------------------------------*\
                              Class driftDiffusionOS Declaration
 \*---------------------------------------------------------------------------*/
@@ -34,34 +34,34 @@ template<class ThermoType>
 class driftDiffusionOS
 :
     public multiSpeciesPlasmaModel
-{  
+{
 
 protected:
-  
+
     // Protected data
-  
+
         const PtrList<ThermoType>& speciesThermo_;
 
-		volScalarField EON;
+        volScalarField EON;
 
     // Protected member functions
-    
+
         virtual inline void updateFlux
-		(
-			const label i,
-			const volVectorField& E
-		);
+        (
+            const label i,
+            const volVectorField& E
+        );
 
         virtual inline void transportCoeffInterpolate
-		(
-			const label i
-		);
+        (
+            const label i
+        );
 
 public:
 
-		//- Runtime type information
-		TypeName("driftDiffusionOS");
-    
+        //- Runtime type information
+        TypeName("driftDiffusionOS");
+
     // Constructors
 
         //- Construct from components
@@ -75,7 +75,7 @@ public:
         {}
 
     // Member Functions
-    
+
         scalar W(label i) const
         {
             return speciesThermo_[i].W();
@@ -84,17 +84,17 @@ public:
         virtual inline scalar correct
         (
             psiChemistryModel& chemistry,
-			const volVectorField& E,
+            const volVectorField& E,
             multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
         );
-                
+
         //- Read dictionary
         virtual bool read();
   };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-}	// End namespace Foam
+}   // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 

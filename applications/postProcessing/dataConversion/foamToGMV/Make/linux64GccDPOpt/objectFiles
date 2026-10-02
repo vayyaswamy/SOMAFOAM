@@ -1,3 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/foamToGMV.o\
-$(OBJECTS_DIR)/itoa.o

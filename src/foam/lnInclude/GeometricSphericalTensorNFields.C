@@ -1,1 +1,0 @@
-../fields/GeometricFields/GeometricSphericalTensorNFields/GeometricSphericalTensorNFields.C

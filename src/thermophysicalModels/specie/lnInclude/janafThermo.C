@@ -1,1 +1,0 @@
-../thermo/janaf/janafThermo.C

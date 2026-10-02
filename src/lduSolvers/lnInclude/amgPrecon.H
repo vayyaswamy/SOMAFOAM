@@ -1,1 +1,0 @@
-../lduPrecon/amgPrecon/amgPrecon.H

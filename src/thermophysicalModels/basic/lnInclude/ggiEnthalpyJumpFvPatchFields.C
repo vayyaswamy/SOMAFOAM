@@ -1,1 +1,0 @@
-../derivedFvPatchFields/ggiEnthalpyJump/ggiEnthalpyJumpFvPatchFields.C

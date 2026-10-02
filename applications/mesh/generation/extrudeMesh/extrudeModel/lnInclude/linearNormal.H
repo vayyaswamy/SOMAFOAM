@@ -1,1 +1,0 @@
-../linearNormal/linearNormal.H

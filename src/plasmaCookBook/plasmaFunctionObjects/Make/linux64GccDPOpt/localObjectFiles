@@ -1,5 +1,0 @@
-LOCAL_OBJECTS = \
-emPlasmaFields.o\
-emPlasmaFieldsFunctionObject.o\
-electricalCharacteristics.o\
-specieDynamics.o

@@ -1,4 +1,0 @@
-ePatches = eMesh/ePatches
-tetMetrics = tetMetrics
-lengthScaleEstimator = lengthScaleEstimator
-LIB = $(FOAM_LIBBIN)/libdynamicTopoFvMesh

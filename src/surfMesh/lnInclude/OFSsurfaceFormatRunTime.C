@@ -1,1 +1,0 @@
-../surfaceFormats/ofs/OFSsurfaceFormatRunTime.C

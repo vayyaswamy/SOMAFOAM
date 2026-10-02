@@ -1,5 +1,5 @@
 {
-	emc->correct(voltageDict);
+    emc->correct(voltageDict);
 
     int iCorr = 0;
 
@@ -11,83 +11,79 @@
     {
         Phi.storePrevIter();
 
-		if (poissonEquationSolver == "semiImplicit")
-		{
-			volScalarField epsSource = eps + runTime.deltaTValue()*eCharge*mspm().potentialImpSource();
+        if (poissonEquationSolver == "semiImplicit")
+        {
+            volScalarField epsSource = eps + runTime.deltaTValue()*eCharge*mspm().potentialImpSource();
 
-			fvScalarMatrix phiPlasmaEqn
-			(
-				fvm::laplacian(epsSource, Phi, "laplacian(eps,phi)")
-				==
-				- eCharge*(mspm().potentialExpSource())
-			);
+            fvScalarMatrix phiPlasmaEqn
+            (
+                fvm::laplacian(epsSource, Phi, "laplacian(eps,phi)")
+                ==
+                - eCharge*(mspm().potentialExpSource())
+            );
 
-			phiPlasmaEqn.solve();
+            phiPlasmaEqn.solve();
 
-			E = - fvc::reconstruct(phiPlasmaEqn.flux())/epsSource;
-		}
-		else if (poissonEquationSolver == "explicit")
-		{
-			fvScalarMatrix phiPlasmaEqn
-			(
-				fvm::laplacian(eps, Phi, "laplacian(eps,phi)")
-				==
-				- eCharge*(mspm().netCharge())
-			);
+            E = - fvc::reconstruct(phiPlasmaEqn.flux())/epsSource;
+        }
+        else if (poissonEquationSolver == "explicit")
+        {
+            fvScalarMatrix phiPlasmaEqn
+            (
+                fvm::laplacian(eps, Phi, "laplacian(eps,phi)")
+                ==
+                - eCharge*(mspm().netCharge())
+            );
 
-			phiPlasmaEqn.solve();
+            phiPlasmaEqn.solve();
 
-			E = -fvc::reconstruct(phiPlasmaEqn.flux())/eps;
-		}
-		else if (poissonEquationSolver == "linearized")
-		{
-			fvScalarMatrix phiPlasmaEqn
-			(
-				fvm::laplacian(eps, Phi, "laplacian(eps,phi)") 
-				==
-				- eCharge*(mspm().netCharge()
-				+ runTime.deltaTValue()*fvc::div(F.oldTime()))
-			);
+            E = -fvc::reconstruct(phiPlasmaEqn.flux())/eps;
+        }
+        else if (poissonEquationSolver == "linearized")
+        {
+            fvScalarMatrix phiPlasmaEqn
+            (
+                fvm::laplacian(eps, Phi, "laplacian(eps,phi)")
+                ==
+                - eCharge*(mspm().netCharge()
+                + runTime.deltaTValue()*fvc::div(F.oldTime()))
+            );
 
-			phiPlasmaEqn.solve();
+            phiPlasmaEqn.solve();
 
-			E = - fvc::reconstruct(phiPlasmaEqn.flux())/eps;
-		}
+            E = - fvc::reconstruct(phiPlasmaEqn.flux())/eps;
+        }
 
-        // if (iCorr == 0)
-        // {
-        //     initialResidual = solverPerf.initialResidual();
-        // }
 
-		forAll(dielectricRegions, i)
-		{
-			fvScalarMatrix phiDielectricEqn
-			(
-				fvm::laplacian(epsD[i], PhiD[i], "laplacian(eps,phi)")
-			);
+        forAll(dielectricRegions, i)
+        {
+            fvScalarMatrix phiDielectricEqn
+            (
+                fvm::laplacian(epsD[i], PhiD[i], "laplacian(eps,phi)")
+            );
 
-			phiDielectricEqn.solve();
+            phiDielectricEqn.solve();
 
-			ED[i] = - fvc::grad(PhiD[i], "grad(phi)");
-		}
+            ED[i] = - fvc::grad(PhiD[i], "grad(phi)");
+        }
 
-		residual =
-		    gMax
-		    (
-		        mag
-		        (
-		            Phi.internalField()
-		          - Phi.prevIter().internalField()
-		        )
-		       /Phi.internalField()
-		    );
+        residual =
+            gMax
+            (
+                mag
+                (
+                    Phi.internalField()
+                  - Phi.prevIter().internalField()
+                )
+               /Phi.internalField()
+            );
     }
     while
     (
-		mag(residual) > convergenceTolerance && ++iCorr < nCorr
+        mag(residual) > convergenceTolerance && ++iCorr < nCorr
     );
 
-	Info<< "Solving for phi "
-	<< ", outer iterations " << iCorr
-	<< ", Relative error: " << residual << endl;
+    Info<< "Solving for phi "
+    << ", outer iterations " << iCorr
+    << ", Relative error: " << residual << endl;
 }

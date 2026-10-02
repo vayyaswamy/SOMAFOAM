@@ -1,1 +1,0 @@
-../dimensionedTypes/dimensionedSymmTensor/dimensionedSymmTensor.H

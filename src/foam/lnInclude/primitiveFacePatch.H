@@ -1,1 +1,0 @@
-../meshes/primitiveMesh/primitivePatch/primitiveFacePatch.H

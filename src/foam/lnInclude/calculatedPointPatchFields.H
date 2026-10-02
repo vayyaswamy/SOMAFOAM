@@ -1,1 +1,0 @@
-../fields/pointPatchFields/basic/calculated/calculatedPointPatchFields.H

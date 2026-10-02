@@ -22,7 +22,7 @@ Foam::multiSpeciesPlasmaModel::New
         (
             IOobject
             (
-                "plasmaProperties", 
+                "plasmaProperties",
                 thermo.T().mesh().time().constant(),
                 thermo.T().mesh(),
                 IOobject::MUST_READ,
@@ -31,7 +31,7 @@ Foam::multiSpeciesPlasmaModel::New
         );
         dict.lookup("plasmaModel") >> modelName;
     }
-  
+
     fvMeshConstructorTable::iterator cstrIter =
         fvMeshConstructorTablePtr_->find(modelName);
 
@@ -44,7 +44,7 @@ Foam::multiSpeciesPlasmaModel::New
             << modelName << endl << endl
             << fvMeshConstructorTablePtr_->toc()
             << abort(FatalError);
-  	}
+    }
 
   return autoPtr<multiSpeciesPlasmaModel>
       (cstrIter()(thermo));

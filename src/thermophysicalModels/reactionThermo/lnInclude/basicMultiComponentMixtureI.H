@@ -1,1 +1,0 @@
-../mixtures/basicMultiComponentMixture/basicMultiComponentMixtureI.H

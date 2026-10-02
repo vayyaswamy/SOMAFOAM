@@ -31,7 +31,7 @@ Foam::eTemp::eTemp
     mspm_(mspm),
     E_(E),
     mesh_(thermo.T().mesh()),
-	runTime_(const_cast<Time&>(mesh_.time())),
+    runTime_(const_cast<Time&>(mesh_.time())),
     restartcapable(runTime_.controlDict().lookup("restartCapable"))
 {}
 

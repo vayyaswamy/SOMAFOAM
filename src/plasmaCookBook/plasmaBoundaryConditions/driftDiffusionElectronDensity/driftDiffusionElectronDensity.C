@@ -33,7 +33,6 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
@@ -48,9 +47,8 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     FE_(false),
     beta_(1.0),
     wf_(1.0)
-    
+
 {
-    //Info << "Constructor 1" << endl;
     this->refValue() = 0;
     this->refGrad() = 0;
     this->valueFraction() = 0;
@@ -73,8 +71,6 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_)
 {
-    //Info << "Constructor 3" << endl;
-    //fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
 
@@ -92,20 +88,12 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(readScalar(dict.lookup("field_enhancement_factor"))),
     wf_(readScalar(dict.lookup("work_function")))
 {
-    //Info << "Constructor 2 " << endl;
-    //Info << "seec_ " << seec_ << endl;
-    //Info << "fieldName = " << iF.name() << endl;
     this->refValue() = 0.0;
 
     this->refGrad() = 0.0;
     this->valueFraction() = 0.0;
     fvPatchField<scalar>::operator=(this->patchInternalField());
-    //Info << "Edepend = " << Edepend_ << endl;
-    //Info << "FE_ = " << FE_ << endl;
-    //Info << "work function = " << wf_ << endl;
-    //Info << "field_enhancement_factor " << beta_ << endl; 
 }
-
 
 
 Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
@@ -120,10 +108,8 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_)
 {
-    //Info << "Constructor 5" << endl;
     fvPatchField<scalar>::operator=(this->patchInternalField());
 }
-
 
 
 Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
@@ -139,9 +125,6 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_)
 {
-    //Info << "Constructor 6" << endl;
-    //Info << "seec = " << seec_ << endl;
-    //fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
 
@@ -155,7 +138,6 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
         return;
     }
 
-    //Info << "Inside updateCoeffs " << endl;
     vectorField n = patch().nf();
 
     const fvPatchField<scalar>& muef=
@@ -165,7 +147,7 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
         patch().lookupPatchField<volScalarField, scalar>("D_electron");
 
     const fvPatchField<scalar>& Tef=
-        patch().lookupPatchField<volScalarField, scalar>("Te"); 
+        patch().lookupPatchField<volScalarField, scalar>("Te");
 
     const fvPatchField<vector>& Ef=
         patch().lookupPatchField<volVectorField, vector>("E");
@@ -184,13 +166,13 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
 
     scalarField Fifnorm = Fif&n;
 
-    scalarField a = pos(mag(Enorm));   
+    scalarField a = pos(mag(Enorm));
 
     scalarField b = pos(Fifnorm);
 
     if (Edepend_)
     {
-        a = pos(Enorm);    
+        a = pos(Enorm);
     }
 
     const scalarField Gamma_se = seec_*(b*Fifnorm);
@@ -199,23 +181,18 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
 
     scalarField Gamma_FE = c*0.0;
 
-    //Info << "FE_ = " << FE_ << endl;
 
     if (FE_)
     {
-        //Info << "Enorm = " << Enorm << endl;
 
         scalarField vofy = 0.95 - sqr(3.79E-4)*beta_*c*mag(Enorm)*1E-2/sqr(wf_) ; // 1E-2 is for converting V/m to V/cm
 
-        //Info << "vofy = " << vofy << endl;
 
         Gamma_FE = c*1.54E-6/1.602e-19*sqr(beta_*c*mag(Enorm) )/1.1/wf_*exp(-6.85E9*pow(wf_,1.5)*vofy/beta_/(c*mag(Enorm) + SMALL) ) ;
 
-        //Info << "Gamma_FE = " << Gamma_FE << endl;
     }
-    
- 
- 
+
+
     this->refValue() = 0.0;
 
     this->valueFraction() = a*C1/(C1+C2*this->patch().deltaCoeffs()) ;
@@ -224,7 +201,7 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
 
     mixedFvPatchField<scalar>::updateCoeffs();
 
-   
+
 }
 
 

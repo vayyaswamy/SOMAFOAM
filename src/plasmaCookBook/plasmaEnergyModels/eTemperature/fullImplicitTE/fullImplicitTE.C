@@ -37,9 +37,9 @@ Foam::efullImplicitTE::efullImplicitTE
         (
             "eeFlux",
             thermo.T().mesh().time().timeName(),
-			thermo.T().mesh(),
-			IOobject::MUST_READ,
-			IOobject::NO_WRITE
+            thermo.T().mesh(),
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
         ),
         thermo.T().mesh()
     ),
@@ -58,27 +58,27 @@ Foam::efullImplicitTE::efullImplicitTE
 Foam::scalar Foam::efullImplicitTE::correct
 (
     psiChemistryModel& chemistry,
-	const volVectorField& E
+    const volVectorField& E
 )
 {
-	volScalarField& TeC = thermo().Te();
+    volScalarField& TeC = thermo().Te();
 
-	eeFlux = 2.5*plasmaConstants::boltzC*mspm().J(eIndex_)*TeC;
+    eeFlux = 2.5*plasmaConstants::boltzC*mspm().J(eIndex_)*TeC;
 
-	eeFlux.correctBoundaryConditions();
+    eeFlux.correctBoundaryConditions();
 
-	if (restartCapable() && runTime().write())
-	{
-		eeFlux.write();
-	}
+    if (restartCapable() && runTime().write())
+    {
+        eeFlux.write();
+    }
 
-	surfaceScalarField eeFluxF = fvc::interpolate(eeFlux/TeC) & mesh().Sf();
+    surfaceScalarField eeFluxF = fvc::interpolate(eeFlux/TeC) & mesh().Sf();
 
-	surfaceScalarField eFluxF = fvc::interpolate(mspm().J(eIndex_)) & mesh().Sf();
+    surfaceScalarField eFluxF = fvc::interpolate(mspm().J(eIndex_)) & mesh().Sf();
 
-	volScalarField eeSource = -plasmaConstants::eCharge*(mspm().J(eIndex_) & E) - mspm().electronTempSource(chemistry);
+    volScalarField eeSource = -plasmaConstants::eCharge*(mspm().J(eIndex_) & E) - mspm().electronTempSource(chemistry);
 
-	const volScalarField& Ne = mspm().N(eIndex_);
+    const volScalarField& Ne = mspm().N(eIndex_);
 
     volScalarField K = 0.5*plasmaConstants::rA*mspm().W(eIndex_)*magSqr(mspm().U(eIndex_));
 
@@ -87,18 +87,18 @@ Foam::scalar Foam::efullImplicitTE::correct
         fvm::ddt((1.5*plasmaConstants::boltzC*Ne), TeC)
       + fvm::div(eeFluxF, TeC, "div(eeFlux,Te)")
       + fvc::ddt(Ne, K)
-      + fvc::div(eFluxF, K, "div(eFlux,K)") 
+      + fvc::div(eFluxF, K, "div(eFlux,K)")
       - fvm::laplacian(mspm().electronConductivity(chemistry), TeC, "laplacian(eC,Te)")
-	  + fvm::SuSp((-eeSource/TeC), TeC)
+      + fvm::SuSp((-eeSource/TeC), TeC)
     );
 
     TeEqn.relax();
 
-	TeEqn.solve();
+    TeEqn.solve();
 
     TeC.max(TeMin);
 
-	TeC.min(TeMax);
+    TeC.min(TeMax);
 
     return 0;
 }

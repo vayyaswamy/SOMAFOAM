@@ -89,7 +89,6 @@ void Foam::plasmaDielectricEpsilonSlaveFvPatchScalarField::updateCoeffs()
         return;
     }
 
-    //    shadowPatchField().calcEpsilon(*this, shadowPatchField());
 
     scalarField& k = *this;
 

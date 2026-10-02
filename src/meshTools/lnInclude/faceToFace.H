@@ -1,1 +1,0 @@
-../sets/faceSources/faceToFace/faceToFace.H

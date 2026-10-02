@@ -6,7 +6,6 @@ This project is licensed under The 3-Clause BSD License. For further information
 look for license file include with distribution.
 
 
-
 Application
     plasmaDictionary
 
@@ -229,12 +228,7 @@ int main(int argc, char *argv[])
     if (regionName != fvMesh::defaultRegion)
     {
         regionPrefix = regionName;
-//		#include "createRegionFields.H"	
     }
-//	else
-//	{
-//		#include "createFields.H"	
-//	}
 
     word instance = runTime.timeName();
     if (args.options().found("instance"))

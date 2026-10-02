@@ -151,8 +151,8 @@ void Foam::currentControlledElectrode::updateCoeffs()
     else if (modelName_ == "cosFrequencyModulated")
     {
         scalar desired_current_density = (amplitude_*Foam::cos(2*mathematicalConstant::pi*frequency_*this->db().time().value()) + bias_);
-        const fvPatchField<vector>& Ef = patch().lookupPatchField<volVectorField, vector>("E"); 
-        const fvPatchField<vector>& Jnet = patch().lookupPatchField<volVectorField, vector>("Jnet"); 
+        const fvPatchField<vector>& Ef = patch().lookupPatchField<volVectorField, vector>("E");
+        const fvPatchField<vector>& Jnet = patch().lookupPatchField<volVectorField, vector>("Jnet");
     }
     else if (modelName_ == "sinFrequencyModulated")
     {

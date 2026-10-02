@@ -1,3 +1,0 @@
-SOURCE = \
-foamToGMV.C\
-itoa.C

@@ -1,1 +1,0 @@
-../submodels/scatterModel/scatterModel/newScatterModel.C

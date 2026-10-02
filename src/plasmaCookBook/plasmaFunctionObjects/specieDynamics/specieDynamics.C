@@ -41,14 +41,14 @@ Foam::specieDynamics::specieDynamics
     name_(name),
     time_(t),
     regionName_(polyMesh::defaultRegion),
-	objectNames_()
+    objectNames_()
 {
     if (dict.found("region"))
     {
         dict.lookup("region") >> regionName_;
     }
-        
-	dict.lookup("objectNames") >> objectNames_;
+
+    dict.lookup("objectNames") >> objectNames_;
 }
 
 
@@ -75,7 +75,7 @@ bool Foam::specieDynamics::read(const dictionary& dict)
         dict.lookup("region") >> regionName_;
     }
 
-	dict.lookup("objectNames") >> objectNames_;
+    dict.lookup("objectNames") >> objectNames_;
 
     return true;
 }

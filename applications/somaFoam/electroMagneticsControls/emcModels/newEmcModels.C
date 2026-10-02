@@ -13,21 +13,21 @@ look for license file include with distribution.
 
 Foam::autoPtr<Foam::emcModel> Foam::emcModel::New
 (
-	const dictionary& electroMagnetics,
-	multiSpeciesPlasmaModel& mspm,
-	const volVectorField& E,
-	const Time& runTime
+    const dictionary& electroMagnetics,
+    multiSpeciesPlasmaModel& mspm,
+    const volVectorField& E,
+    const Time& runTime
 )
 {
     word emcModelTypeName = electroMagnetics.lookup("emcModel");
 
     Info<< "Selecting electromagnetic control " << emcModelTypeName << endl;
 
-	if (emcModelTypeName == "none")
-	{
-		    Info<< "electromagnetic control model " << emcModelTypeName
+    if (emcModelTypeName == "none")
+    {
+            Info<< "electromagnetic control model " << emcModelTypeName
         << " not implemented." << nl << endl;
-	}
+    }
 
     dictionaryConstructorTable::iterator cstrIter =
         dictionaryConstructorTablePtr_->find(emcModelTypeName);

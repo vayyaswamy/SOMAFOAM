@@ -1,1 +1,0 @@
-../sets/faceSources/patchToFace/patchToFace.H

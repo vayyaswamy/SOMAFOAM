@@ -25,7 +25,7 @@ Foam::emcModel::emcModel
     const dictionary& electroMagnetics,
     multiSpeciesPlasmaModel& mspm,
     const volVectorField& E,
-	const Time& runTime
+    const Time& runTime
 )
 :
     regIOobject
@@ -46,7 +46,7 @@ Foam::emcModel::emcModel
     ),
     mspm_(mspm),
     E_(E),
-	time_(runTime)
+    time_(runTime)
 {}
 
 

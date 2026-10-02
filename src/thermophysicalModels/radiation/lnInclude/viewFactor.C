@@ -1,1 +1,0 @@
-../radiationModel/viewFactor/viewFactor.C

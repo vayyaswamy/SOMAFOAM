@@ -1,1 +1,0 @@
-../field/mag/writeMagField.C

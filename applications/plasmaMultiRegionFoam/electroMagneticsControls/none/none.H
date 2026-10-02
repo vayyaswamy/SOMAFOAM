@@ -46,10 +46,10 @@ public:
         //- Construct from components
         none
         (
-			const dictionary& electroMagnetics,
-			multiSpeciesPlasmaModel& mspm,
-			const volVectorField& E,
-			const Time& runTime
+            const dictionary& electroMagnetics,
+            multiSpeciesPlasmaModel& mspm,
+            const volVectorField& E,
+            const Time& runTime
         );
 
 
@@ -69,7 +69,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} 
+}
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

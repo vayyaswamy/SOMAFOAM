@@ -121,14 +121,6 @@ Foam::plasmaDielectricWallCoupledFvPatchScalarField::sigma() const
     return tsurfC;
 }
 
-//const Foam::fvPatchVectorField&
-//Foam::plasmaDielectricWallCoupledFvPatchScalarField::E() const
-//{
-//    const fvPatchField<vector>& tE =
-//        patch().lookupPatchField<volVectorField, vector>("E");
-
-//    return tE;
-//}
 
 const Foam::fvPatchScalarField&
 Foam::plasmaDielectricWallCoupledFvPatchScalarField::epsilon() const
@@ -207,40 +199,23 @@ void Foam::plasmaDielectricWallCoupledFvPatchScalarField::updateCoeffs()
 
     tmp<scalarField> myEpsilon = epsilon()*patch().deltaCoeffs();
 
-	if (neighbourPatchName_ == "plasma")
-	{
-		this->refValue() = nbrIntFld;
+    if (neighbourPatchName_ == "plasma")
+    {
+        this->refValue() = nbrIntFld;
 
-		this->refGrad() = - sigma()/epsilon();
+        this->refGrad() = - sigma()/epsilon();
 
-		this->valueFraction() = nbrEpsilon / (nbrEpsilon + myEpsilon());
-	}
-	else if (neighbourPatchName_ == "dielectric")
-	{
-		this->refValue() = nbrIntFld;
+        this->valueFraction() = nbrEpsilon / (nbrEpsilon + myEpsilon());
+    }
+    else if (neighbourPatchName_ == "dielectric")
+    {
+        this->refValue() = nbrIntFld;
 
-		this->refGrad() = - nbrSigma/epsilon();
+        this->refGrad() = - nbrSigma/epsilon();
 
-		this->valueFraction() = nbrEpsilon / (nbrEpsilon + myEpsilon());
-	}
+        this->valueFraction() = nbrEpsilon / (nbrEpsilon + myEpsilon());
+    }
 
-
-//	if (neighbourPatchName_ == "plasma")
-//	{
-//		this->refValue() = 0.0;
-
-//		this->refGrad() = (sigma()-nbrEpsilon*(nbrElectricField & patch().nf()))/epsilon();
-
-//		this->valueFraction() = 0.0;
-//	}
-//	else if (neighbourPatchName_ == "dielectric")
-//	{
-//		this->refValue() = nbrIntFld;
-
-//		this->refGrad() = 0.0;
-
-//		this->valueFraction() = 1.0;
-//	}
 
     mixedFvPatchScalarField::updateCoeffs();
 }

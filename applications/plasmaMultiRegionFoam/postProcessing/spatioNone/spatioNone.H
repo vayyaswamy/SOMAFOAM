@@ -5,39 +5,39 @@
 
 namespace Foam
 {
-	namespace spatioTemporals
-	{
-		class spatioNone
-		:
-		public spatioTemporal
-		{
-			private:
+    namespace spatioTemporals
+    {
+        class spatioNone
+        :
+        public spatioTemporal
+        {
+            private:
 
-				// disallow copy construct 
-				spatioNone(const spatioNone&);
+                // disallow copy construct
+                spatioNone(const spatioNone&);
 
-				// disallow default bitwise assigment
-				void operator=(const spatioNone&);
+                // disallow default bitwise assigment
+                void operator=(const spatioNone&);
 
-			public:
+            public:
 
-				TypeName("noneD");
+                TypeName("noneD");
 
-				spatioNone
-				(
-					const dictionary& spatioTemporals,
-					const dictionary& electroMagnetics,
-					multiSpeciesPlasmaModel& mspm,
-					const volVectorField& E,
-					const Time& runTime,
-					const fvMesh& mesh
-				);
+                spatioNone
+                (
+                    const dictionary& spatioTemporals,
+                    const dictionary& electroMagnetics,
+                    multiSpeciesPlasmaModel& mspm,
+                    const volVectorField& E,
+                    const Time& runTime,
+                    const fvMesh& mesh
+                );
 
-				virtual ~spatioNone();
+                virtual ~spatioNone();
 
-				virtual void correct();
-		};
-	}
+                virtual void correct();
+        };
+    }
 }
 
 #endif

@@ -8,87 +8,87 @@
 
 namespace Foam
 {
-	class spatioTemporal
-	:
-	public regIOobject
-	{
-		protected:
+    class spatioTemporal
+    :
+    public regIOobject
+    {
+        protected:
 
-			dictionary spatioTemporalcoeffs_;
-			dictionary emcModelCoeffs_;
-			multiSpeciesPlasmaModel& mspm_;
-			const volVectorField& E_;
-			const Time& time_;
-	        const fvMesh& mesh_;
+            dictionary spatioTemporalcoeffs_;
+            dictionary emcModelCoeffs_;
+            multiSpeciesPlasmaModel& mspm_;
+            const volVectorField& E_;
+            const Time& time_;
+            const fvMesh& mesh_;
 
-		private:
+        private:
 
-			//- Disallow copy construct
-			spatioTemporal(const spatioTemporal&);
+            //- Disallow copy construct
+            spatioTemporal(const spatioTemporal&);
 
-			// disallow default bitwise assigment
-			void operator=(const spatioTemporal&);
+            // disallow default bitwise assigment
+            void operator=(const spatioTemporal&);
 
-		public:
+        public:
 
-			// Runtime type information
-			TypeName("spatioTemporal");
+            // Runtime type information
+            TypeName("spatioTemporal");
 
-			declareRunTimeSelectionTable
-			(
-				autoPtr,
-				spatioTemporal,
-				dictionary,
-				(
-					const dictionary& spatioTemporals,
-					const dictionary& electroMagnetics,
-					multiSpeciesPlasmaModel& mspm,
-					const volVectorField& E,
-					const Time& runTime,
-					const fvMesh& mesh
-				),
-				(
-					spatioTemporals,
-					electroMagnetics,
-					mspm,
-					E,
-					runTime,
-					mesh
-				)
-			);
+            declareRunTimeSelectionTable
+            (
+                autoPtr,
+                spatioTemporal,
+                dictionary,
+                (
+                    const dictionary& spatioTemporals,
+                    const dictionary& electroMagnetics,
+                    multiSpeciesPlasmaModel& mspm,
+                    const volVectorField& E,
+                    const Time& runTime,
+                    const fvMesh& mesh
+                ),
+                (
+                    spatioTemporals,
+                    electroMagnetics,
+                    mspm,
+                    E,
+                    runTime,
+                    mesh
+                )
+            );
 
-			// selector
-			static autoPtr<spatioTemporal> New
-			(
-				const dictionary& spatioTemporals,
-				const dictionary& electroMagnetics,
-				multiSpeciesPlasmaModel& mspm,
-				const volVectorField& E,
-				const Time& runTime,
-				const fvMesh& mesh
-			);
+            // selector
+            static autoPtr<spatioTemporal> New
+            (
+                const dictionary& spatioTemporals,
+                const dictionary& electroMagnetics,
+                multiSpeciesPlasmaModel& mspm,
+                const volVectorField& E,
+                const Time& runTime,
+                const fvMesh& mesh
+            );
 
-			// constructor
-			spatioTemporal
-			(
-				const dictionary& spatioTemporals,
-				const dictionary& electroMagnetics,
-				multiSpeciesPlasmaModel& mspm,
-				const volVectorField& E,
-				const Time& runTime,
-				const fvMesh& mesh
-			);
+            // constructor
+            spatioTemporal
+            (
+                const dictionary& spatioTemporals,
+                const dictionary& electroMagnetics,
+                multiSpeciesPlasmaModel& mspm,
+                const volVectorField& E,
+                const Time& runTime,
+                const fvMesh& mesh
+            );
 
-			// destructor
-			virtual ~spatioTemporal();
+            // destructor
+            virtual ~spatioTemporal();
 
-			virtual void correct() = 0;
+            virtual void correct() = 0;
 
-	        virtual bool writeData(Ostream&) const
-	        {
-	            return true;
-	        }
-	};
+            virtual bool writeData(Ostream&) const
+            {
+                return true;
+            }
+    };
 }
 
 #endif

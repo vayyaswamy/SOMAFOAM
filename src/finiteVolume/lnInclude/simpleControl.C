@@ -1,1 +1,0 @@
-../cfdTools/general/solutionControl/simpleControl/simpleControl.C

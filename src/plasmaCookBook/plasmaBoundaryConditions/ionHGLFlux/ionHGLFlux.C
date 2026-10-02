@@ -26,11 +26,11 @@ ionHGLFlux
     const DimensionedField<vector, volMesh>& iF
 )
 :
-	fixedValueFvPatchVectorField(p, iF),
-	mobName_("mobility"),
-	scalar1Data_(0.0),
-	scalar2Data_(0.0),
-	scalar3Data_(0.0)    
+    fixedValueFvPatchVectorField(p, iF),
+    mobName_("mobility"),
+    scalar1Data_(0.0),
+    scalar2Data_(0.0),
+    scalar3Data_(0.0)
 {}
 
 
@@ -43,7 +43,7 @@ ionHGLFlux
 )
 :
     fixedValueFvPatchVectorField(p, iF),
-	mobName_(dict.lookupOrDefault<word>("mobility","mu_Arp1")),
+    mobName_(dict.lookupOrDefault<word>("mobility","mu_Arp1")),
     scalar1Data_(readScalar(dict.lookup("refCoeff"))),
     scalar2Data_(readScalar(dict.lookup("charge"))),
     scalar3Data_(readScalar(dict.lookup("molWeight")))
@@ -145,25 +145,23 @@ void Foam::ionHGLFlux::updateCoeffs()
     const fvPatchField<scalar>& muif=
         patch().lookupPatchField<volScalarField, scalar>(mobName_);
 
-    //const fvPatchField<scalar>& rhof=
-    //    patch().lookupPatchField<volScalarField, scalar>("rho");
 
         vectorField n = patch().nf();
 
-    	scalarField Enorm = scalar2Data_*(Ef&n);
-        vectorField temp = 0.0*n;        
+        scalarField Enorm = scalar2Data_*(Ef&n);
+        vectorField temp = 0.0*n;
 
     forAll(temp, facei)
     {
-		if(Enorm[facei] > 0.0)
-		{	
-		    temp[facei]=(((1-scalar1Data_)/(1+scalar1Data_))*((0.50*Foam::sqrt(21172.59783*Tif[facei]/scalar3Data_)*n[facei])+muif[facei]*Ef[facei]));
+        if(Enorm[facei] > 0.0)
+        {
+            temp[facei]=(((1-scalar1Data_)/(1+scalar1Data_))*((0.50*Foam::sqrt(21172.59783*Tif[facei]/scalar3Data_)*n[facei])+muif[facei]*Ef[facei]));
         }
         else
-        {        
-		    temp[facei]=(((1-scalar1Data_)/(1+scalar1Data_))*((0.50*Foam::sqrt(21172.59783*Tif[facei]/scalar3Data_)*n[facei])-muif[facei]*Ef[facei]));
+        {
+            temp[facei]=(((1-scalar1Data_)/(1+scalar1Data_))*((0.50*Foam::sqrt(21172.59783*Tif[facei]/scalar3Data_)*n[facei])-muif[facei]*Ef[facei]));
         }
-	}
+    }
 
     operator == (temp);
     fixedValueFvPatchVectorField::updateCoeffs();
@@ -174,7 +172,7 @@ void Foam::ionHGLFlux::write(Ostream& os) const
 {
     fvPatchVectorField::write(os);
     os.writeKeyword("mobility")
-        << mobName_ << token::END_STATEMENT << nl;    
+        << mobName_ << token::END_STATEMENT << nl;
     os.writeKeyword("refCoeff")
         << scalar1Data_ << token::END_STATEMENT << nl;
     os.writeKeyword("charge")

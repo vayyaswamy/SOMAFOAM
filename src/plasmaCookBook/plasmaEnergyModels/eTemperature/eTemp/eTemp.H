@@ -50,9 +50,9 @@ private:
 
         const fvMesh& mesh_;
 
-		Time& runTime_;
+        Time& runTime_;
 
-		Switch restartcapable;
+        Switch restartcapable;
 
     // Private Member Functions
 

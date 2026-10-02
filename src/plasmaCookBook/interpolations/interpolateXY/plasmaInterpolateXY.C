@@ -26,9 +26,6 @@ Field<Type> plasmaInterpolateXY
 {
     scalarField yNew(xNew.size());
 
-    //Info << "xNew = " << xNew << endl;
-    //Info << "xOld = " << xOld << endl;
-    //Info << "yOld = " << yOld << endl;
 
     forAll(xNew, i)
     {
@@ -89,15 +86,6 @@ Type plasmaInterpolateXY
     }
     else if (lo == hi)
     {
-        //return yOld[lo];
-        //Info << "lo = " << lo << endl;
-        //Info << "n = " << n << endl;
-        //Info << "value = " << x << " " << xOld[lo] << " " << xOld[lo+1] << endl;
-        //Info << "value = " << yOld[lo] << " " << yOld[lo+1] << endl;
-        //Info << exp(log(yOld[lo]) + 
-        //    (log(x) - log(xOld[lo]))/(log(xOld[lo+1]) - log(xOld[lo]))*(log(yOld[lo+1]) - log(yOld[lo]))); 
-        //return exp(log(yOld[lo]) + 
-        //    (log(x) - log(xOld[lo]))/(log(xOld[lo+1]) - log(xOld[lo]))*(log(yOld[lo+1]) - log(yOld[lo])));
         return yOld[lo];
     }
     else if (lo == n)
@@ -107,12 +95,6 @@ Type plasmaInterpolateXY
     }
     else
     {
-        //Info << "x = " << x << endl;
-        //Info << "lo = " << lo << endl;
-        //Info << "hi = " << hi << endl;
-        //Info <<"n = " << n << endl;
-        //return exp(log(yOld[lo]) + 
-        //    (log(x) - log(xOld[lo]))/(log(xOld[lo+1]) - log(xOld[lo]))*(log(yOld[lo+1]) - log(yOld[lo])));
         return yOld[lo];
     }
 }

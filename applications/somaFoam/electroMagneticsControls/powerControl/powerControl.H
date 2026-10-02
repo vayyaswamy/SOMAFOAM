@@ -26,21 +26,21 @@ class power
     public emcModel
 {
     // Private data
-		const word mode_;
-		scalar initialAmplitude_;
-		scalar frequency_;
-		scalar bias_;
-		scalar power_;
-		int nCycles_;
-		scalar dampingFactor_;
-		scalar mf_;
-		scalar timeCounter_;
-		scalar timeCount_;
-		label curTimeIndex_;
+        const word mode_;
+        scalar initialAmplitude_;
+        scalar frequency_;
+        scalar bias_;
+        scalar power_;
+        int nCycles_;
+        scalar dampingFactor_;
+        scalar mf_;
+        scalar timeCounter_;
+        scalar timeCount_;
+        label curTimeIndex_;
 
-		OFstream* powerLogFilePtr_;
-		scalar amplitude_;
-		scalar powerSum_;
+        OFstream* powerLogFilePtr_;
+        scalar amplitude_;
+        scalar powerSum_;
 
         volScalarField meshV_;
 
@@ -66,10 +66,10 @@ public:
         //- Construct from components
         power
         (
-			const dictionary& electroMagnetics,
-			multiSpeciesPlasmaModel& mspm,
-			const volVectorField& E,
-			const Time& runTime
+            const dictionary& electroMagnetics,
+            multiSpeciesPlasmaModel& mspm,
+            const volVectorField& E,
+            const Time& runTime
         );
 
 
@@ -88,7 +88,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} 
+}
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -25,7 +25,7 @@ Class
     Foam::electronFlux
 
 Description
-    This boundary condition provides an electron flux including thermal flux and 
+    This boundary condition provides an electron flux including thermal flux and
     drift when electric field is pointing away from electrode
 
 Usage
@@ -46,7 +46,6 @@ SourceFiles
 #ifndef electronVelocity_H
 #define electronVelocity_H
 
-// #include "fvPatchFields.H"
 #include "fixedValueFvPatchFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -33,7 +33,6 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::electronTemperatureOpenBoundary::electronTemperatureOpenBoundary
@@ -44,7 +43,6 @@ Foam::electronTemperatureOpenBoundary::electronTemperatureOpenBoundary
 :
     mixedFvPatchField<scalar>(p, iF)
 {
-    //Info << "Constructor 1" << endl;
     this->refValue() = 0;
     this->refGrad() = 0;
     this->valueFraction() = 0;
@@ -73,15 +71,12 @@ Foam::electronTemperatureOpenBoundary::electronTemperatureOpenBoundary
 :
     mixedFvPatchField<scalar>(p, iF)
 {
-    //Info << "Constructor 2 " << endl;
-    //Info << "fieldName = " << iF.name() << endl;
     this->refValue() = 0.0;
 
     this->refGrad() = 0.0;
     this->valueFraction() = 0.0;
     fvPatchField<scalar>::operator=(this->patchInternalField());
 }
-
 
 
 Foam::electronTemperatureOpenBoundary::electronTemperatureOpenBoundary
@@ -91,7 +86,6 @@ Foam::electronTemperatureOpenBoundary::electronTemperatureOpenBoundary
 :
     mixedFvPatchField<scalar>(ptf)
 {}
-
 
 
 Foam::electronTemperatureOpenBoundary::electronTemperatureOpenBoundary
@@ -114,10 +108,8 @@ void Foam::electronTemperatureOpenBoundary::updateCoeffs()
         return;
     }
 
-    //Info << "Inside updateCoeffs " << endl;
     vectorField n = patch().nf();
 
-    
 
     const fvPatchField<scalar>& Nef=
         patch().lookupPatchField<volScalarField, scalar>("N_electron");
@@ -139,25 +131,16 @@ void Foam::electronTemperatureOpenBoundary::updateCoeffs()
 
     scalarField a = pos(Enorm*chargeSign_);
 
-    //Info << "Ef = " << Ef << endl;
 
-    //Info << "n = " << n << endl;
-
-    //Info << "Enorm = " << Enorm << endl;
-
-    //Info << "a = " << a << endl;
- 
     this->refValue() = 0.0;
 
     this->valueFraction() = (1-a)*C1/(C1+C2*this->patch().deltaCoeffs());
 
-    //this->valueFraction() = 0.0;
 
     this->refGrad() = 0;
 
     mixedFvPatchField<scalar>::updateCoeffs();
 
-    //Info << "Nef = " << Nef << endl;
 }
 
 
@@ -184,7 +167,6 @@ void Foam::driftDiffusionOpenBoundary::operator=
         + (1 - this->valueFraction())*ptf
     );
 
-    //Info << "operator " << endl;
 }
 
 

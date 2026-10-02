@@ -1,1 +1,0 @@
-../db/regIOobject/regIOobjectWrite.C

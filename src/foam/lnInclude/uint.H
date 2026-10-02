@@ -1,1 +1,0 @@
-../primitives/ints/uint/uint.H

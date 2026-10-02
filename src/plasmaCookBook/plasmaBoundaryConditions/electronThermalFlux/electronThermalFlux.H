@@ -31,95 +31,95 @@ class electronThermalFlux
 :
 public fixedValueFvPatchVectorField
 {
-	// Private data
-	scalar scalar1Data_;
-	
-	public:
+    // Private data
+    scalar scalar1Data_;
 
-	//- Runtime type information
-	TypeName("electronThermalFlux");
+    public:
+
+    //- Runtime type information
+    TypeName("electronThermalFlux");
 
 
-	// Constructors
+    // Constructors
 
-	//- Construct from patch and internal field
-	electronThermalFlux
-	(
-	 const fvPatch&,
-	 const DimensionedField<vector, volMesh>&
-	 );
+    //- Construct from patch and internal field
+    electronThermalFlux
+    (
+     const fvPatch&,
+     const DimensionedField<vector, volMesh>&
+     );
 
-	//- Construct from patch, internal field and dictionary
-	electronThermalFlux
-	(
-	 const fvPatch&,
-	 const DimensionedField<vector, volMesh>&,
-	 const dictionary&
-	 );
+    //- Construct from patch, internal field and dictionary
+    electronThermalFlux
+    (
+     const fvPatch&,
+     const DimensionedField<vector, volMesh>&,
+     const dictionary&
+     );
 
-	//- Construct by mapping given
-	//  electronThermalFlux onto a new patch
-	electronThermalFlux
-	(
-		const electronThermalFlux&,
-		const fvPatch&,
-		const DimensionedField<vector, volMesh>&,
-		const fvPatchFieldMapper&
-	);
+    //- Construct by mapping given
+    //  electronThermalFlux onto a new patch
+    electronThermalFlux
+    (
+        const electronThermalFlux&,
+        const fvPatch&,
+        const DimensionedField<vector, volMesh>&,
+        const fvPatchFieldMapper&
+    );
 
-	//- Construct as copy
-	electronThermalFlux
-	(
-		const electronThermalFlux&
-	);
+    //- Construct as copy
+    electronThermalFlux
+    (
+        const electronThermalFlux&
+    );
 
-	//- Construct and return a clone
-	virtual tmp<fvPatchVectorField> clone() const
-	{
-	  return tmp<fvPatchVectorField>
-	(
-	 new electronThermalFlux(*this)
-	 );
-	}
+    //- Construct and return a clone
+    virtual tmp<fvPatchVectorField> clone() const
+    {
+      return tmp<fvPatchVectorField>
+    (
+     new electronThermalFlux(*this)
+     );
+    }
 
-	//- Construct as copy setting internal field reference
-	electronThermalFlux
-	(
-	 const electronThermalFlux&,
-	 const DimensionedField<vector, volMesh>&
-	 );
+    //- Construct as copy setting internal field reference
+    electronThermalFlux
+    (
+     const electronThermalFlux&,
+     const DimensionedField<vector, volMesh>&
+     );
 
-	//- Construct and return a clone setting internal field reference
-	virtual tmp<fvPatchVectorField> clone
-	(
-	 const DimensionedField<vector, volMesh>& iF
-	) const
-	{
-		return tmp<fvPatchVectorField>
-		(
-			new electronThermalFlux(*this, iF)
-		);
-	}
+    //- Construct and return a clone setting internal field reference
+    virtual tmp<fvPatchVectorField> clone
+    (
+     const DimensionedField<vector, volMesh>& iF
+    ) const
+    {
+        return tmp<fvPatchVectorField>
+        (
+            new electronThermalFlux(*this, iF)
+        );
+    }
 
-	//- Map (and resize as needed) from self given a mapping object
-	virtual void autoMap
-	(
-		const fvPatchFieldMapper&
-	);
+    //- Map (and resize as needed) from self given a mapping object
+    virtual void autoMap
+    (
+        const fvPatchFieldMapper&
+    );
 
-	//- Reverse map the given fvPatchField onto this fvPatchField
-	virtual void rmap
-	(
-		const fvPatchVectorField&,
-		const labelList&
-	);
-	// Member functions
+    //- Reverse map the given fvPatchField onto this fvPatchField
+    virtual void rmap
+    (
+        const fvPatchVectorField&,
+        const labelList&
+    );
+    // Member functions
 
-	//- Update the coefficients associated with the patch field
-	virtual void updateCoeffs();
+    //- Update the coefficients associated with the patch field
+    virtual void updateCoeffs();
 
-	//- Write
-	virtual void write(Ostream&) const;
+    //- Write
+    virtual void write(Ostream&) const;
   };
 
 

@@ -14,7 +14,7 @@ look for license file include with distribution.
 //#include "mixedN.H"
 #include "momentum.H"
 #include "zeroD.H"
-#include "thermoPhysicsTypes.H" 
+#include "thermoPhysicsTypes.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -46,7 +46,7 @@ protected:
 
         multiSpeciesPlasmaModel& mspm_;
         const volVectorField& E_;
-		const Time& time_;
+        const Time& time_;
 
 private:
 
@@ -73,16 +73,16 @@ public:
             emcModel,
             dictionary,
             (
-				const dictionary& electroMagnetics,
-				multiSpeciesPlasmaModel& mspm,
-				const volVectorField& E,
-				const Time& runTime
+                const dictionary& electroMagnetics,
+                multiSpeciesPlasmaModel& mspm,
+                const volVectorField& E,
+                const Time& runTime
             ),
             (
                 electroMagnetics,
                 mspm,
                 E,
-				runTime
+                runTime
             )
         );
 
@@ -91,10 +91,10 @@ public:
 
         static autoPtr<emcModel> New
         (
-			const dictionary& electroMagnetics,
-			multiSpeciesPlasmaModel& mspm,
-			const volVectorField& E,
-			const Time& runTime
+            const dictionary& electroMagnetics,
+            multiSpeciesPlasmaModel& mspm,
+            const volVectorField& E,
+            const Time& runTime
         );
 
 
@@ -103,10 +103,10 @@ public:
         //- Construct from components
         emcModel
         (
-			const dictionary& electroMagnetics,
-			multiSpeciesPlasmaModel& mspm,
-			const volVectorField& E,
-			const Time& runTime
+            const dictionary& electroMagnetics,
+            multiSpeciesPlasmaModel& mspm,
+            const volVectorField& E,
+            const Time& runTime
         );
 
 

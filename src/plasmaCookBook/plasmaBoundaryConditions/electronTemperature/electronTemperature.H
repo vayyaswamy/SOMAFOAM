@@ -60,7 +60,7 @@ class electronTemperature
 
     scalar TFN_ ;
 
-    bool FE_; 
+    bool FE_;
 
     scalar beta_;
 
@@ -136,7 +136,6 @@ class electronTemperature
 
     // Member functions
 
-        
 
         //- Update the coefficients associated with the patch field
         virtual void updateCoeffs();
@@ -157,9 +156,6 @@ class electronTemperature
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//#ifdef NoRepository
-//#   include "inletOutletFvPatchField.C"
-//#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

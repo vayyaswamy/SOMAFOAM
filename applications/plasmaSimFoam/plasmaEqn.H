@@ -1,20 +1,20 @@
-	ionFlux = mspm().totalIonFlux();
+    ionFlux = mspm().totalIonFlux();
 
-	mspm().correct(Y, E, chemistry, fields);
+    mspm().correct(Y, E, chemistry, fields);
 
-	pem.ecorrect(chemistry, E);
+    pem.ecorrect(chemistry, E);
 
-	pem.icorrect(chemistry);
+    pem.icorrect(chemistry);
 
-	pem.gcorrect(chemistry, E);
+    pem.gcorrect(chemistry, E);
 
-	thermo.correct();
+    thermo.correct();
 
-	rho = thermo.rho();
+    rho = thermo.rho();
 
-	volVectorField F = mspm().netChargeFlux();
+    volVectorField F = mspm().netChargeFlux();
 
-	if (emcModelRef == "power")
-	{
-		ddtE = fvc::ddt(E);
-	}
+    if (emcModelRef == "power")
+    {
+        ddtE = fvc::ddt(E);
+    }

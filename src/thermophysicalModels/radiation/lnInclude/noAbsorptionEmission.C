@@ -1,1 +1,0 @@
-../submodels/absorptionEmissionModel/noAbsorptionEmission/noAbsorptionEmission.C

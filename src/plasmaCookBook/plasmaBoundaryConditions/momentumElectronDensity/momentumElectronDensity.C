@@ -33,7 +33,6 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::momentumElectronDensity::momentumElectronDensity
@@ -48,9 +47,8 @@ Foam::momentumElectronDensity::momentumElectronDensity
     FE_(false),
     beta_(1.0),
     wf_(1.0)
-    
+
 {
-    //Info << "Constructor 1" << endl;
     this->refValue() = 0;
     this->refGrad() = 0;
     this->valueFraction() = 0;
@@ -73,8 +71,6 @@ Foam::momentumElectronDensity::momentumElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_)
 {
-    //Info << "Constructor 3" << endl;
-    //fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
 
@@ -92,9 +88,6 @@ Foam::momentumElectronDensity::momentumElectronDensity
     beta_(readScalar(dict.lookup("field_enhancement_factor"))),
     wf_(readScalar(dict.lookup("work_function")))
 {
-    //Info << "Constructor 2 " << endl;
-    //Info << "seec_ " << seec_ << endl;
-    //Info << "fieldName = " << iF.name() << endl;
     this->refValue() = 0.0;
 
     this->refGrad() = 0.0;
@@ -102,10 +95,7 @@ Foam::momentumElectronDensity::momentumElectronDensity
     fvPatchField<scalar>::operator=(this->patchInternalField());
     Info << "Edepend = " << Edepend_ << endl;
     Info << "FE_ = " << FE_ << endl;
-    //Info << "work function = " << wf_ << endl;
-    //Info << "field_enhancement_factor " << beta_ << endl; 
 }
-
 
 
 Foam::momentumElectronDensity::momentumElectronDensity
@@ -120,10 +110,8 @@ Foam::momentumElectronDensity::momentumElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_)
 {
-    //Info << "Constructor 5" << endl;
     fvPatchField<scalar>::operator=(this->patchInternalField());
 }
-
 
 
 Foam::momentumElectronDensity::momentumElectronDensity
@@ -139,9 +127,6 @@ Foam::momentumElectronDensity::momentumElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_)
 {
-    //Info << "Constructor 6" << endl;
-    //Info << "seec = " << seec_ << endl;
-    //fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
 
@@ -158,12 +143,11 @@ void Foam::momentumElectronDensity::updateCoeffs()
     vectorField n = patch().nf();
 
     const fvPatchField<scalar>& Uef=
-        patch().lookupPatchField<volScalarField, scalar>("U_electron"); 
+        patch().lookupPatchField<volScalarField, scalar>("U_electron");
 
     c
-    
- 
- 
+
+
     this->refValue() = 0.0;
 
     this->valueFraction() =  ;
@@ -172,7 +156,7 @@ void Foam::momentumElectronDensity::updateCoeffs()
 
     mixedFvPatchField<scalar>::updateCoeffs();
 
-   
+
 }
 
 

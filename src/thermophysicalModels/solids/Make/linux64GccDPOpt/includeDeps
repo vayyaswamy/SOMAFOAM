@@ -1,5 +1,0 @@
-include solid/solid.dep
-include solid/newSolid.dep
-include ash/ash.dep
-include C/C.dep
-include CaCO3/CaCO3.dep

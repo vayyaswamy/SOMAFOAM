@@ -1,1 +1,0 @@
-../sampledSurface/writers/proxy/proxySurfaceWriterRunTime.C

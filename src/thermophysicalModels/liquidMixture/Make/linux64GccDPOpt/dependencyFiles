@@ -1,3 +1,0 @@
-DEPENDENCIES = \
-$(liquidMixture)/liquidMixture.dep\
-$(liquidMixture)/liquidMixtureIO.dep

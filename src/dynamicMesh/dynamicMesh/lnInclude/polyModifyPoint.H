@@ -1,1 +1,0 @@
-../polyTopoChange/polyTopoChange/actions/modifyObject/polyModifyPoint.H

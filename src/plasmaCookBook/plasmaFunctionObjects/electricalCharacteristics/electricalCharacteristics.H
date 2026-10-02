@@ -50,9 +50,9 @@ class electricalCharacteristics
         //- Output file stream
         OFstream* probeFilePtr_;
 
-		int writeFrequency_;
+        int writeFrequency_;
 
-		int cellCount_;
+        int cellCount_;
 
     // Private Member Functions
 

@@ -37,9 +37,9 @@ Foam::efullImplicit::efullImplicit
         (
             "eeFlux",
             thermo.T().mesh().time().timeName(),
-			thermo.T().mesh(),
-			IOobject::NO_READ,
-			IOobject::NO_WRITE
+            thermo.T().mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
         ),
         thermo.T().mesh(),
         dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
@@ -54,12 +54,12 @@ Foam::efullImplicit::efullImplicit
 Foam::scalar Foam::efullImplicit::correct
 (
     psiChemistryModel& chemistry,
-	const volVectorField& E
+    const volVectorField& E
 )
 {
 
     lduSolverPerformance solverPerf;
-	volScalarField& TeC = thermo().Te();
+    volScalarField& TeC = thermo().Te();
     TeC.storePrevIter();
     scalar initialResidual = 1.0;
 
@@ -69,21 +69,20 @@ Foam::scalar Foam::efullImplicit::correct
 
     {
 
-	   eeFlux = 2.5*plasmaConstants::boltzC*mspm().J(eIndex_);
+       eeFlux = 2.5*plasmaConstants::boltzC*mspm().J(eIndex_);
 
-	   surfaceScalarField eeFluxF = fvc::interpolate(eeFlux) & mesh().Sf();
+       surfaceScalarField eeFluxF = fvc::interpolate(eeFlux) & mesh().Sf();
 
-	   volScalarField eeSource = - plasmaConstants::eCharge*(mspm().J(eIndex_) & E) - mspm().electronTempSource(chemistry);
+       volScalarField eeSource = - plasmaConstants::eCharge*(mspm().J(eIndex_) & E) - mspm().electronTempSource(chemistry);
 
-        volScalarField eeSource_Su = plasmaConstants::eCharge*(mspm().J(eIndex_) & E) 
-                                    + mspm().electronTempSource(chemistry) 
+        volScalarField eeSource_Su = plasmaConstants::eCharge*(mspm().J(eIndex_) & E)
+                                    + mspm().electronTempSource(chemistry)
                                     - mspm().dElectronTempSourceDTe(chemistry)*TeC;
 
         volScalarField eeSource_SuSp = mspm().dElectronTempSourceDTe(chemistry);
 
-        //Info << eeSource_SuSp << endl;
 
-	   const volScalarField& Ne = mspm().N(eIndex_);
+       const volScalarField& Ne = mspm().N(eIndex_);
 
         fvScalarMatrix TeEqn
         (
@@ -91,10 +90,10 @@ Foam::scalar Foam::efullImplicit::correct
             + fvm::div(eeFluxF, TeC)
             - fvm::laplacian(mspm().electronConductivity(chemistry), TeC, "laplacian(eC,Te)")
             + fvm::SuSp(eeSource_SuSp, TeC)
-            + eeSource_Su 
+            + eeSource_Su
         );
 
-	   solverPerf = TeEqn.solve();
+       solverPerf = TeEqn.solve();
 
         initialResidual = solverPerf.initialResidual();
 

@@ -1,1 +1,0 @@
-../meshes/polyMesh/zones/ZoneID/polyPatchID.H

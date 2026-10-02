@@ -1,1 +1,0 @@
-/usr/bin/gcc  -m64 -fPIC    -m64 CMakeFiles/cmsysTestsC.dir/cmsysTestsC.c.o CMakeFiles/cmsysTestsC.dir/testEncode.c.o CMakeFiles/cmsysTestsC.dir/testTerminal.c.o  -o cmsysTestsC -rdynamic libcmsys_c.a 

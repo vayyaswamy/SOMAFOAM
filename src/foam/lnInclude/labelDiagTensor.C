@@ -1,1 +1,0 @@
-../primitives/DiagTensor/labelDiagTensor/labelDiagTensor.C

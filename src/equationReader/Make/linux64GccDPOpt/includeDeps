@@ -1,9 +1,0 @@
-include equationSource/equationSources.dep
-include equation/equation.dep
-include equation/equationIO.dep
-include equationOperation/equationOperation.dep
-include equationReader/equationReader.dep
-include equationReader/equationReaders.dep
-include equationReader/equationReaderIO.dep
-include IOEquationReader/IOEquationReader.dep
-include IOEquationReader/IOEquationReaderIO.dep

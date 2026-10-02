@@ -1,3 +1,0 @@
-include edgeMesh.dep
-include edgeMeshIO.dep
-include featureEdgeMesh.dep

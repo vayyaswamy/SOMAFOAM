@@ -1,1 +1,0 @@
-../derivedFvPatchFields/MarshakRadiation/MarshakRadiationMixedFvPatchScalarField.C

@@ -1,1 +1,0 @@
-../algorithms/polygon/pointInPolygon/HormannAgathos.H

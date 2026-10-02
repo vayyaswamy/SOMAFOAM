@@ -24,24 +24,24 @@ Description
 namespace Foam
 {
 
-#define makeMultiSpeciesPlasmaModel(PlasmaModel,Thermo)                 		\
-                                                                              	\
-typedef PlasmaModel<Thermo>                                                		\
-    PlasmaModel##Thermo;                                                   		\
-                                                                              	\
-defineTemplateTypeNameAndDebugWithName                                        	\
-(                                                                             	\
-    PlasmaModel##Thermo,                                                   		\
-    #PlasmaModel                                                           		\
-        "<"#Thermo">",                                                        	\
-    0                                                                         	\
-);                                                                            	\
-                                                                              	\
-addToRunTimeSelectionTable                                                    	\
-(                                                                             	\
-    multiSpeciesPlasmaModel,                                               		\
-    PlasmaModel##Thermo,                                                   		\
-    fvMesh                                                                    	\
+#define makeMultiSpeciesPlasmaModel(PlasmaModel,Thermo)                         \
+                                                                                \
+typedef PlasmaModel<Thermo>                                                     \
+    PlasmaModel##Thermo;                                                        \
+                                                                                \
+defineTemplateTypeNameAndDebugWithName                                          \
+(                                                                               \
+    PlasmaModel##Thermo,                                                        \
+    #PlasmaModel                                                                \
+        "<"#Thermo">",                                                          \
+    0                                                                           \
+);                                                                              \
+                                                                                \
+addToRunTimeSelectionTable                                                      \
+(                                                                               \
+    multiSpeciesPlasmaModel,                                                    \
+    PlasmaModel##Thermo,                                                        \
+    fvMesh                                                                      \
 )
 
 }

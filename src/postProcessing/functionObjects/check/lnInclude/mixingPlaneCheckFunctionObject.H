@@ -1,1 +1,0 @@
-../mixingPlaneCheck/mixingPlaneCheckFunctionObject.H

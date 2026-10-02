@@ -1,5 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/emPlasmaFields.o\
-$(OBJECTS_DIR)/emPlasmaFieldsFunctionObject.o\
-$(OBJECTS_DIR)/electricalCharacteristics.o\
-$(OBJECTS_DIR)/specieDynamics.o

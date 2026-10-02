@@ -1,1 +1,0 @@
-../staticPressure/staticPressure.C

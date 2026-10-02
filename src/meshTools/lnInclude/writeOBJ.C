@@ -1,1 +1,0 @@
-../triSurface/triSurface/interfaces/OBJ/writeOBJ.C

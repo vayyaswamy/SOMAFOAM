@@ -1,1 +1,0 @@
-../writeRegisteredObject/writeRegisteredObjectFunctionObject.H

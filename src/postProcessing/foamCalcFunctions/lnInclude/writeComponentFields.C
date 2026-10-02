@@ -1,1 +1,0 @@
-../field/components/writeComponentFields.C

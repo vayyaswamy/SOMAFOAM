@@ -26,10 +26,10 @@ namespace emcModels
 
 Foam::emcModels::none::none
 (
-	const dictionary& electroMagnetics,
-	multiSpeciesPlasmaModel& mspm,
-	const volVectorField& E,
-	const Time& runTime
+    const dictionary& electroMagnetics,
+    multiSpeciesPlasmaModel& mspm,
+    const volVectorField& E,
+    const Time& runTime
 )
 :
     emcModel(electroMagnetics, mspm, E, runTime)

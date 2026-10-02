@@ -1,1 +1,0 @@
-../primitives/Lists/stringListTemplates.C

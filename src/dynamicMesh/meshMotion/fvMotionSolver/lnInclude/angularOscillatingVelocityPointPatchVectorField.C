@@ -1,1 +1,0 @@
-../pointPatchFields/derived/angularOscillatingVelocity/angularOscillatingVelocityPointPatchVectorField.C

@@ -1,1 +1,0 @@
-../primitives/BlockCoeff/sphericalTensorBlockCoeff.C

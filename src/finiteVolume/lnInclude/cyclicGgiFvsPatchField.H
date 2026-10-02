@@ -1,1 +1,0 @@
-../fields/fvsPatchFields/constraint/cyclicGgi/cyclicGgiFvsPatchField.H

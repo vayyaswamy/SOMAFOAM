@@ -41,7 +41,7 @@ void Foam::ifullImplicit::correct
     psiChemistryModel& chemistry
 )
 {
-	FatalError << "model not implemented" << nl << abort(FatalError);
+    FatalError << "model not implemented" << nl << abort(FatalError);
 }
 
 

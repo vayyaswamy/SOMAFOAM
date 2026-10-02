@@ -15,27 +15,27 @@ Foam::multiSpeciesPlasmaModel::species() const
 
 inline void Foam::multiSpeciesPlasmaModel::LTSset()
 {
-	runTime_.setDeltaT
-	(
-		LTScounter
-	);
+    runTime_.setDeltaT
+    (
+        LTScounter
+    );
 
-	Info<< "deltaT = " <<  runTime_.deltaT().value() << endl;
+    Info<< "deltaT = " <<  runTime_.deltaT().value() << endl;
 }
 
 inline void Foam::multiSpeciesPlasmaModel::MTSset()
 {
-	runTime_.setDeltaT
-	(
-		MTScounter
-	);
+    runTime_.setDeltaT
+    (
+        MTScounter
+    );
 }
 
 inline void Foam::multiSpeciesPlasmaModel::STSset()
 {
     runTime_.setDeltaT
     (
-		STScounter
+        STScounter
     );
 }
 
@@ -86,14 +86,14 @@ inline void Foam::multiSpeciesPlasmaModel::updateTemperature()
 
         forAll(TiCells, cellI)
         {
-        	if (i == eIndex_)
-				{
-           			TiCells[cellI] = TeCells[cellI];
-    			}
-        	else if (i != eIndex_ && i < activeSpecies_)
-				{
-           			TiCells[cellI] = TionCells[cellI];
-    			}
+            if (i == eIndex_)
+                {
+                    TiCells[cellI] = TeCells[cellI];
+                }
+            else if (i != eIndex_ && i < activeSpecies_)
+                {
+                    TiCells[cellI] = TionCells[cellI];
+                }
         }
 
         forAll(T_[i].boundaryField(), patchI)
@@ -108,15 +108,15 @@ inline void Foam::multiSpeciesPlasmaModel::updateTemperature()
 
             forAll(pTT, faceI)
             {
-        		if (i == eIndex_)
-				{
-           			pTT[faceI] = pTe[faceI];
-    			}
+                if (i == eIndex_)
+                {
+                    pTT[faceI] = pTe[faceI];
+                }
 
-        		else if (i != eIndex_ && i < activeSpecies_)
-				{
-           			pTT[faceI] = pTi[faceI];
-    			}
+                else if (i != eIndex_ && i < activeSpecies_)
+                {
+                    pTT[faceI] = pTi[faceI];
+                }
             }
         }
     }
@@ -124,21 +124,21 @@ inline void Foam::multiSpeciesPlasmaModel::updateTemperature()
 
 inline void Foam::multiSpeciesPlasmaModel::updateChemistryCollFreq
 (
-	psiChemistryModel& chemistry
+    psiChemistryModel& chemistry
 )
 {
-	if (plasmaChemistry == "temporal")
-	{
-		chemistry.solve
-		(
-			runTime_.value() - runTime_.deltaT().value(),
-			runTime_.deltaT().value()
-		);
-	}
-	else if (plasmaChemistry == "directSolution")
-	{
-		chemistry.calculateWcf();
-	}
+    if (plasmaChemistry == "temporal")
+    {
+        chemistry.solve
+        (
+            runTime_.value() - runTime_.deltaT().value(),
+            runTime_.deltaT().value()
+        );
+    }
+    else if (plasmaChemistry == "directSolution")
+    {
+        chemistry.calculateWcf();
+    }
 }
-  
+
 // ************************************************************************* //

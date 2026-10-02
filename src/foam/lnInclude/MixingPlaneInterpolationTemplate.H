@@ -1,1 +1,0 @@
-../interpolations/MixingPlaneInterpolation/MixingPlaneInterpolationTemplate.H

@@ -1,1 +1,0 @@
-../meshes/pointMesh/pointPatches/constraint/empty/emptyPointPatch.H

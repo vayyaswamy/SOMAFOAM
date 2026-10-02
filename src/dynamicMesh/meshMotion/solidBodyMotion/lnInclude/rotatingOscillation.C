@@ -1,1 +1,0 @@
-../rotatingOscillation/rotatingOscillation.C

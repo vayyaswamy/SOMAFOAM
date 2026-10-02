@@ -1,1 +1,0 @@
-../fields/fvPatchFields/derived/movingRotatingWallVelocity/movingRotatingWallVelocityFvPatchVectorField.H

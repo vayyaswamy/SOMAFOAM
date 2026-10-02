@@ -1,1 +1,0 @@
-../plasmaBoundaryConditions/externalCircuitPotential/externalCircuitPotential.C

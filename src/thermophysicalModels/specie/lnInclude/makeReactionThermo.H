@@ -1,1 +1,0 @@
-../reaction/reactions/makeReactionThermo.H

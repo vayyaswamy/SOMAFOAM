@@ -78,7 +78,7 @@ plasmaDielectricRegionCoupleBase::shadowPatchField() const
 
 tmp<scalarField> plasmaDielectricRegionCoupleBase::forig() const
 {
-   
+
     return originalPatchField();
 }
 
@@ -87,8 +87,7 @@ tmp<scalarField> plasmaDielectricRegionCoupleBase::kc() const
     const fvPatch& p = patch();
     const magLongDelta& mld = magLongDelta::New(p.boundaryMesh().mesh());
 
-    //Info << "kc func " << patchInternalField() << endl;
-   
+
     return patchInternalField()/(1 - p.weights())/mld.magDelta(p.index());
 }
 
@@ -106,9 +105,9 @@ tmp<scalarField> plasmaDielectricRegionCoupleBase::korig() const
 // Return a named shadow patch field
 tmp<scalarField> plasmaDielectricRegionCoupleBase::kw() const
 {
-    
+
     return *this;
-    
+
 }
 
 
@@ -140,12 +139,7 @@ plasmaDielectricRegionCoupleBase::calcPotential
     const plasmaDielectricRegionCoupleBase& ownerEps
 ) const
 {
-    //Info << "owner = " << owner << endl;
-    //Info << "neighbour = " << neighbour << endl;
-    //Info << "ownerEps = " << ownerEps << endl;
-    //Info << "Shadow = " << shadowPatchField() << endl;
     return shadowPatchField().calcPotential(owner, neighbour, ownerEps);
-    //Info << "Done here " << endl;
 }
 
 

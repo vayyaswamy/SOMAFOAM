@@ -1,6 +1,0 @@
-lduPrecon = lduPrecon
-lduSmoother = lduSmoother
-lduSolver = lduSolver
-amg = amg
-amgPolicy = $(amg)/amgPolicy
-LIB = $(FOAM_LIBBIN)/liblduSolvers

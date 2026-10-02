@@ -1,1 +1,0 @@
-../reaction/reactionRate/powerSeries/powerSeriesReactionRate.H

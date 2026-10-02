@@ -1,1 +1,0 @@
-../cellDist/wallPoint/wallPointData.C

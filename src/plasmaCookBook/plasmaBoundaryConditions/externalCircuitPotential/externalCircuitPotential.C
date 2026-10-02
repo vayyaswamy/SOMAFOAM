@@ -31,7 +31,6 @@ externalCircuitPotential
     C_(1e20),
     Phi_(p.size(), 0),
     I_(0)
-    //count_(0.0)
 {
 }
 
@@ -53,7 +52,6 @@ externalCircuitPotential
     C_(dict.lookupOrDefault<scalar>("C", 1e20)),
     Phi_("Phi", dict, p.size()),
     I_(dict.lookupOrDefault<scalar>("I", 0))
-    //count_(0.0)
 {
     if (dict.found("value"))
     {
@@ -86,7 +84,6 @@ externalCircuitPotential
     C_(ptf.C_),
     Phi_(ptf.Phi_),
     I_(ptf.I_)
-    //count_(ptf.count_)
 {}
 
 
@@ -105,7 +102,6 @@ externalCircuitPotential
     C_(tppsf.C_),
     Phi_(tppsf.Phi_),
     I_(tppsf.I_)
-    //count_(tppsf.count_)
 {}
 
 
@@ -125,7 +121,6 @@ externalCircuitPotential
     C_(tppsf.C_),
     Phi_(tppsf.Phi_),
     I_(tppsf.I_)
-    //count_(tppsf.count_)
 {}
 
 
@@ -141,45 +136,21 @@ void Foam::externalCircuitPotential::updateCoeffs()
 
     const volScalarField& QC =
         db().objectRegistry::lookupObject<volScalarField>("QC");
-        
+
     const volVectorField& Jtotpatch =
         db().objectRegistry::lookupObject<volVectorField>("Jtot");
-        
+
     label patchi = this->patch().index();
     const fvPatchScalarField& QClocal = QC.boundaryField()[patchi];
 
     const fvMesh& mesh = patch().boundaryMesh().mesh();
-    
-    //Info << "Jtot = " << Jtot << endl;
 
-    //Info << "JtotD = " << JtotDPatch << endl;
-    
+
     scalar patchCurrent = gSum(Jtotpatch & mesh.Sf().boundaryField()[patchi]);
-    
+
     Info << "patchCurrent = " << patchCurrent << endl;
 
-    
-    //Info << "Size = " << JtotPatch << endl;
 
-    /*iSqrSum_ += sqr(patchCurrent)*this->db().time().deltaTValue();
-    tSum_ += *this->db().time().deltaTValue();
-
-    if (tSum_ >= 1.0/frequency_)
-    {
-
-        scalar iRMSold = iRMS_;
-
-        iRMS_ = sqrt(iSqrSum_/tSum_);
-
-        tSum_ = tSum_ - 1.0/frequency_;
-        
-        iSqrSum_ = sqr(patchCurrent)*tSum_;
-
-        amplitude_ = amplitude_*(iRMS_/iDesired_)
-    }*/
-	
-	//Info << "dIdt = " << dIdt << endl;
-	
     if (modelName_ == "directCurrent")
     {
         Info << "V = " << amplitude_*(1-Foam::exp(-this->db().time().value()/C_)) + neg(patchCurrent)*patchCurrent*R_;
@@ -204,9 +175,8 @@ void Foam::externalCircuitPotential::updateCoeffs()
         )   << " model name inconsitent, model = " << modelName_
             << exit(FatalError);
     }
-	Info << "Phi_ = " << Phi_ << endl;
-	Info << "I_ = " << I_ << endl;
-	//Info << "patch size = " << this->size();
+    Info << "Phi_ = " << Phi_ << endl;
+    Info << "I_ = " << I_ << endl;
     fixedValueFvPatchScalarField::updateCoeffs();
 }
 

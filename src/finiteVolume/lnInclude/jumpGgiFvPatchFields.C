@@ -1,1 +1,0 @@
-../fields/fvPatchFields/constraint/jumpGgi/jumpGgiFvPatchFields.C

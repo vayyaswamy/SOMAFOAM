@@ -39,7 +39,7 @@ Foam::none::none
 void Foam::none::correct
 (
     psiChemistryModel& chemistry,
-	const volVectorField& E
+    const volVectorField& E
 )
 {}
 

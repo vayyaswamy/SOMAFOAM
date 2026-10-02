@@ -1,1 +1,0 @@
-../motionDiffusivity/motionDiffusivity/motionDiffusivity.H

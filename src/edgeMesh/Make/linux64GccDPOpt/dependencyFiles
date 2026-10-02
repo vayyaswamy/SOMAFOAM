@@ -1,4 +1,0 @@
-DEPENDENCIES = \
-edgeMesh.dep\
-edgeMeshIO.dep\
-featureEdgeMesh.dep

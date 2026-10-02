@@ -1,1 +1,0 @@
-../polyMeshModifiers/slidingInterface/slidingInterfaceClearCouple.C

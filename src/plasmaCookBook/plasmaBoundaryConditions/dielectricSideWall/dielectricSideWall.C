@@ -33,7 +33,6 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::dielectricSideWall::dielectricSideWall
@@ -42,9 +41,8 @@ Foam::dielectricSideWall::dielectricSideWall
     const DimensionedField<scalar, volMesh>& iF
 )
 :
-    mixedFvPatchField<scalar>(p, iF)    
+    mixedFvPatchField<scalar>(p, iF)
 {
-    //Info << "Constructor 1" << endl;
     this->refValue() = 0;
     this->refGrad() = 0;
     this->valueFraction() = 0;
@@ -61,11 +59,11 @@ dielectricSideWall
 :
     mixedFvPatchField<scalar>(p, iF)
 {
-	this->refValue() = 0.0;
+    this->refValue() = 0.0;
 
     this->refGrad() = 0.0;
     this->valueFraction() = 0.0;
-	fvPatchField<scalar>::operator=(patchInternalField());
+    fvPatchField<scalar>::operator=(patchInternalField());
 }
 
 
@@ -79,8 +77,6 @@ Foam::dielectricSideWall::dielectricSideWall
 :
     mixedFvPatchField<scalar>(ptf, p, iF, mapper)
 {
-    //Info << "Constructor 3" << endl;
-    //fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
 
@@ -94,7 +90,6 @@ Foam::dielectricSideWall::dielectricSideWall
 }
 
 
-
 Foam::dielectricSideWall::dielectricSideWall
 (
     const dielectricSideWall& ptf,
@@ -103,9 +98,6 @@ Foam::dielectricSideWall::dielectricSideWall
 :
     mixedFvPatchField<scalar>(ptf, iF)
 {
-    //Info << "Constructor 6" << endl;
-    //Info << "seec = " << seec_ << endl;
-    //fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
 
@@ -119,12 +111,11 @@ void Foam::dielectricSideWall::updateCoeffs()
         return;
     }
 
-    //Info << "Inside updateCoeffs " << endl;
     vectorField n = patch().nf();
 
     const fvPatchField<scalar>& surfC=
         patch().lookupPatchField<volScalarField, scalar>("surfC");
- 
+
     this->refValue() = 0.0;
 
     this->valueFraction() = 0.0;
@@ -133,7 +124,7 @@ void Foam::dielectricSideWall::updateCoeffs()
 
     mixedFvPatchField<scalar>::updateCoeffs();
 
-   
+
 }
 
 

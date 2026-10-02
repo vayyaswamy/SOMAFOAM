@@ -1,1 +1,0 @@
-../submodels/absorptionEmissionModel/constantAbsorptionEmission/constantAbsorptionEmission.C

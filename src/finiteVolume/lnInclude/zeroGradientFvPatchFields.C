@@ -1,1 +1,0 @@
-../fields/fvPatchFields/basic/zeroGradient/zeroGradientFvPatchFields.C

@@ -1,1 +1,0 @@
-../sampledSurface/sampledSurfacesFunctionObject/sampledSurfacesFunctionObject.C

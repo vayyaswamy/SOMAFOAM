@@ -39,7 +39,7 @@ SourceFiles
 
 namespace Foam
 {
-  
+
 /*---------------------------------------------------------------------------*\
                     Class multiSpeciesPlasmaModel Declaration
 \*---------------------------------------------------------------------------*/
@@ -48,54 +48,54 @@ class multiSpeciesPlasmaModel
 :
     public IOdictionary
 {
-    
-protected:    
+
+protected:
 
         hsCombustionThermo& thermo_;
 
         const fvMesh& mesh_;
 
-		Time& runTime_;
+        Time& runTime_;
 
         const int activeSpecies_;
 
-		const bool multiTimeStep;
+        const bool multiTimeStep;
 
-		const scalar STScounter;
+        const scalar STScounter;
 
-		const scalar MTScounter;
+        const scalar MTScounter;
 
-		const scalar LTScounter;
+        const scalar LTScounter;
 
-		const word eSpecie;
+        const word eSpecie;
 
-		const label eIndex_;
+        const label eIndex_;
 
-		const word bGas;
+        const word bGas;
 
-		const label bIndex_;
+        const label bIndex_;
 
-		word plasmaChemistry;
+        word plasmaChemistry;
 
-		Switch restartcapabale;
+        Switch restartcapabale;
 
-		Switch eonCalculation;
+        Switch eonCalculation;
 
-		PtrList<graph> graphDiffData_;
+        PtrList<graph> graphDiffData_;
 
-		PtrList<graph> graphMuData_;
+        PtrList<graph> graphMuData_;
 
         PtrList<scalar> z_;
 
-		PtrList<word> diffusionModel_;
+        PtrList<word> diffusionModel_;
 
-		PtrList<word> mobilityModel_;
+        PtrList<word> mobilityModel_;
 
-		PtrList<word> transportModel_;
+        PtrList<word> transportModel_;
 
-		PtrList<word> collisionFrequency_;
+        PtrList<word> collisionFrequency_;
 
-		PtrList<Switch> speciesSolution_;
+        PtrList<Switch> speciesSolution_;
 
         PtrList<word> timeS_;
 
@@ -115,14 +115,13 @@ protected:
 
         PtrList<volScalarField> N_;
 
-        PtrList<volScalarField> collFrequency_;        
+        PtrList<volScalarField> collFrequency_;
 
         volScalarField NG_;
 
-        
 
 private:
-  
+
         multiSpeciesPlasmaModel(const multiSpeciesPlasmaModel&);
 
         void operator=(const multiSpeciesPlasmaModel&);
@@ -135,7 +134,7 @@ private:
         ) const;
 
 public:
- 
+
     TypeName("multiSpeciesPlasmaModel");
 
 
@@ -151,8 +150,8 @@ public:
         (thermo)
     );
 #endif
-  
-    // Constructors	  
+
+    // Constructors
 
         //- Construct from components
         multiSpeciesPlasmaModel
@@ -160,8 +159,8 @@ public:
             hsCombustionThermo& thermo
         );
 
-    // Selectors	  
-  
+    // Selectors
+
         //- Return a reference to the selected multispeciesplasma model
 
         static autoPtr<multiSpeciesPlasmaModel> New
@@ -176,7 +175,7 @@ public:
 
     // Member Functions
 
-        // Access   
+        // Access
 
         inline void LTSset();
 
@@ -207,23 +206,23 @@ public:
         inline void updateChemistryCollFreq(psiChemistryModel& chemistry);
 
         tmp<volScalarField> electronTempSource
-		(
-			const psiChemistryModel& chemistry		
-		);
+        (
+            const psiChemistryModel& chemistry
+        );
 
         tmp<volScalarField> dElectronTempSourceDTe
         (
-            const psiChemistryModel& chemistry      
+            const psiChemistryModel& chemistry
         );
 
         tmp<volScalarField> ionTempSource
-		(
-			const psiChemistryModel& chemistry,
-			const volVectorField& E	
-		);
+        (
+            const psiChemistryModel& chemistry,
+            const volVectorField& E
+        );
 
         scalar divFe();
-        
+
         surfaceScalarField meshParameter();
 
         tmp<volVectorField> gradTe();
@@ -237,7 +236,7 @@ public:
         tmp<volVectorField> netChargeFlux();
 
         tmp<volVectorField> totalIonFlux();
-        
+
         tmp<volVectorField> electronConvectiveFlux();
 
         tmp<volScalarField> electronConductivity(const psiChemistryModel& chemistry);
@@ -245,19 +244,19 @@ public:
         virtual scalar correct
         (
             psiChemistryModel& chemistry,
-			const volVectorField& E,
+            const volVectorField& E,
             multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
         ) = 0;
 
         scalar correct
         (
             PtrList<volScalarField>& Y,
-    		const volVectorField& E,
+            const volVectorField& E,
             psiChemistryModel& chemistry,
             multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
         );
 
-		virtual void input();
+        virtual void input();
 
         virtual bool read() = 0;
 };

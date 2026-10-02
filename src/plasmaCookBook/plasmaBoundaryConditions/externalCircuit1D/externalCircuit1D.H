@@ -6,7 +6,7 @@ This project is licensed under The 3-Clause BSD License. For further information
 look for license file include with distribution.
 
 Class
-Foam::externalCircuit1D 
+Foam::externalCircuit1D
 
 Description
     Class for electric potential boundary conditions.
@@ -39,7 +39,7 @@ namespace Foam
             scalar distance_;
             bool init_;
             scalar oldValue_;
-            scalar newValue_; 
+            scalar newValue_;
 
         public:
 
@@ -57,11 +57,11 @@ namespace Foam
             (
                 const fvPatch&,
                 const DimensionedField<scalar, volMesh>&,
-                const dictionary&            
+                const dictionary&
             );
 
-            // Construct by mapping given externalCircuit1D onto a 
-            // new patch 
+            // Construct by mapping given externalCircuit1D onto a
+            // new patch
             externalCircuit1D
             (
                 const externalCircuit1D&,
@@ -92,8 +92,8 @@ namespace Foam
                 const DimensionedField<scalar, volMesh>&
             );
 
-            // Construct and return a clone setting internal field reference 
-            virtual tmp<fvPatchScalarField> 
+            // Construct and return a clone setting internal field reference
+            virtual tmp<fvPatchScalarField>
             clone(const DimensionedField<scalar, volMesh>& iF) const
             {
                 return tmp<fvPatchScalarField>

@@ -1,1 +1,0 @@
-../thermo/specieThermo/specieThermo.H

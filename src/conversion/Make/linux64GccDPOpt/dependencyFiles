@@ -1,9 +1,0 @@
-DEPENDENCIES = \
-meshTables/boundaryRegion.dep\
-meshTables/cellTable.dep\
-meshReader/meshReader.dep\
-meshReader/meshReaderAux.dep\
-meshReader/calcPointCells.dep\
-meshReader/createPolyCells.dep\
-meshReader/createPolyBoundary.dep\
-polyDualMesh/polyDualMesh.dep

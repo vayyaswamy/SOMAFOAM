@@ -30,7 +30,6 @@ License
 #include "addToRunTimeSelectionTable.H"
 
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::ionVelocity::
@@ -114,31 +113,24 @@ void Foam::ionVelocity::updateCoeffs()
         return;
     }
 
-    // const fvMesh& mesh = internalField().mesh();
-    
 
     scalar e = 1.602e-19;
 
     scalar pi = acos(-1.0);
 
-//    const fvPatchField<scalar>& nef =
-//	    patch().lookupPatchField<volScalarField, scalar>("ne");
 
-    //const fvPatchField<vector>& Ef =
-//	    patch().lookupPatchField<volVectorField, vector>("E");
-  
-    const volVectorField& Ui = 
-	    db().objectRegistry::lookupObject<volVectorField>(variable_);
-   
+    const volVectorField& Ui =
+        db().objectRegistry::lookupObject<volVectorField>(variable_);
+
     vectorField n = patch().nf();
-    
-    vectorField Uif = 0.0*n; 
+
+    vectorField Uif = 0.0*n;
 
     forAll(Uif, facei)
     {
         label faceCelli = patch().faceCells()[facei];
 
-	Uif[facei] = 0.25*sqrt(8*e*Ti_/pi/mi_)*n[facei] + Ui[faceCelli];
+    Uif[facei] = 0.25*sqrt(8*e*Ti_/pi/mi_)*n[facei] + Ui[faceCelli];
     }
 
     operator == (Uif);
@@ -151,11 +143,11 @@ void Foam::ionVelocity::write(Ostream& os) const
 {
     fvPatchVectorField::write(os);
     os.writeKeyword("Ti")
-	    << Ti_ << token::END_STATEMENT << nl;
+        << Ti_ << token::END_STATEMENT << nl;
     os.writeKeyword("mi")
-	    << mi_ << token::END_STATEMENT << nl;
+        << mi_ << token::END_STATEMENT << nl;
     os.writeKeyword("variable")
-	    << variable_ << token::END_STATEMENT << nl;
+        << variable_ << token::END_STATEMENT << nl;
     writeEntry("value", os);
 }
 

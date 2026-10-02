@@ -1,3 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/meshDualiser.o\
-$(OBJECTS_DIR)/polyDualMeshApp.o

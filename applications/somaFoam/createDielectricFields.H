@@ -39,7 +39,7 @@
                     IOobject::NO_WRITE
                 ),
                 dielectricRegions[i],
-			    dimensionedVector("E", dimensionSet(0, 0, 0, 1, 0), vector(0.0, 0.0, 0.0))
+                dimensionedVector("E", dimensionSet(0, 0, 0, 1, 0), vector(0.0, 0.0, 0.0))
             )
         );
 
@@ -77,8 +77,4 @@
                 dielectricRegions[i]
             )
         );
-	}
-
-	
-    
-
+    }

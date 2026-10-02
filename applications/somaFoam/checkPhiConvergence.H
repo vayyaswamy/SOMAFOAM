@@ -1,7 +1,6 @@
 {
     scalarField magPhi = mag(Phi.internalField());
 
-    //Info << "Phiw = " << mag(Phi.boundaryField()) << endl;
 
     forAll(magPhi, cellI)
     {
@@ -21,6 +20,4 @@
             )
            /magPhi
         );
-    //Info << "relativePhiResidual = " << relativePhiResidual << endl;
 }
-

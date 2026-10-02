@@ -1,1 +1,0 @@
-../searchableSurface/searchableSphere.C

@@ -1,1 +1,0 @@
-../thermo/hPolynomial/hPolynomialThermo.H

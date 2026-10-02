@@ -1,1 +1,0 @@
-../sampledSet/midPointAndFace/midPointAndFaceSet.H

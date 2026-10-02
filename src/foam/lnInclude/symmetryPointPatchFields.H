@@ -1,1 +1,0 @@
-../fields/pointPatchFields/constraint/symmetry/symmetryPointPatchFields.H

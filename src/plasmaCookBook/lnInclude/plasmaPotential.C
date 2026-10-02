@@ -1,1 +1,0 @@
-../plasmaBoundaryConditions/plasmaPotential/plasmaPotential.C

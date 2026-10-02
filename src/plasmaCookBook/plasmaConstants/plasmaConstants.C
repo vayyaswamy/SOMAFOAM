@@ -7,7 +7,7 @@ look for license file include with distribution.
 
 
 Description
-	plasma model constants
+    plasma model constants
 \*---------------------------------------------------------------------------*/
 
 #include "plasmaConstants.H"

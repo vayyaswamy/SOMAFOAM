@@ -1,1 +1,0 @@
-../reaction/reactionsTemplates/ionIrreversibleReaction/ionIrreversibleReaction.C

@@ -1,1 +1,0 @@
-../STRUTIL.h

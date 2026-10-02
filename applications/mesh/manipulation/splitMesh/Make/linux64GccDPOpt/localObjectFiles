@@ -1,3 +1,0 @@
-LOCAL_OBJECTS = \
-regionSide.o\
-splitMesh.o

@@ -10,7 +10,7 @@ Class
 
 Description
     mixedN
-  
+
 SourceFiles
     mixedN.C
 
@@ -25,7 +25,7 @@ SourceFiles
 
 namespace Foam
 {
-  
+
 /*---------------------------------------------------------------------------*\
                              Class mixed Declaration
 \*---------------------------------------------------------------------------*/
@@ -34,47 +34,47 @@ template<class ThermoType>
 class mixed
 :
     public multiSpeciesPlasmaModel
-{  
+{
 
 protected:
-  
+
     // Protected data
-  
+
         const PtrList<ThermoType>& speciesThermo_;
 
-		scalar momentumCount;
+        scalar momentumCount;
 
-		scalar ddCount;
+        scalar ddCount;
 
-		volScalarField EON;
+        volScalarField EON;
 
     // Protected member functions
 
         virtual void mixedModelInput();
 
         virtual inline void updateVelocity
-		(
-			const psiChemistryModel& chemistry,
-			const volVectorField& E,
-			const label i
-		);
+        (
+            const psiChemistryModel& chemistry,
+            const volVectorField& E,
+            const label i
+        );
 
         virtual inline void updateFlux
-		(
-			const label i,
-			const volVectorField& E
-		);
+        (
+            const label i,
+            const volVectorField& E
+        );
 
         virtual inline void transportCoeffInterpolate
-		(
-			const label i
-		);
+        (
+            const label i
+        );
 
 public:
 
-		//- Runtime type information
-		TypeName("mixed");
-    
+        //- Runtime type information
+        TypeName("mixed");
+
     // Constructors
 
         //- Construct from components
@@ -88,7 +88,7 @@ public:
         {}
 
     // Member Functions
-    
+
         scalar W(label i) const
         {
             return speciesThermo_[i].W();
@@ -97,17 +97,17 @@ public:
         virtual inline scalar correct
         (
             psiChemistryModel& chemistry,
-			const volVectorField& E,
+            const volVectorField& E,
             multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
         );
-                
+
         //- Read dictionary
         virtual bool read();
   };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-}	// End namespace Foam
+}   // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 

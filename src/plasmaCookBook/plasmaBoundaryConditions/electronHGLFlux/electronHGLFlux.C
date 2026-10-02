@@ -145,27 +145,27 @@ void Foam::electronHGLFlux::updateCoeffs()
         label patchi = this->patch().index();
         const fvPatchVectorField& FiT = Fi.boundaryField()[patchi];
 
-    	scalarField Enorm = Ef&n;
-		scalarField Nf = scalar1Data_*(FiT&n)/muef/(Enorm+0.001);
-        vectorField temp = 0.0*n;        
+        scalarField Enorm = Ef&n;
+        scalarField Nf = scalar1Data_*(FiT&n)/muef/(Enorm+0.001);
+        vectorField temp = 0.0*n;
 
     forAll(temp, facei)
     {
-    	label faceCelli = patch().faceCells()[facei];
+        label faceCelli = patch().faceCells()[facei];
 
-		if(Enorm[facei] > 0.0)
-		{	
-		    temp[facei]=(rhof[facei]*((1-scalar2Data_)/(1+scalar2Data_))*(1-(Nf[facei]/Nef[facei]))*((0.50*sqrt(3.8595300515e7*Tef[facei])*n[facei])+muef[facei]*Ef[facei]) 
-					- scalar1Data_*rhof[facei]*((Fi[faceCelli])/Nef[facei]));
+        if(Enorm[facei] > 0.0)
+        {
+            temp[facei]=(rhof[facei]*((1-scalar2Data_)/(1+scalar2Data_))*(1-(Nf[facei]/Nef[facei]))*((0.50*sqrt(3.8595300515e7*Tef[facei])*n[facei])+muef[facei]*Ef[facei])
+                    - scalar1Data_*rhof[facei]*((Fi[faceCelli])/Nef[facei]));
         }
         else
-        {        
-		    temp[facei]=(rhof[facei]*((1-scalar2Data_)/(1+scalar2Data_))*((0.50*sqrt(3.8595300515e7*Tef[facei])*n[facei])-muef[facei]*Ef[facei]));
+        {
+            temp[facei]=(rhof[facei]*((1-scalar2Data_)/(1+scalar2Data_))*((0.50*sqrt(3.8595300515e7*Tef[facei])*n[facei])-muef[facei]*Ef[facei]));
         }
-	}
+    }
 
     operator == (temp);
-    
+
     fixedValueFvPatchVectorField::updateCoeffs();
 }
 

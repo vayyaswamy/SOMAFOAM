@@ -57,7 +57,7 @@ class driftDiffusionElectronDensity
 
     bool Edepend_;
 
-    bool FE_; 
+    bool FE_;
 
     scalar beta_;
 
@@ -132,7 +132,6 @@ class driftDiffusionElectronDensity
 
     // Member functions
 
-        
 
         //- Update the coefficients associated with the patch field
         virtual void updateCoeffs();
@@ -153,9 +152,6 @@ class driftDiffusionElectronDensity
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//#ifdef NoRepository
-//#   include "inletOutletFvPatchField.C"
-//#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -1,1 +1,0 @@
-../fields/fvPatchFields/basic/basicSymmetry/basicSymmetryFvPatchField.C

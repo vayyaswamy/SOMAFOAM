@@ -1,1 +1,0 @@
-../derivedFvPatchFields/isentropicTotalPressure/isentropicTotalPressureFvPatchScalarField.C
