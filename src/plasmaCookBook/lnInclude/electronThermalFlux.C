@@ -1,1 +1,0 @@
-../plasmaBoundaryConditions/electronThermalFlux/electronThermalFlux.C

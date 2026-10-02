@@ -26,14 +26,14 @@ namespace emcModels
 
 Foam::emcModels::voltage::voltage
 (
-	const dictionary& electroMagnetics,
-	multiSpeciesPlasmaModel& mspm,
-	const volVectorField& E,
-	const Time& runTime
+    const dictionary& electroMagnetics,
+    multiSpeciesPlasmaModel& mspm,
+    const volVectorField& E,
+    const Time& runTime
 )
 :
     emcModel(electroMagnetics, mspm, E, runTime),
-	mode_(emcModelCoeffs_.lookup("mode")),
+    mode_(emcModelCoeffs_.lookup("mode")),
     amplitude_("amplitude", dimless, emcModelCoeffs_.lookup("amplitude")),
     frequency_("frequency", dimless, emcModelCoeffs_.lookup("frequency")),
     bias_("bias", dimless, emcModelCoeffs_.lookup("bias"))
@@ -49,18 +49,18 @@ Foam::emcModels::voltage::~voltage()
 
 void Foam::emcModels::voltage::correct(dictionary& voltageDict)
 {
-	if (mode_ == "continuousFrequencyModulated")
-	{
-		scalar voltageValue = amplitude_.value()*Foam::cos(2.0*M_PI*frequency_.value()*time_.value()) + bias_.value();
+    if (mode_ == "continuousFrequencyModulated")
+    {
+        scalar voltageValue = amplitude_.value()*Foam::cos(2.0*M_PI*frequency_.value()*time_.value()) + bias_.value();
 
-		voltageDict.set("voltage", voltageValue);
-	}
-	else
-	{
+        voltageDict.set("voltage", voltageValue);
+    }
+    else
+    {
         FatalErrorIn("emcModels::voltage::correct(dictionary& voltageDict)")
             << " incorrect mode "
             << exit(FatalError);
-	}
+    }
 }
 
 bool Foam::emcModels::voltage::read(const dictionary& electroMagnetics)

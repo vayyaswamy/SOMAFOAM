@@ -85,45 +85,45 @@ void Foam::emPlasmaFields::write()
     {
         forAll(objectNames_, i)
         {
-		    if (objectNames_[i] == "ePowerDeposition")
-		    {
-				word Eref = "E";
+            if (objectNames_[i] == "ePowerDeposition")
+            {
+                word Eref = "E";
 
-				word electron = "electron";
+                word electron = "electron";
 
-				const volVectorField& E = obr_.lookupObject<volVectorField>
-				(
-				    Eref
-				);
+                const volVectorField& E = obr_.lookupObject<volVectorField>
+                (
+                    Eref
+                );
 
-				const multiSpeciesPlasmaModel& mspm
-				    = obr_.lookupObject<multiSpeciesPlasmaModel>("plasmaProperties");
+                const multiSpeciesPlasmaModel& mspm
+                    = obr_.lookupObject<multiSpeciesPlasmaModel>("plasmaProperties");
 
-		        Info<< "Calculating electron power deposition field." << endl;
+                Info<< "Calculating electron power deposition field." << endl;
 
-		        volScalarField ePowerDeposition
-		        (
-		            IOobject
-		            (
-		                "ePowerDeposition",
-		                obr_.time().timeName(),
-		                obr_,
-		                IOobject::NO_READ
-		            ),
-		            plasmaConstants::eCharge*(mspm.J(electron) & E)
-		        );
+                volScalarField ePowerDeposition
+                (
+                    IOobject
+                    (
+                        "ePowerDeposition",
+                        obr_.time().timeName(),
+                        obr_,
+                        IOobject::NO_READ
+                    ),
+                    plasmaConstants::eCharge*(mspm.J(electron) & E)
+                );
 
-		        ePowerDeposition.write();
+                ePowerDeposition.write();
 
-		        Info<< "emPlasmaFields written." << nl << endl;
-		    }
-		    else
-		    {
-		        Info<< "Object name (" << objectNames_[i]
-		            << ") is not present/implemented. "
-		            << endl;
-		    }
-		}
+                Info<< "emPlasmaFields written." << nl << endl;
+            }
+            else
+            {
+                Info<< "Object name (" << objectNames_[i]
+                    << ") is not present/implemented. "
+                    << endl;
+            }
+        }
     }
 }
 

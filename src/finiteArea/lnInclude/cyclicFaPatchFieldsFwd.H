@@ -1,1 +1,0 @@
-../fields/faPatchFields/constraint/cyclic/cyclicFaPatchFieldsFwd.H

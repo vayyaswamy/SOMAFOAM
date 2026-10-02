@@ -1,1 +1,0 @@
-../fields/pointPatchFields/derived/oscillatingFixedValue/oscillatingFixedValuePointPatchFields.C

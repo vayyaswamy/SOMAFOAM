@@ -33,10 +33,10 @@ plasmaEnergyModel::plasmaEnergyModel
         IOobject
         (
             "plasmaProperties",
-			thermo.T().mesh().time().constant(),
-			thermo.T().mesh(),
-			IOobject::MUST_READ,
-			IOobject::NO_WRITE
+            thermo.T().mesh().time().constant(),
+            thermo.T().mesh(),
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
         )
     ),
     eTempPtr_(eTemp::New(thermo, mspm, E, subDict("energyModel"))),

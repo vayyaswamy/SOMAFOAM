@@ -1,1 +1,0 @@
-../motionDiffusivity/uniform/uniformDiffusivity.H

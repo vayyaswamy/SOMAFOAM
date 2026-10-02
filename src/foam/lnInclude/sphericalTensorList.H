@@ -1,1 +1,0 @@
-../primitives/Lists/sphericalTensorList.H

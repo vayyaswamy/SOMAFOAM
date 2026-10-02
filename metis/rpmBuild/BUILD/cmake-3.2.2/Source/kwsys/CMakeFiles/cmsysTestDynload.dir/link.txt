@@ -1,1 +1,0 @@
-/usr/bin/gcc  -fPIC -m64 -fPIC   -m64 -shared -Wl,-soname,libcmsysTestDynload.so -o libcmsysTestDynload.so CMakeFiles/cmsysTestDynload.dir/testDynload.c.o 

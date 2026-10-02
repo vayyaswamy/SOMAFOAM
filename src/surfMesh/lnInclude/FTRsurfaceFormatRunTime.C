@@ -1,1 +1,0 @@
-../surfaceFormats/ftr/FTRsurfaceFormatRunTime.C

@@ -1,1 +1,0 @@
-../fvMesh/fvPatches/constraint/cyclicGgi/cyclicGgiFvPatch.H

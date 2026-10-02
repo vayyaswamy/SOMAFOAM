@@ -126,7 +126,6 @@ class driftDiffusionOpenBoundary
 
     // Member functions
 
-        
 
         //- Update the coefficients associated with the patch field
         virtual void updateCoeffs();
@@ -147,9 +146,6 @@ class driftDiffusionOpenBoundary
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//#ifdef NoRepository
-//#   include "inletOutletFvPatchField.C"
-//#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

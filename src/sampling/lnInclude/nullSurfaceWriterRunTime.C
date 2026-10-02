@@ -1,1 +1,0 @@
-../sampledSurface/writers/null/nullSurfaceWriterRunTime.C

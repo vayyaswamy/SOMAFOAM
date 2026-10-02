@@ -1,9 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/processorMeshesReconstructor.o\
-$(OBJECTS_DIR)/processorMeshesRebuild.o\
-$(OBJECTS_DIR)/processorFaMeshes.o\
-$(OBJECTS_DIR)/fvFieldReconstructor.o\
-$(OBJECTS_DIR)/faFieldReconstructor.o\
-$(OBJECTS_DIR)/pointFieldReconstructor.o\
-$(OBJECTS_DIR)/reconstructLagrangianPositions.o\
-$(OBJECTS_DIR)/reconstructParMesh.o

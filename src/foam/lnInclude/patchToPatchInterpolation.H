@@ -1,1 +1,0 @@
-../interpolations/patchToPatchInterpolation/patchToPatchInterpolation.H

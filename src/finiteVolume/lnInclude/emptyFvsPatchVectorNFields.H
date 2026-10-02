@@ -1,1 +1,0 @@
-../fields/fvsPatchFields/fvsPatchVectorNFields/emptyFvsPatchVectorNFields.H

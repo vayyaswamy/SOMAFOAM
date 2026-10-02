@@ -117,10 +117,6 @@ void Foam::electronThermalFlux::updateCoeffs()
         return;
     }
 
-    //Info << "electronThermalFlux " << endl;
-
-    //const volVectorField& Fi =
-    //    db().objectRegistry::lookupObject<volVectorField>("ionFlux");
 
     const fvPatchField<scalar>& Nef =
         patch().lookupPatchField<volScalarField, scalar>("N_electron");
@@ -134,45 +130,32 @@ void Foam::electronThermalFlux::updateCoeffs()
     const fvPatchField<vector>& Fif=
         patch().lookupPatchField<volVectorField, vector>("ionFlux");
 
-    //const fvPatchField<scalar>& rhof=
-    //    patch().lookupPatchField<volScalarField, scalar>("rho");
 
         vectorField n = patch().nf();
 
-        //Info << "nf = " << n << endl;
 
-        //Info << "Tef = " << Tef << endl;
-
-    	scalarField Enorm = Ef&n;
+        scalarField Enorm = Ef&n;
 
         vectorField temp = 0.0*n;
 
         scalarField Finorm = Fif&n;
 
-       // Info << "Finorm " << Finorm << endl;
 
     forAll(temp, facei)
     {
-    	//label faceCelli = patch().faceCells()[facei];
 
-        //Info << "Finorm[facei] " << Finorm[facei] << endl; 
-        
-		if(Enorm[facei] > 0.0)
-		{	
-			//Info << "Tef = " << Tef[facei] << endl; 
-			//Info << "Nef = " << Nef[facei] << endl;
-		    //temp[facei]=(rhof[facei]*(0.25*Foam::sqrt(3.8595300515e7*Tef[facei])*n[facei]) 
-			//		- scalar1Data_*rhof[facei]*(Fi[faceCelli]/Nef[facei]));
-            temp[facei]=((0.25*Foam::sqrt(3.8595300515e7*Tef[facei])*n[facei]) 
+
+        if(Enorm[facei] > 0.0)
+        {
+            temp[facei]=((0.25*Foam::sqrt(3.8595300515e7*Tef[facei])*n[facei])
                     - scalar1Data_*(Finorm[facei]/Nef[facei])*n[facei]);
         }
         else
         {
-		    temp[facei]=((0.25*Foam::sqrt(3.8595300515e7*Tef[facei])*n[facei]));
+            temp[facei]=((0.25*Foam::sqrt(3.8595300515e7*Tef[facei])*n[facei]));
         }
-	}
+    }
     operator == (temp);
-    //Info << "temp = " << temp << endl;
     fixedValueFvPatchVectorField::updateCoeffs();
 }
 

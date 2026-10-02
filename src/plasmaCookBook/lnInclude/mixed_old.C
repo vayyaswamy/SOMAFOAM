@@ -1,1 +1,0 @@
-../multiSpeciesPlasmaModels/mixed/mixed_old.C

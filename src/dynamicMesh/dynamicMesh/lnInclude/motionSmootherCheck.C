@@ -1,1 +1,0 @@
-../motionSmoother/motionSmootherCheck.C

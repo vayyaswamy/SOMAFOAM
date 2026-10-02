@@ -1,1 +1,0 @@
-../db/objectRegistry/objectRegistryTemplates.C

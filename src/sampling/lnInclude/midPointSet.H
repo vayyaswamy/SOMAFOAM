@@ -1,1 +1,0 @@
-../sampledSet/midPoint/midPointSet.H

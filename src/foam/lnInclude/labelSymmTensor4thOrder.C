@@ -1,1 +1,0 @@
-../primitives/SymmTensor4thOrder/labelSymmTensor4thOrder/labelSymmTensor4thOrder.C

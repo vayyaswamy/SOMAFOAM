@@ -1,1 +1,0 @@
-../meshes/pointMesh/pointPatches/constraint/overlapGgi/overlapGgiPointPatch.C

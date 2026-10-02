@@ -136,26 +136,26 @@ void Foam::eEnergyThermalMFlux::updateCoeffs()
 
         vectorField n = patch().nf();
 
-    	scalarField Enorm = Ef&n;
-        vectorField temp = 0.0*n;        
+        scalarField Enorm = Ef&n;
+        vectorField temp = 0.0*n;
 
     forAll(temp, facei)
     {
-    	label faceCelli = patch().faceCells()[facei];
+        label faceCelli = patch().faceCells()[facei];
 
-		if(Enorm[facei] > 0.0)
-		{	
-		    temp[facei]=(2.76129704e-23*(Tef[facei]*Jef[facei])
-					- scalar1Data_*scalar2Data_*2.76129704e-23*Fi[faceCelli]);
+        if(Enorm[facei] > 0.0)
+        {
+            temp[facei]=(2.76129704e-23*(Tef[facei]*Jef[facei])
+                    - scalar1Data_*scalar2Data_*2.76129704e-23*Fi[faceCelli]);
         }
         else
-        {        
-		    temp[facei]=(2.76129704e-23*(Tef[facei]*Jef[facei]));
+        {
+            temp[facei]=(2.76129704e-23*(Tef[facei]*Jef[facei]));
         }
-	}
+    }
 
     operator == (temp);
-    
+
     fixedValueFvPatchVectorField::updateCoeffs();
 }
 

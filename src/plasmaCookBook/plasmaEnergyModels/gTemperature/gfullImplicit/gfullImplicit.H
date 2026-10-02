@@ -45,7 +45,7 @@ class gfullImplicit
         volScalarField gasTempSourcetemp;
 
         scalar timeCount;
-        
+
         scalar timeCountn;
 
     // Private Member Functions

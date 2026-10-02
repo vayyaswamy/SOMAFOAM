@@ -1,1 +1,0 @@
-../primitiveMeshGeometry/primitiveMeshGeometry.C

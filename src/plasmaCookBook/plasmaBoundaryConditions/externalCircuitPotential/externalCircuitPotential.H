@@ -39,8 +39,8 @@ public fixedValueFvPatchScalarField
     scalar C_;
     scalarField Phi_;
     scalar I_;
-   
-    	
+
+
   public:
 
     //- Runtime type information
@@ -77,40 +77,40 @@ public fixedValueFvPatchScalarField
     //- Construct as copy
     externalCircuitPotential
     (
-     	const externalCircuitPotential&
+        const externalCircuitPotential&
     );
 
     //- Construct and return a clone
     virtual tmp<fvPatchScalarField> clone() const
     {
-      	return tmp<fvPatchScalarField>
-		(
-		 new externalCircuitPotential(*this)
-		);
+        return tmp<fvPatchScalarField>
+        (
+         new externalCircuitPotential(*this)
+        );
     }
 
     //- Construct as copy setting internal field reference
     externalCircuitPotential
     (
-		 const externalCircuitPotential&,
-		 const DimensionedField<scalar, volMesh>&
+         const externalCircuitPotential&,
+         const DimensionedField<scalar, volMesh>&
     );
 
     //- Construct and return a clone setting internal field reference
     virtual tmp<fvPatchScalarField> clone
     (
-     	const DimensionedField<scalar, volMesh>& iF
+        const DimensionedField<scalar, volMesh>& iF
     ) const
     {
-		return tmp<fvPatchScalarField>
-		(
-			new externalCircuitPotential(*this, iF)
-		);
+        return tmp<fvPatchScalarField>
+        (
+            new externalCircuitPotential(*this, iF)
+        );
     }
 
 
     // Member functions
-    
+
 
     //- Update the coefficients associated with the patch field
     virtual void updateCoeffs();

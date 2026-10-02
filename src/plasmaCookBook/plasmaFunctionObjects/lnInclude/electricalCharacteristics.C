@@ -1,1 +1,0 @@
-../electricalCharacteristics/electricalCharacteristics.C

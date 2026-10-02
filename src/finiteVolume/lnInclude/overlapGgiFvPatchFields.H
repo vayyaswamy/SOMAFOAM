@@ -1,1 +1,0 @@
-../fields/fvPatchFields/constraint/overlapGgi/overlapGgiFvPatchFields.H

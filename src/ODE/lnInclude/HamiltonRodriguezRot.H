@@ -1,1 +1,0 @@
-../sixDOF/quaternions/HamiltonRodriguezRot.H

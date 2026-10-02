@@ -29,7 +29,7 @@ coupledPotentialFvPatchScalarField::coupledPotentialFvPatchScalarField
 )
 :
     regionCouplingFvPatchScalarField(p, iF),
-	surfaceCharge_(false)
+    surfaceCharge_(false)
 {}
 
 
@@ -122,13 +122,9 @@ void coupledPotentialFvPatchScalarField::initEvaluate
     const plasmaDielectricRegionCoupleBase& eps =
         dynamic_cast<const plasmaDielectricRegionCoupleBase&>(epspf);
 
-    //Info << "starting calcPotential " << endl;
-
-
 
     *this == eps.calcPotential(*this, shadowPatchField(), eps);
 
-    //Info << "initEvaluate " << endl;
 }
 
 
@@ -137,10 +133,7 @@ void coupledPotentialFvPatchScalarField::evaluate
     const Pstream::commsTypes
 )
 {
-    //Info << "about to evaluate " << endl;
-    //Info << "Shadow = " << shadowPatchField() << endl; 
     fvPatchScalarField::evaluate();
-    //Info << "evaluate " << endl;
 }
 
 
@@ -150,20 +143,17 @@ void coupledPotentialFvPatchScalarField::updateCoeffs()
     {
         return;
     }
-    //Info << "About to do updateCoeffs " << endl;
 
-    const plasmaDielectricRegionCoupleBase& eps = 
+    const plasmaDielectricRegionCoupleBase& eps =
         refCast<const plasmaDielectricRegionCoupleBase>
         (
             lookupPatchField<volScalarField, scalar>("epsilon")
         );
 
-    //Info << "About to set this " << endl;
 
     *this == eps.calcPotential(*this, shadowPatchField(), eps);
 
     fvPatchScalarField::updateCoeffs();
-    //Info << "Done with updateCoeffs " << endl;
 }
 
 
@@ -185,13 +175,6 @@ tmp<scalarField> coupledPotentialFvPatchScalarField::source() const
     const scalarField eps = Eps.kw()*p.deltaCoeffs();
     const scalarField epsOwn = Eps.kc();
 
-    //Info << "epsOwn = " << epsOwn << endl;
-
-    //Info << "Eps.kw() = " << Eps.kw() << endl;
-
-    //Info << "eps =  " << Eps.kw()*p.deltaCoeffs() << endl;
-
-    //Info << "source = " << epsOwn*(PhicOwn - Phiw) + eps*(PhicNei - PhicOwn) << endl;
 
     return epsOwn*(PhicOwn - Phiw) + eps*(PhicNei - PhicOwn);
 
@@ -208,17 +191,14 @@ void coupledPotentialFvPatchScalarField::manipulateMatrix
     const labelList& cellLabels = p.faceCells();
     scalarField& source = matrix.source();
 
-    //Info << "About to call source " << endl;
 
     scalarField s = this->source();
 
-    //Info << "s = " << s << endl;
 
     forAll(cellLabels, i)
     {
         source[cellLabels[i]] += s[i]*magSf[i];
     }
-    //Info << "Done with manipulateMatrix" << endl;
 }
 
 

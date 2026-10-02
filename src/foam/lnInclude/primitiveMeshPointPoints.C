@@ -1,1 +1,0 @@
-../meshes/primitiveMesh/primitiveMeshPointPoints.C

@@ -1,1 +1,0 @@
-../fields/pointPatchFields/constraint/wedge/wedgePointPatchFields.H

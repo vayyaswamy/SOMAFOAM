@@ -1,1 +1,0 @@
-../fvMesh/extendedStencil/faceToCell/fullStencils/CFCFaceToCellStencil.H

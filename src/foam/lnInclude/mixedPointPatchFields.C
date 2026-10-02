@@ -1,1 +1,0 @@
-../fields/pointPatchFields/basic/mixed/mixedPointPatchFields.C

@@ -27,7 +27,12 @@ Class
 
 Description
     momentum equation.
-  
+
+    Each charged specie has its own momentum equation; the continuity
+    equations are solved for the number densities N (the quantity held in
+    the 0/<specie> files and assumed by the plasma boundary conditions).
+    Neutral species use drift-free diffusion.
+
 SourceFiles
     momentum.C
 
@@ -42,7 +47,7 @@ SourceFiles
 
 namespace Foam
 {
-  
+
 /*---------------------------------------------------------------------------*\
                              Class momentum Declaration
 \*---------------------------------------------------------------------------*/
@@ -51,33 +56,41 @@ template<class ThermoType>
 class momentum
 :
     public multiSpeciesPlasmaModel
-{  
+{
 
 protected:
-  
+
         const PtrList<ThermoType>& speciesThermo_;
 
-		volScalarField EON;
+        volScalarField EON;
 
     // Protected member functions
-    
+
         virtual inline void updateVelocity
-		(
-			const psiChemistryModel& chemistry,
-			const volVectorField& E,
-			const label i
-		);
+        (
+            const psiChemistryModel& chemistry,
+            const volVectorField& E,
+            const label i
+        );
 
         virtual inline void transportCoeffInterpolate
-		(
-			const label i
-		);
+        (
+            const label i
+        );
+
+        //- Solve the number density equation of specie i
+        void solveSpecie
+        (
+            const label i,
+            psiChemistryModel& chemistry,
+            const volVectorField& E
+        );
 
 public:
 
     //- Runtime type information
     TypeName("momentum");
-    
+
     // Constructors
 
         //- Construct from components
@@ -97,21 +110,19 @@ public:
             return speciesThermo_[i].W();
         }
 
-        inline tmp<volVectorField> J(const label i) const;
-        
         virtual inline scalar correct
         (
             psiChemistryModel& chemistry,
-			const volVectorField& E,
+            const volVectorField& E,
             multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
         );
-                
+
         virtual bool read();
   };
-  
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-}	// End namespace Foam
+}   // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 

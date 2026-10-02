@@ -29,8 +29,6 @@ License
 #include "fvcMeshPhi.H"
 #include "addToRunTimeSelectionTable.H"
 
-//#include "fvPatchFieldMapper.H"
-//#include "fvPatch.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -105,36 +103,26 @@ void Foam::electronVelocity::updateCoeffs()
         return;
     }
 
-    // const fvMesh& mesh = internalField().mesh();
-    
+
     const dictionary& physicalProperties = db().lookupObject<IOdictionary>
-	    (
-	        "physicalProperties"
-	    );
+        (
+            "physicalProperties"
+        );
     dimensionedScalar me(physicalProperties.lookup("me"));
 
     scalar e = 1.602e-19;
 
     scalar pi = acos(-1.0);
 
-//    const fvPatchField<scalar>& nef =
-//	    patch().lookupPatchField<volScalarField, scalar>("ne");
 
-    //const fvPatchField<vector>& Ef =
-//	    patch().lookupPatchField<volVectorField, vector>("E");
-  
-  //  const volVectorField& mome = 
-//	    db().objectRegistry::lookupObject<volVectorField>("mome");
-   
     vectorField n = patch().nf();
-    
-    vectorField Uef = 0.0*n; 
+
+    vectorField Uef = 0.0*n;
 
     forAll(Uef, facei)
     {
- //       label faceCelli = patch().faceCells()[facei];
 
-	Uef[facei] = 0.25*sqrt(8*e*Te_/pi/me.value())*n[facei];
+    Uef[facei] = 0.25*sqrt(8*e*Te_/pi/me.value())*n[facei];
     }
 
     operator == (Uef);
@@ -147,7 +135,7 @@ void Foam::electronVelocity::write(Ostream& os) const
 {
     fvPatchVectorField::write(os);
     os.writeKeyword("Te")
-	    << Te_ << token::END_STATEMENT << nl;
+        << Te_ << token::END_STATEMENT << nl;
     writeEntry("value", os);
 }
 

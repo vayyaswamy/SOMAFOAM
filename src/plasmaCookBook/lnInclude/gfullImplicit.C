@@ -1,1 +1,0 @@
-../plasmaEnergyModels/gTemperature/gfullImplicit/gfullImplicit.C

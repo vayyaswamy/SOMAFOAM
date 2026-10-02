@@ -57,7 +57,7 @@ class momentumElectronDensity
 
     bool Edepend_;
 
-    bool FE_; 
+    bool FE_;
 
     scalar beta_;
 
@@ -132,7 +132,6 @@ class momentumElectronDensity
 
     // Member functions
 
-        
 
         //- Update the coefficients associated with the patch field
         virtual void updateCoeffs();

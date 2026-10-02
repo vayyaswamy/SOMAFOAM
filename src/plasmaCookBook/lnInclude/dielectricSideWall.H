@@ -1,1 +1,0 @@
-../plasmaBoundaryConditions/dielectricSideWall/dielectricSideWall.H

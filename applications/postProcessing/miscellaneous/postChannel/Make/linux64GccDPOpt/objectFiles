@@ -1,3 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/postChannel.o\
-$(OBJECTS_DIR)/channelIndex.o

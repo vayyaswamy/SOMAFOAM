@@ -15,33 +15,33 @@ look for license file include with distribution.
 
 namespace Foam
 {
-  
-// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //  
-  
+
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+
     defineTypeNameAndDebug(multiSpeciesPlasmaModel, 0);
     defineRunTimeSelectionTable(multiSpeciesPlasmaModel, fvMesh);
 }
 
-// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //  
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 void Foam::multiSpeciesPlasmaModel::updateChemistry
 (
-	psiChemistryModel& chemistry
+    psiChemistryModel& chemistry
 )
 {
-	if (plasmaChemistry == "temporal")
-	{
-		chemistry.solve
-		(
-			runTime_.value() - runTime_.deltaT().value(),
-			runTime_.deltaT().value()
-		);
-	}
-	else if (plasmaChemistry == "directSolution")
-	{
-		chemistry.calculate();
-	}
+    if (plasmaChemistry == "temporal")
+    {
+        chemistry.solve
+        (
+            runTime_.value() - runTime_.deltaT().value(),
+            runTime_.deltaT().value()
+        );
+    }
+    else if (plasmaChemistry == "directSolution")
+    {
+        chemistry.calculate();
+    }
 }
-     
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
@@ -54,10 +54,10 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
         IOobject
         (
             "plasmaProperties",
-			thermo.T().mesh().time().constant(),
-			thermo.T().mesh(),
-			IOobject::MUST_READ,
-			IOobject::NO_WRITE
+            thermo.T().mesh().time().constant(),
+            thermo.T().mesh(),
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
         )
     ),
 
@@ -65,44 +65,44 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
 
     mesh_(thermo.T().mesh()),
 
-	runTime_(const_cast<Time&>(mesh_.time())),
+    runTime_(const_cast<Time&>(mesh_.time())),
 
     activeSpecies_(readInt(IOdictionary::lookup("activeSpecies"))),
 
-	multiTimeStep(IOdictionary::lookupOrDefault("multiTimeStep", false)),
+    multiTimeStep(IOdictionary::lookupOrDefault("multiTimeStep", false)),
 
-	STScounter(runTime_.deltaT().value()),
+    STScounter(runTime_.deltaT().value()),
 
-	MTScounter(IOdictionary::lookupOrDefault<scalar>("LTSvalue", 0.0)),
+    MTScounter(IOdictionary::lookupOrDefault<scalar>("MTSvalue", 0.0)),
 
-	LTScounter(IOdictionary::lookupOrDefault<scalar>("MTSvalue", 0.0)),
+    LTScounter(IOdictionary::lookupOrDefault<scalar>("LTSvalue", 0.0)),
 
-	eSpecie("electron"),
+    eSpecie("electron"),
 
-	eIndex_(species()[eSpecie]),
+    eIndex_(species()[eSpecie]),
 
-	bGas(IOdictionary::lookup("backgroundGas")),
+    bGas(IOdictionary::lookup("backgroundGas")),
 
-	bIndex_(species()[bGas]),
+    bIndex_(species()[bGas]),
 
-	plasmaChemistry("directSolution"),
+    plasmaChemistry("directSolution"),
 
-	restartcapabale(runTime_.controlDict().lookup("restartCapable")),
+    restartcapabale(runTime_.controlDict().lookup("restartCapable")),
 
-	eonCalculation(false),
+    eonCalculation(false),
 
     NG_
     (
-		IOobject
-		(
-			"NG_",
+        IOobject
+        (
+            "NG_",
             mesh_.time().timeName(),
             mesh_,
-			IOobject::NO_READ,
-			IOobject::NO_WRITE
-		),
-		mesh_,
-		dimensionedScalar("zero", dimMass/dimTime/dimVolume, 0.0)
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh_,
+        dimensionedScalar("zero", dimMass/dimTime/dimVolume, 0.0)
     )
 {
     graphDiffData_.setSize(species().size());
@@ -115,11 +115,11 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
 
     mobilityModel_.setSize(activeSpecies_);
 
-	collisionFrequency_.setSize(activeSpecies_);
+    collisionFrequency_.setSize(activeSpecies_);
 
-	transportModel_.setSize(species().size());
+    transportModel_.setSize(species().size());
 
-	speciesSolution_.setSize(species().size());
+    speciesSolution_.setSize(species().size());
 
     timeS_.setSize(species().size());
 
@@ -136,7 +136,7 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     N_.setSize(species().size());
 
     collFrequency_.setSize(activeSpecies_);
-      
+
     forAll(thermo.composition().Y(), i)
     {
         Sy_.set
@@ -153,7 +153,7 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
                 ),
                 mesh_,
                 dimensionedScalar("zero", dimMass/dimTime/dimVolume, 0.0),
-	            zeroGradientFvPatchScalarField::typeName
+                zeroGradientFvPatchScalarField::typeName
             )
         );
 
@@ -171,11 +171,10 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
                 ),
                 mesh_,
                 dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0),
-	            zeroGradientFvPatchScalarField::typeName
+                zeroGradientFvPatchScalarField::typeName
             )
         );
 
-        //Info << "species " << species()[i] << endl;
 
         N_.set
         (
@@ -183,7 +182,6 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
             (
                 IOobject
                 (
-                    //"N_" + species()[i],
                     species()[i],
                     mesh_.time().timeName(),
                     mesh_,
@@ -191,13 +189,11 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
                     IOobject::NO_WRITE
                 ),
                 mesh_
-                //dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0)
             )
         );
 
         N_[i].rename("N_" + species()[i]);
 
-        //Info << "N = " << N_[i] << endl;
 
         T_.set
         (
@@ -215,107 +211,107 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
                 dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0, 0, 0), 0.0)
             )
         );
-		
-    	if ( i < activeSpecies_)
-		{
-		    mu_.set
-		    (
-		        i, new volScalarField
-		        (
-		            IOobject
-		            (
-		                "mu_" + species()[i],
-		                mesh_.time().timeName(),
-		                mesh_,
-		                IOobject::NO_READ,
-		                IOobject::NO_WRITE
-		            ),
-		            mesh_,
-		            dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0)
-		        )
-		    );
 
-		    collFrequency_.set
-		    (
-		        i, new volScalarField
-		        (
-		            IOobject
-		            (
-		                "collFrequency_" + species()[i],
-		                mesh_.time().timeName(),
-		                mesh_,
-		                IOobject::NO_READ,
-		                IOobject::NO_WRITE
-		            ),
-		            mesh_,
-		            dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0)
-		        )
-		    );
+        if ( i < activeSpecies_)
+        {
+            mu_.set
+            (
+                i, new volScalarField
+                (
+                    IOobject
+                    (
+                        "mu_" + species()[i],
+                        mesh_.time().timeName(),
+                        mesh_,
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE
+                    ),
+                    mesh_,
+                    dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0)
+                )
+            );
 
-		    J_.set
-		    (
-		        i, new volVectorField
-		        (
-		            IOobject
-		            (
-		                "J_" + species()[i],
-		                mesh_.time().timeName(),
-		                mesh_,
-		                IOobject::NO_READ,
-		                IOobject::NO_WRITE
-		            ),
-		            mesh_,
-		            dimensionedVector("zero", dimensionSet(1, -1, -1, 0, 0), vector::zero)
-		        )
-		    );
-		}        
-    } 
+            collFrequency_.set
+            (
+                i, new volScalarField
+                (
+                    IOobject
+                    (
+                        "collFrequency_" + species()[i],
+                        mesh_.time().timeName(),
+                        mesh_,
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE
+                    ),
+                    mesh_,
+                    dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0)
+                )
+            );
+
+            J_.set
+            (
+                i, new volVectorField
+                (
+                    IOobject
+                    (
+                        "J_" + species()[i],
+                        mesh_.time().timeName(),
+                        mesh_,
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE
+                    ),
+                    mesh_,
+                    dimensionedVector("zero", dimensionSet(1, -1, -1, 0, 0), vector::zero)
+                )
+            );
+        }
+    }
 }
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 void Foam::multiSpeciesPlasmaModel::input
 ()
-{ 
-	IOdictionary diffDict
+{
+    IOdictionary diffDict
     (
         IOobject
         (
-            "plasmaProperties", 
+            "plasmaProperties",
             mesh_.time().constant(),
             mesh_,
             IOobject::MUST_READ,
-            IOobject::NO_WRITE  
+            IOobject::NO_WRITE
         )
     );
 
-	IOdictionary chemDict
+    IOdictionary chemDict
     (
         IOobject
         (
-            "chemistryProperties", 
+            "chemistryProperties",
             mesh_.time().constant(),
             mesh_,
             IOobject::MUST_READ,
-            IOobject::NO_WRITE  
+            IOobject::NO_WRITE
         )
     );
 
-	plasmaChemistry = (chemDict.lookupOrDefault<word>("plasmaChemistryModel", "directSolution"));
+    plasmaChemistry = (chemDict.lookupOrDefault<word>("plasmaChemistryModel", "directSolution"));
 
-	if ((plasmaChemistry != "temporal") && (plasmaChemistry != "directSolution"))
-	{
-		WarningIn
-		(
-		    "plasmaChemistry"
-		)   << "in chemistryProperties, unknown plasmaChemistry type."
-		    << endl;
-	}
+    if ((plasmaChemistry != "temporal") && (plasmaChemistry != "directSolution"))
+    {
+        WarningIn
+        (
+            "plasmaChemistry"
+        )   << "in chemistryProperties, unknown plasmaChemistry type."
+            << endl;
+    }
 
-	int a(0);
+    int a(0);
 
     forAll(species(), i)
     {
-		const word& currentSpecie = species()[i];
+        const word& currentSpecie = species()[i];
         const dictionary& subDict = diffDict.subDict(currentSpecie);
 
         diffusionModel_.set
@@ -326,17 +322,17 @@ void Foam::multiSpeciesPlasmaModel::input
 
         diffusionModel_[i] =
         (
-			subDict.lookupOrDefault<word>("diffusionModel", "none")
+            subDict.lookupOrDefault<word>("diffusionModel", "none")
         );
 
-		if ((diffusionModel_[i] != "EON") && (diffusionModel_[i] != "eTemp") && (diffusionModel_[i] != "constant") && (diffusionModel_[i] != "einsteinRelation") && (diffusionModel_[i] != "none"))
-		{
-			WarningIn
-			(
-			    "diffusionModel"
-			)   << "unknown diffusionModel type."
-			    << endl;
-		}
+        if ((diffusionModel_[i] != "EON") && (diffusionModel_[i] != "eTemp") && (diffusionModel_[i] != "constant") && (diffusionModel_[i] != "einsteinRelation") && (diffusionModel_[i] != "none"))
+        {
+            WarningIn
+            (
+                "diffusionModel"
+            )   << "unknown diffusionModel type."
+                << endl;
+        }
 
         speciesSolution_.set
         (
@@ -344,183 +340,179 @@ void Foam::multiSpeciesPlasmaModel::input
              new Switch(subDict.lookup("speciesSolution"))
         );
 
-		if (multiTimeStep)
-		{
-		    timeS_.set
-		    (
-		         i,
-		         new word(subDict.lookup("timeScale"))
-		    );
-		}
+        if (multiTimeStep)
+        {
+            timeS_.set
+            (
+                 i,
+                 new word(subDict.lookup("timeScale"))
+            );
+        }
 
-		if (diffusionModel_[i] == "constant")
-		{
-			tmp<volScalarField> d_
-			(
-				new volScalarField
-				(
-					IOobject
-					(
-					    "d_",
-			            mesh_.time().timeName(),
-			            mesh_,
-			            IOobject::NO_READ,
-			            IOobject::NO_WRITE
-					),
-					mesh_,
-			        dimensionedScalar("d_", dimensionSet(1, -1, -1, 0, 0, 0, 0), subDict.lookup("D"))
-				)
-			);
+        if (diffusionModel_[i] == "constant")
+        {
+            tmp<volScalarField> d_
+            (
+                new volScalarField
+                (
+                    IOobject
+                    (
+                        "d_",
+                        mesh_.time().timeName(),
+                        mesh_,
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE
+                    ),
+                    mesh_,
+                    dimensionedScalar("d_", dimensionSet(1, -1, -1, 0, 0, 0, 0), subDict.lookup("D"))
+                )
+            );
 
-			D_[i] = d_;
+            D_[i] = d_;
 
-			D_[i].correctBoundaryConditions();
-		}
-		else if (diffusionModel_[i] == "eTemp" || diffusionModel_[i] == "EON")
-		{
-			IFstream file_D(thermo_.T().mesh().time().constant()/"D_" + species()[i]);
+            D_[i].correctBoundaryConditions();
+        }
+        else if (diffusionModel_[i] == "eTemp" || diffusionModel_[i] == "EON")
+        {
+            IFstream file_D(thermo_.T().mesh().time().constant()/"D_" + species()[i]);
 
-			graphDiffData_.set(i, new graph("D_data_file","inter_data","D_data", file_D));;
-		}
-
-		//N_[i] = thermo_.rho()*thermo_.composition().Y(i)*plasmaConstants::A/W(i);
-
-		//N_[i].correctBoundaryConditions();
+            graphDiffData_.set(i, new graph("D_data_file","inter_data","D_data", file_D));;
+        }
 
 
         if ( i < activeSpecies_)
-		{
-		    z_.set
-		    (
-		         i,
-		         new scalar(0.0)
-		    );
+        {
+            z_.set
+            (
+                 i,
+                 new scalar(0.0)
+            );
 
-		    z_[i] = (subDict.lookupOrDefault<scalar>("charge", 0.0));
+            z_[i] = (subDict.lookupOrDefault<scalar>("charge", 0.0));
 
-		    collisionFrequency_.set
-		    (
-		         i,
-		         new word("none")
-		    );
+            collisionFrequency_.set
+            (
+                 i,
+                 new word("none")
+            );
 
-			collisionFrequency_[i] = (subDict.lookupOrDefault<word>("collisionFrequency", "none"));
+            collisionFrequency_[i] = (subDict.lookupOrDefault<word>("collisionFrequency", "none"));
 
-			if ((collisionFrequency_[i] != "muBased") && (collisionFrequency_[i] != "rrBased") && (collisionFrequency_[i] != "none"))
-			{
-				WarningIn
-				(
-				    "collisionFrequency"
-				)   << "unknown collisionFrequency type."
-				    << endl;
-			}
+            if ((collisionFrequency_[i] != "muBased") && (collisionFrequency_[i] != "rrBased") && (collisionFrequency_[i] != "none"))
+            {
+                WarningIn
+                (
+                    "collisionFrequency"
+                )   << "unknown collisionFrequency type."
+                    << endl;
+            }
 
-		    mobilityModel_.set
-		    (
-		         i,
-		         new word("none")
-		    );
+            mobilityModel_.set
+            (
+                 i,
+                 new word("none")
+            );
 
-		    mobilityModel_[i] =
-		    (
-				subDict.lookupOrDefault<word>("mobilityModel", "none")
-		    );
+            mobilityModel_[i] =
+            (
+                subDict.lookupOrDefault<word>("mobilityModel", "none")
+            );
 
-			if ((mobilityModel_[i] != "EON") && (mobilityModel_[i] != "eTemp") && (mobilityModel_[i] != "constant") && (mobilityModel_[i] != "none"))
-			{
-				WarningIn
-				(
-				    "mobilityModel"
-				)   << "unknown mobilityModel type."
-				    << endl;
-			}
+            if ((mobilityModel_[i] != "EON") && (mobilityModel_[i] != "eTemp") && (mobilityModel_[i] != "constant") && (mobilityModel_[i] != "none"))
+            {
+                WarningIn
+                (
+                    "mobilityModel"
+                )   << "unknown mobilityModel type."
+                    << endl;
+            }
 
-			if (mobilityModel_[i] == "constant")
-			{
-				tmp<volScalarField> mui_
-				(
-					new volScalarField
-					(
-						IOobject
-						(
-							"mui_",
-					        mesh_.time().timeName(),
-					        mesh_,
-					        IOobject::NO_READ,
-					        IOobject::NO_WRITE
-						),
-						mesh_,
-					    dimensionedScalar("mui_", dimensionSet(1, -1, -1, 0, 0, 0, 0), subDict.lookup("mu"))
-					)
-				);
+            if (mobilityModel_[i] == "constant")
+            {
+                tmp<volScalarField> mui_
+                (
+                    new volScalarField
+                    (
+                        IOobject
+                        (
+                            "mui_",
+                            mesh_.time().timeName(),
+                            mesh_,
+                            IOobject::NO_READ,
+                            IOobject::NO_WRITE
+                        ),
+                        mesh_,
+                        dimensionedScalar("mui_", dimensionSet(1, -1, -1, 0, 0, 0, 0), subDict.lookup("mu"))
+                    )
+                );
 
-				forAll(mu_[i], celli)
-				{
-					mu_[i][celli] = mui_()[celli];
-				}
+                forAll(mu_[i], celli)
+                {
+                    mu_[i][celli] = mui_()[celli];
+                }
 
-				forAll(mu_[i].boundaryField(), patchi)
-				{
-					const fvPatchScalarField& pmu =
-						mui_().boundaryField()[patchi];
+                forAll(mu_[i].boundaryField(), patchi)
+                {
+                    const fvPatchScalarField& pmu =
+                        mui_().boundaryField()[patchi];
 
-					fvPatchScalarField& pmui = mu_[i].boundaryField()[patchi];
+                    fvPatchScalarField& pmui = mu_[i].boundaryField()[patchi];
 
-					forAll(pmui, facei)
-					{
-						pmui[facei] = pmu[facei];
-					}
-				}
-			}
-			else if (mobilityModel_[i] == "eTemp" || mobilityModel_[i] == "EON")
-			{
-				IFstream file_mu(thermo_.T().mesh().time().constant()/"mu_" + species()[i]);
+                    forAll(pmui, facei)
+                    {
+                        pmui[facei] = pmu[facei];
+                    }
+                }
+            }
+            else if (mobilityModel_[i] == "eTemp" || mobilityModel_[i] == "EON")
+            {
+                IFstream file_mu(thermo_.T().mesh().time().constant()/"mu_" + species()[i]);
 
-				graphMuData_.set(i, new graph("mu_data_file","inter_data","mu_data", file_mu));
-			}
-		}
+                graphMuData_.set(i, new graph("mu_data_file","inter_data","mu_data", file_mu));
+            }
+        }
 
-		if((diffusionModel_[i].find("EON")) || (mobilityModel_[i].find("EON"))) 
-		{
-			a++; 
-		}
+        if ((diffusionModel_[i] == "EON") || (i < activeSpecies_ && mobilityModel_[i] == "EON"))
+        {
+            a++;
+        }
     }
-	
-	if(a!=0)
-	{
-		eonCalculation=true;
-	}
+
+    if(a!=0)
+    {
+        eonCalculation=true;
+    }
 }
 
 Foam::scalar Foam::multiSpeciesPlasmaModel::correct
 (
-	PtrList<volScalarField>& Y,
+    PtrList<volScalarField>& Y,
     const volVectorField& E,
     psiChemistryModel& chemistry,
     multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
 )
-{ 
-	updateTemperature();
+{
+    updateTemperature();
 
-	updateChemistryCollFreq(chemistry);
-	
+    updateChemistryCollFreq(chemistry);
+
     forAll(Sy_, i)
     {
         Sy_[i] = chemistry.RR(i);
     }
 
-	NG_ = thermo_.p()/plasmaConstants::boltzC/thermo_.T();
+    NG_ = thermo_.p()/plasmaConstants::boltzC/thermo_.T();
 
-	NG_.correctBoundaryConditions();
+    NG_.correctBoundaryConditions();
 
     return correct(chemistry, E, fields);
 }
 
-Foam::scalar 
+Foam::scalar
 Foam::multiSpeciesPlasmaModel::divFe()
 {
 
-	tmp<volScalarField> tdivFe
+    tmp<volScalarField> tdivFe
     (
         new volScalarField
         (
@@ -541,12 +533,10 @@ Foam::multiSpeciesPlasmaModel::divFe()
 
     volScalarField& divFe = tdivFe();
 
-    //Info << "div step " << endl;
 
     divFe = mag(0.5*fvc::div(F_[eIndex_]));
     tdivFe().correctBoundaryConditions();
 
-    //Info << "div step done " << endl;
 
     scalar maxdivFe = gMax(divFe);
 
@@ -554,10 +544,10 @@ Foam::multiSpeciesPlasmaModel::divFe()
 
 }
 
-Foam::surfaceScalarField 
+Foam::surfaceScalarField
 Foam::multiSpeciesPlasmaModel::meshParameter()
 {
-    
+
     surfaceScalarField gradNeOverNe
     (
             IOobject
@@ -571,8 +561,7 @@ Foam::multiSpeciesPlasmaModel::meshParameter()
             (fvc::interpolate(fvc::grad(N_[eIndex_])/N_[eIndex_]) & mesh_.Sf())/mesh_.magSf()
     );
 
-    
-    //scalar maxValue = gMax(gradNeOverNeDelta);
+
     return gradNeOverNe;
 
 }
@@ -603,7 +592,7 @@ Foam::multiSpeciesPlasmaModel::RR
         )
     );
 
-	scalarField& Su = tRR();
+    scalarField& Su = tRR();
 
     if (chemistry.chemistry())
     {
@@ -620,7 +609,7 @@ Foam::multiSpeciesPlasmaModel::RR
 Foam::tmp<Foam::volScalarField>
 Foam::multiSpeciesPlasmaModel::electronTempSource
 (
-	const psiChemistryModel& chemistry
+    const psiChemistryModel& chemistry
 )
 {
     tmp<volScalarField> tEts
@@ -639,17 +628,17 @@ Foam::multiSpeciesPlasmaModel::electronTempSource
             dimensionedScalar("zero", dimensionSet(1, -1, -3, 0, 0), 0.0)
         )
     );
-    
+
     volScalarField& ets = tEts();
 
     volScalarField pets = 0.0*ets;
 
-    pets = (chemistry.eChemSource()())*plasmaConstants::A/W(eIndex_); 
+    pets = (chemistry.eChemSource()())*plasmaConstants::A/W(eIndex_);
 
-	if (collisionFrequency_[eIndex_] == "muBased")
-	{
-		pets += (3*plasmaConstants::boltzC*plasmaConstants::eChargeA*(thermo_.Te()-thermo_.T())*N(eIndex_)/mu_[eIndex_]/W(bIndex_));
-	}
+    if (collisionFrequency_[eIndex_] == "muBased")
+    {
+        pets += (3*plasmaConstants::boltzC*plasmaConstants::eChargeA*(thermo_.Te()-thermo_.T())*N(eIndex_)/mu_[eIndex_]/W(bIndex_));
+    }
 
     forAll(ets, celli)
     {
@@ -668,14 +657,14 @@ Foam::multiSpeciesPlasmaModel::electronTempSource
             pppets[facei] = ppets[facei];
         }
     }
-   
+
     return tEts;
 }
 
 Foam::tmp<Foam::volScalarField>
 Foam::multiSpeciesPlasmaModel::dElectronTempSourceDTe
 (
-	const psiChemistryModel& chemistry
+    const psiChemistryModel& chemistry
 )
 {
     tmp<volScalarField> tEts
@@ -694,17 +683,17 @@ Foam::multiSpeciesPlasmaModel::dElectronTempSourceDTe
             dimensionedScalar("zero", dimensionSet(1, -1, -3, 0, 0), 0.0)
         )
     );
-    
+
     volScalarField& ets = tEts();
 
     volScalarField pets = 0.0*ets;
 
-    pets = (chemistry.dEChemSourceDTe()())*plasmaConstants::A/W(eIndex_); 
+    pets = (chemistry.dEChemSourceDTe()())*plasmaConstants::A/W(eIndex_);
 
-	if (collisionFrequency_[eIndex_] == "muBased")
-	{
-		pets += (3*plasmaConstants::boltzC*plasmaConstants::eChargeA*N(eIndex_)/mu_[eIndex_]/W(bIndex_));
-	}
+    if (collisionFrequency_[eIndex_] == "muBased")
+    {
+        pets += (3*plasmaConstants::boltzC*plasmaConstants::eChargeA*N(eIndex_)/mu_[eIndex_]/W(bIndex_));
+    }
 
     forAll(ets, celli)
     {
@@ -723,15 +712,15 @@ Foam::multiSpeciesPlasmaModel::dElectronTempSourceDTe
             pppets[facei] = ppets[facei];
         }
     }
-   
+
     return tEts;
 }
 
 Foam::tmp<Foam::volScalarField>
 Foam::multiSpeciesPlasmaModel::ionTempSource
 (
-	const psiChemistryModel& chemistry,
-	const volVectorField& E
+    const psiChemistryModel& chemistry,
+    const volVectorField& E
 )
 {
     tmp<volScalarField> tIts
@@ -751,7 +740,7 @@ Foam::multiSpeciesPlasmaModel::ionTempSource
             zeroGradientFvPatchScalarField::typeName
         )
     );
-    
+
     volScalarField& its = tIts();
 
     forAll(species(), i)
@@ -768,11 +757,11 @@ Foam::multiSpeciesPlasmaModel::ionTempSource
             {
                 its += (0.75*plasmaConstants::boltzC*(thermo_.Tion()-thermo_.T())*N(i)*chemistry.collFreq(i));
             }
-		}        
+        }
     }
 
     tIts().correctBoundaryConditions();
-   
+
     return tIts;
 }
 
@@ -795,18 +784,18 @@ Foam::multiSpeciesPlasmaModel::netCharge()
             dimensionedScalar("zero", dimensionSet(1, -1, -3, 0, 0), 0.0)
         )
     );
-    
+
     volScalarField& ps = tPs();
 
     volScalarField pps = 0.0*ps;
-    
+
     forAll(species(), i)
     {
         if (i < activeSpecies_)
-        {	
+        {
             pps += z_[i]*N(i);
-		}        
-    }    
+        }
+    }
 
     forAll(ps, celli)
     {
@@ -876,34 +865,34 @@ Foam::multiSpeciesPlasmaModel::potentialImpSource()
             dimensionedScalar("zero", dimensionSet(1, -1, -3, 0, 0), 0.0)
         )
     );
-    
+
     volScalarField& pis = tPis();
-    
+
     forAll(species(), i)
     {
         if (i < activeSpecies_)
         {
-		    volScalarField netImpSource = sign(z_[i])*z_[i]*mu_[i]*N(i);
-		
-		    forAll(pis, celli)
-		    {
-		        pis[celli] += netImpSource[celli];
-		    }
+            volScalarField netImpSource = sign(z_[i])*z_[i]*mu_[i]*N(i);
 
-		    forAll(pis.boundaryField(), patchi)
-		    {
-		        const fvPatchScalarField& pnetImpSource =
-		            netImpSource.boundaryField()[patchi];
+            forAll(pis, celli)
+            {
+                pis[celli] += netImpSource[celli];
+            }
 
-		        fvPatchScalarField& ppis = pis.boundaryField()[patchi];
+            forAll(pis.boundaryField(), patchi)
+            {
+                const fvPatchScalarField& pnetImpSource =
+                    netImpSource.boundaryField()[patchi];
 
-		        forAll(ppis, facei)
-		        {
-		            ppis[facei] += pnetImpSource[facei];
-		        }
-		    }
-		}        
-    }    
+                fvPatchScalarField& ppis = pis.boundaryField()[patchi];
+
+                forAll(ppis, facei)
+                {
+                    ppis[facei] += pnetImpSource[facei];
+                }
+            }
+        }
+    }
     return tPis;
 }
 
@@ -926,26 +915,25 @@ Foam::multiSpeciesPlasmaModel::potentialExpSource()
             dimensionedScalar("zero", dimensionSet(1, -1, -3, 0, 0), 0.0)
         )
     );
-    
+
     volScalarField& pes = tPes();
-    
+
     forAll(species(), i)
     {
         if (i < activeSpecies_)
         {
-        	//Info << "N(i) old = " << N(i).oldTime() << endl;
-		    volScalarField netExpSource 
-			= z_[i]*(N(i).oldTime()
-			+ runTime_.deltaT().value()*((Sy_[i]*plasmaConstants::A/W(i))
-			+ fvc::laplacian(D_[i], N(i), "laplacian(D,Ni)")
-			+ fvc::laplacian((mu_[i]*plasmaConstants::KBE*N(i)), T_[i], "laplacian(D,T)")));
-		
-		    forAll(pes, celli)
-		    {
-		        pes[celli] += netExpSource[celli];
-		    }
-		}        
-    }    
+            volScalarField netExpSource
+            = z_[i]*(N(i).oldTime()
+            + runTime_.deltaT().value()*((Sy_[i]*plasmaConstants::A/W(i))
+            + fvc::laplacian(D_[i], N(i), "laplacian(D,Ni)")
+            + fvc::laplacian((mu_[i]*plasmaConstants::KBE*N(i)), T_[i], "laplacian(D,T)")));
+
+            forAll(pes, celli)
+            {
+                pes[celli] += netExpSource[celli];
+            }
+        }
+    }
     return tPes;
 }
 
@@ -968,17 +956,17 @@ Foam::multiSpeciesPlasmaModel::netChargeFlux()
             dimensionedVector("zero", dimensionSet(1, -1, -3, 0, 0), vector::zero)
         )
     );
-    
+
     volVectorField& ncf = tNcf();
 
-	volVectorField pNcf = 0.0*ncf;
-    
+    volVectorField pNcf = 0.0*ncf;
+
     forAll(species(), i)
     {
         if (i < activeSpecies_)
         {
             pNcf += z_[i]*J(i);
-		}        
+        }
     }
 
     pNcf*= plasmaConstants::eCharge;
@@ -1005,7 +993,6 @@ Foam::multiSpeciesPlasmaModel::netChargeFlux()
 }
 
 
-
 Foam::tmp<Foam::volVectorField>
 Foam::multiSpeciesPlasmaModel::totalIonFlux()
 {
@@ -1025,17 +1012,17 @@ Foam::multiSpeciesPlasmaModel::totalIonFlux()
             dimensionedVector("zero", dimensionSet(1, -1, -3, 0, 0), vector::zero)
         )
     );
-    
+
     volVectorField& If = tIf();
 
-	volVectorField pIf = 0.0*If;
-    
+    volVectorField pIf = 0.0*If;
+
     forAll(species(), i)
     {
         if (i != eIndex_ && i < activeSpecies_)
         {
             pIf += J(i);
-		}        
+        }
     }
 
     forAll(If, celli)
@@ -1078,9 +1065,9 @@ Foam::multiSpeciesPlasmaModel::electronConvectiveFlux()
             dimensionedVector("zero", dimensionSet(1, -1, -3, 0, 0), vector::zero)
         )
     );
-    
+
     volVectorField& ecf = tEcf();
-    
+
     volVectorField pEcf = F_[eIndex_];
 
     forAll(ecf, celli)
@@ -1107,7 +1094,7 @@ Foam::multiSpeciesPlasmaModel::electronConvectiveFlux()
 Foam::tmp<Foam::volScalarField>
 Foam::multiSpeciesPlasmaModel::electronConductivity
 (
-	const psiChemistryModel& chemistry
+    const psiChemistryModel& chemistry
 )
 {
     tmp<volScalarField> tEc
@@ -1126,21 +1113,21 @@ Foam::multiSpeciesPlasmaModel::electronConductivity
             dimensionedScalar("zero", dimensionSet(1, -1, -3, 0, 0), 0.0)
         )
     );
-    
+
     volScalarField& ec = tEc();
 
-	volScalarField collFreqT = 0.0*ec;
+    volScalarField collFreqT = 0.0*ec;
 
-	if (collisionFrequency_[eIndex_] == "rrBased")
-	{
-		collFreqT = chemistry.collFreq(eIndex_)*W(eIndex_)*plasmaConstants::rA;
+    if (collisionFrequency_[eIndex_] == "rrBased")
+    {
+        collFreqT = chemistry.collFreq(eIndex_)*W(eIndex_)*plasmaConstants::rA;
     }
-	else if (collisionFrequency_[eIndex_] == "muBased")
-	{
-		collFreqT = plasmaConstants::eCharge/mu_[eIndex_];
-	}
+    else if (collisionFrequency_[eIndex_] == "muBased")
+    {
+        collFreqT = plasmaConstants::eCharge/mu_[eIndex_];
+    }
 
-	volScalarField ptEc = 2.5*plasmaConstants::boltzCsqr*T_[eIndex_]*N(eIndex_)/collFreqT;
+    volScalarField ptEc = 2.5*plasmaConstants::boltzCsqr*T_[eIndex_]*N(eIndex_)/collFreqT;
 
     forAll(ec, celli)
     {

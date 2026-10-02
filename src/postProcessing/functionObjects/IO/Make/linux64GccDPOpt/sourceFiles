@@ -1,3 +1,0 @@
-SOURCE = \
-writeRegisteredObject/writeRegisteredObject.C\
-writeRegisteredObject/writeRegisteredObjectFunctionObject.C

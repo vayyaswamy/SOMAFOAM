@@ -1,1 +1,0 @@
-../meshes/polyMesh/polyPatches/constraint/empty/emptyPolyPatch.H

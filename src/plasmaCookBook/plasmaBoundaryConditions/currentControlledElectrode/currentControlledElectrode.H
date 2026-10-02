@@ -34,7 +34,7 @@ public fixedGradientFvPatchScalarField
     scalarField amplitude_;
     word modelName_;
     scalar frequency_;
-    	
+
   public:
 
     //- Runtime type information
@@ -71,35 +71,35 @@ public fixedGradientFvPatchScalarField
     //- Construct as copy
     currentControlledElectrode
     (
-     	const currentControlledElectrode&
+        const currentControlledElectrode&
     );
 
     //- Construct and return a clone
     virtual tmp<fvPatchScalarField> clone() const
     {
-      	return tmp<fvPatchScalarField>
-		(
-		 new currentControlledElectrode(*this)
-		);
+        return tmp<fvPatchScalarField>
+        (
+         new currentControlledElectrode(*this)
+        );
     }
 
     //- Construct as copy setting internal field reference
     currentControlledElectrode
     (
-		 const currentControlledElectrode&,
-		 const DimensionedField<scalar, volMesh>&
+         const currentControlledElectrode&,
+         const DimensionedField<scalar, volMesh>&
     );
 
     //- Construct and return a clone setting internal field reference
     virtual tmp<fvPatchScalarField> clone
     (
-     	const DimensionedField<scalar, volMesh>& iF
+        const DimensionedField<scalar, volMesh>& iF
     ) const
     {
-		return tmp<fvPatchScalarField>
-		(
-			new currentControlledElectrode(*this, iF)
-		);
+        return tmp<fvPatchScalarField>
+        (
+            new currentControlledElectrode(*this, iF)
+        );
     }
 
 

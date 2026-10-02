@@ -48,7 +48,7 @@ class specieDynamics
         word regionName_;
 
         //- object to write
-		wordList objectNames_;
+        wordList objectNames_;
 
     // Private Member Functions
 

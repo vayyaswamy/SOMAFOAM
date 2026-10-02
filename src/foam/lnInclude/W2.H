@@ -1,1 +1,0 @@
-../interpolations/RBFInterpolation/RBFFunctions/W2/W2.H

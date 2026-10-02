@@ -29,117 +29,117 @@ Description
 
 int main(int argc, char *argv[])
 {
-	#include "setRootCase.H"
-	#include "createTime.H"
+    #include "setRootCase.H"
+    #include "createTime.H"
 
-	#include "createPlasmaMesh.H"
-	#include "createFields.H"
+    #include "createPlasmaMesh.H"
+    #include "createFields.H"
 
     lduMatrix::debug = 0;
 
-	coupledLduMatrix::debug = 0;
+    coupledLduMatrix::debug = 0;
 
-	blockLduMatrix::debug = 0;
+    blockLduMatrix::debug = 0;
 
-	if (solutionDomain == "plasmaDielectric")
-	{
-		#include "createDielectricMesh.H"
-		#include "createDielectricFields.H"
+    if (solutionDomain == "plasmaDielectric")
+    {
+        #include "createDielectricMesh.H"
+        #include "createDielectricFields.H"
 
-		while (runTime.run())
-		{
-			#include "detachPatches.H"
-			#include "plasmaEqn.H"
-			#include "surfaceCharge.H"
+        while (runTime.run())
+        {
+            #include "detachPatches.H"
+            #include "plasmaEqn.H"
+            #include "surfaceCharge.H"
 
-		    runTime++;
+            runTime++;
 
-		    Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
-		        << runTime.elapsedCpuTime() << "s" << endl;
+            Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
+                << runTime.elapsedCpuTime() << "s" << endl;
 
-			#include "attachPatches.H"
-			#include "solvePoissonD.H"
+            #include "attachPatches.H"
+            #include "solvePoissonD.H"
 
-		    if (runTime.write() && restartCapabale)
-		    {    
-				thermo.Te().write();
+            if (runTime.write() && restartCapabale)
+            {
+                thermo.Te().write();
 
-			    thermo.T().write();
+                thermo.T().write();
 
-			    thermo.Tion().write();
+                thermo.Tion().write();
 
-			    thermo.p().write();
+                thermo.p().write();
 
-			    Phi.write();
+                Phi.write();
 
-				E.write();
+                E.write();
 
-				forAll(dielectricRegions, i)
-				{
-					PhiD[i].write();
-				}
+                forAll(dielectricRegions, i)
+                {
+                    PhiD[i].write();
+                }
 
-			    forAll(composition.Y(), i)
-			    {
-					volScalarField specN
-					(
-						IOobject
-						(
-							composition.species()[i],
-							runTime.timeName(),
-							mesh
-						),
-						mspm().N(i),
-						Y[i].boundaryField().types()
-					);
-					specN.write();
-			    }
-		    }
-		}
-	}
-	else if (solutionDomain == "plasma")
-	{
-		while (runTime.run())
-		{
-			#include "plasmaEqn.H"
+                forAll(composition.Y(), i)
+                {
+                    volScalarField specN
+                    (
+                        IOobject
+                        (
+                            composition.species()[i],
+                            runTime.timeName(),
+                            mesh
+                        ),
+                        mspm().N(i),
+                        Y[i].boundaryField().types()
+                    );
+                    specN.write();
+                }
+            }
+        }
+    }
+    else if (solutionDomain == "plasma")
+    {
+        while (runTime.run())
+        {
+            #include "plasmaEqn.H"
 
-		    runTime++;
+            runTime++;
 
-		    Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
-		        << runTime.elapsedCpuTime() << "s" << endl;
+            Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
+                << runTime.elapsedCpuTime() << "s" << endl;
 
-			#include "solvePoisson.H"
+            #include "solvePoisson.H"
 
-		    if (runTime.write() && restartCapabale)
-		    {		    
-				thermo.Te().write();
+            if (runTime.write() && restartCapabale)
+            {
+                thermo.Te().write();
 
-			    thermo.T().write();
+                thermo.T().write();
 
-			    thermo.Tion().write();
+                thermo.Tion().write();
 
-			    thermo.p().write();
+                thermo.p().write();
 
-			    Phi.write();
+                Phi.write();
 
-			    forAll(composition.Y(), i)
-			    {
-					volScalarField specN
-					(
-						IOobject
-						(
-							composition.species()[i],
-							runTime.timeName(),
-							mesh
-						),
-						mspm().N(i),
-						Y[i].boundaryField().types()
-					);
-					specN.write();
-				}
-		    }
-		}
-	}
+                forAll(composition.Y(), i)
+                {
+                    volScalarField specN
+                    (
+                        IOobject
+                        (
+                            composition.species()[i],
+                            runTime.timeName(),
+                            mesh
+                        ),
+                        mspm().N(i),
+                        Y[i].boundaryField().types()
+                    );
+                    specN.write();
+                }
+            }
+        }
+    }
 
     return(0);
 }

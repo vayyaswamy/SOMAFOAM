@@ -41,7 +41,7 @@ void Foam::gasTemp::correct
     psiChemistryModel& chemistry
 )
 {
-	volScalarField& TiC = thermo().Tion();
+    volScalarField& TiC = thermo().Tion();
 
     TiC == thermo().T();
 }

@@ -1,1 +1,0 @@
-/usr/bin/gcc  -m64 -fPIC    -m64 CMakeFiles/cmsysTestSharedForward.dir/testSharedForward.c.o  -o cmsysTestSharedForward -rdynamic 

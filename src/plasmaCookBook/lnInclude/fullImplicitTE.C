@@ -1,1 +1,0 @@
-../plasmaEnergyModels/eTemperature/fullImplicitTE/fullImplicitTE.C

@@ -35,7 +35,7 @@ public fixedValueFvPatchScalarField
     word modelName_;
     scalar frequency_;
     scalar bias_;
-    	
+
   public:
 
     //- Runtime type information
@@ -72,35 +72,35 @@ public fixedValueFvPatchScalarField
     //- Construct as copy
     plasmaPotential
     (
-     	const plasmaPotential&
+        const plasmaPotential&
     );
 
     //- Construct and return a clone
     virtual tmp<fvPatchScalarField> clone() const
     {
-      	return tmp<fvPatchScalarField>
-		(
-		 new plasmaPotential(*this)
-		);
+        return tmp<fvPatchScalarField>
+        (
+         new plasmaPotential(*this)
+        );
     }
 
     //- Construct as copy setting internal field reference
     plasmaPotential
     (
-		 const plasmaPotential&,
-		 const DimensionedField<scalar, volMesh>&
+         const plasmaPotential&,
+         const DimensionedField<scalar, volMesh>&
     );
 
     //- Construct and return a clone setting internal field reference
     virtual tmp<fvPatchScalarField> clone
     (
-     	const DimensionedField<scalar, volMesh>& iF
+        const DimensionedField<scalar, volMesh>& iF
     ) const
     {
-		return tmp<fvPatchScalarField>
-		(
-			new plasmaPotential(*this, iF)
-		);
+        return tmp<fvPatchScalarField>
+        (
+            new plasmaPotential(*this, iF)
+        );
     }
 
 

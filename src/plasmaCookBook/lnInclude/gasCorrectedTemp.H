@@ -1,1 +1,0 @@
-../plasmaEnergyModels/iTemperature/gasCorrectedTemp/gasCorrectedTemp.H

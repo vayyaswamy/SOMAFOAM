@@ -1,3 +1,0 @@
-SOURCE = \
-mergePolyMesh.C\
-mergeMeshes.C

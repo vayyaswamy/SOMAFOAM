@@ -1,1 +1,0 @@
-../sampledSurface/sampledTriSurfaceMesh/sampledTriSurfaceMesh.H

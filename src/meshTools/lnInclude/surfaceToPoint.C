@@ -1,1 +1,0 @@
-../sets/pointSources/surfaceToPoint/surfaceToPoint.C

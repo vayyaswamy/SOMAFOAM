@@ -1,1 +1,0 @@
-../triSurface/triSurface/geometricSurfacePatch/geometricSurfacePatch.C

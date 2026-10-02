@@ -1,1 +1,0 @@
-../plasmaFunctionObjects/electricalCharacteristics/electricalCharacteristics.C

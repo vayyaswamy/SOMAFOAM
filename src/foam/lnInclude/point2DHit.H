@@ -1,1 +1,0 @@
-../meshes/primitiveShapes/objectHit/point2DHit.H

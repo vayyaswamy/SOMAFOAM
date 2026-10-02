@@ -1,1 +1,0 @@
-../interpolations/GGIInterpolation/GGIInterpolationName.C

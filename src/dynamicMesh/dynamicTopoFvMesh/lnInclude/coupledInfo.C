@@ -1,1 +1,0 @@
-../coupledMesh/coupledInfo.C

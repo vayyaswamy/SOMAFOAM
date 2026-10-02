@@ -37,52 +37,52 @@ int main(int argc, char *argv[])
 
     lduMatrix::debug = 0;
 
-	blockLduMatrix::debug = 0;
+    blockLduMatrix::debug = 0;
 
     while(runTime.loop())
     {
-		#include "solvePlasma.H"
+        #include "solvePlasma.H"
 
-		#include "solvePoisson.H"
+        #include "solvePoisson.H"
 
-	    if (runTime.write() && restartCapabale)
-	    {		    
-			thermo.Te().write();
+        if (runTime.write() && restartCapabale)
+        {
+            thermo.Te().write();
 
-		    thermo.T().write();
+            thermo.T().write();
 
-		    thermo.Tion().write();
+            thermo.Tion().write();
 
-		    thermo.p().write();
+            thermo.p().write();
 
-		    Phi.write();
+            Phi.write();
 
-			E.write();
+            E.write();
 
-			forAll(dielectricRegions, i)
-			{
-				PhiD[i].write();
-			}
+            forAll(dielectricRegions, i)
+            {
+                PhiD[i].write();
+            }
 
-		    forAll(composition.Y(), i)
-		    {
-				volScalarField specN
-				(
-					IOobject
-					(
-						composition.species()[i],
-						runTime.timeName(),
-						mesh
-					),
-					mspm().N(i),
-					Y[i].boundaryField().types()
-				);
-				specN.write();
-		    }
-	    }
+            forAll(composition.Y(), i)
+            {
+                volScalarField specN
+                (
+                    IOobject
+                    (
+                        composition.species()[i],
+                        runTime.timeName(),
+                        mesh
+                    ),
+                    mspm().N(i),
+                    Y[i].boundaryField().types()
+                );
+                specN.write();
+            }
+        }
 
-	    Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
-		        << runTime.elapsedCpuTime() << "s" << endl;
+        Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
+                << runTime.elapsedCpuTime() << "s" << endl;
     }
 
     Info << "End\n" << endl;

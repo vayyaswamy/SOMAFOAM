@@ -1,1 +1,0 @@
-../primitives/VectorN/vector2/sphericalTensor2I.H

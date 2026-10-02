@@ -108,7 +108,6 @@ public:
 
         const fvPatchScalarField& sigma() const;
 
-/*        const fvPatchVectorField& E() const;*/
 
         const fvPatchScalarField& epsilon() const;
 

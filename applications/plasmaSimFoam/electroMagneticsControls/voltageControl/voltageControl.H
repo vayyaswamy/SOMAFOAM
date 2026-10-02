@@ -27,10 +27,10 @@ class voltage
 {
     // Private data
 
-		const word mode_;		
-		dimensionedScalar amplitude_;
-		dimensionedScalar frequency_;
-		dimensionedScalar bias_;
+        const word mode_;
+        dimensionedScalar amplitude_;
+        dimensionedScalar frequency_;
+        dimensionedScalar bias_;
 
     // Private Member Functions
 
@@ -51,10 +51,10 @@ public:
         //- Construct from components
         voltage
         (
-			const dictionary& electroMagnetics,
-			multiSpeciesPlasmaModel& mspm,
-			const volVectorField& E,
-			const Time& runTime
+            const dictionary& electroMagnetics,
+            multiSpeciesPlasmaModel& mspm,
+            const volVectorField& E,
+            const Time& runTime
         );
 
 
@@ -74,7 +74,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} 
+}
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

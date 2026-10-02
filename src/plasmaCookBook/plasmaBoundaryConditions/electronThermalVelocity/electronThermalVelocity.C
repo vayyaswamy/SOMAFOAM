@@ -145,7 +145,7 @@ void Foam::electronThermalVelocity::updateCoeffs()
         patch().lookupPatchField<volVectorField, vector>("ionFlux");
 
     const fvPatchField<scalar>& Tef=
-        patch().lookupPatchField<volScalarField, scalar>("Te"); 
+        patch().lookupPatchField<volScalarField, scalar>("Te");
 
     const fvPatchField<vector>& Ef=
         patch().lookupPatchField<volVectorField, vector>("E");
@@ -157,7 +157,7 @@ void Foam::electronThermalVelocity::updateCoeffs()
 
     scalarField Fifnorm = Fif&n;
 
-    scalarField a = pos(Enorm);   
+    scalarField a = pos(Enorm);
 
     scalarField b = pos(Fifnorm);
 
@@ -167,27 +167,37 @@ void Foam::electronThermalVelocity::updateCoeffs()
 
     scalarField Gamma_FE = c*0.0;
 
-    //Info << "FE_ = " << FE_ << endl;
 
     if (FE_)
     {
-        //Info << "Enorm = " << Enorm << endl;
 
         scalarField vofy = 0.95 - sqr(3.79E-4)*beta_*c*mag(Enorm)*1E-2/sqr(wf_) ; // 1E-2 is for converting V/m to V/cm
 
-        //Info << "vofy = " << vofy << endl;
 
         Gamma_FE = c*1.54E-6/1.602e-19*sqr(beta_*c*mag(Enorm) )/1.1/wf_*exp(-6.85E9*pow(wf_,1.5)*vofy/beta_/(c*mag(Enorm) + SMALL) ) ;
 
-        //Info << "Gamma_FE = " << Gamma_FE << endl;
     }
 
-    //vectorField temp = 0.0*n;
 
-    vectorField temp = (0.25*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0)) - (Gamma_se + Gamma_FE)/Nef)*n;
+    // As in driftDiffusionElectronDensity: with Edepend the thermal loss
+    // applies only where the field repels electrons from the wall (E.n > 0);
+    // where it drives them in, they leave with their drift velocity.
+    if (!Edepend_)
+    {
+        a = 1.0;
+    }
+
+    const scalarField Udrift = max(this->patchInternalField() & n, scalar(0));
+
+    vectorField temp =
+    (
+        a*0.25*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0))
+      + (1.0 - a)*Udrift
+      - (Gamma_se + Gamma_FE)/Nef
+    )*n;
 
     operator == (temp);
-    
+
     fixedValueFvPatchVectorField::updateCoeffs();
 }
 

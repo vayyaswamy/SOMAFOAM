@@ -1,1 +1,0 @@
-../meshes/pointMesh/pointPatches/basic/generic/genericPointPatch.C

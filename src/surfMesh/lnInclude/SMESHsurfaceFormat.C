@@ -1,1 +1,0 @@
-../surfaceFormats/smesh/SMESHsurfaceFormat.C

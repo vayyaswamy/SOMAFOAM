@@ -1,1 +1,0 @@
-../meshes/polyMesh/globalMeshData/globalIndexI.H

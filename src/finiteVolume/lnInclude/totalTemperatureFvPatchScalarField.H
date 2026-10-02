@@ -1,1 +1,0 @@
-../fields/fvPatchFields/derived/totalTemperature/totalTemperatureFvPatchScalarField.H

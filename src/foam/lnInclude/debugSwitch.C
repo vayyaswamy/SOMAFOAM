@@ -1,1 +1,0 @@
-../global/controlSwitches/debugSwitch.C

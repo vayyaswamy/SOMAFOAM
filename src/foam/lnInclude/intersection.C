@@ -1,1 +1,0 @@
-../meshes/primitiveShapes/triangle/intersection.C

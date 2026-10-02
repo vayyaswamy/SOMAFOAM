@@ -1,8 +1,8 @@
 {
-	forAll(dielectricRegions, i)
-	{
-		
-		JtotD = epsD*fvc::ddt(ED);
+    forAll(dielectricRegions, i)
+    {
 
-	}
+        JtotD = epsD*fvc::ddt(ED);
+
+    }
 }

@@ -28,225 +28,193 @@ Description
 
 int main(int argc, char *argv[])
 {
-	#include "setRootCase.H"
-	#include "createTime.H"
+    #include "setRootCase.H"
+    #include "createTime.H"
 
-	#include "createPlasmaMesh.H"
-
-	//Info << "createFields " << endl;
-
-	#include "createFields.H"
-
-	pimpleControl pimple(mesh);
-
-	//Info << "Done " << endl;
-
-    //lduMatrix::debug = 0;
-
-	//coupledLduMatrix::debug = 0;
-
-	//blockLduMatrix::debug = 0;
-	
-
-	if (solutionDomain == "plasmaDielectric")
-	{
+    #include "createPlasmaMesh.H"
 
 
-		#include "createDielectricMesh.H"
-		#include "createDielectricFields.H"
+    #include "createFields.H"
 
-		while (runTime.run())
-		{
-
-			runTime++;
-
-			Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
-		       		<< runTime.elapsedCpuTime() << "s" << endl;
-
-			while (pimple.loop())
-			{
-
-				#include "attachPatches.H"
-                        	
-				while (pimple.correct())
-				{
-    	   			    #include "solvePoissonD.H"
-				}
-				#include "detachPatches.H"
-
-				#include "plasmaEqn.H"
-			
-				#include "surfaceCharge.H"
-
-				//#include "dielectricJ.H"
-		       	
-			}	
-			
-			gradTe = mspm().gradTe();
-				
-			
-		     	scalar Cofactor = mspm().divFe();
-
-        		scalar Cofactor2 = pem.ecorrect(chemistry, E);
-
-		    	scalar deltaTNew = MaxCo/(Cofactor+1e-10);
-
-		    	deltaTNew = min(deltaTNew,deltaTMax);
-
-		    	deltaTNew = max(deltaTNew,deltaTMin);
-
-		    	runTime.setDeltaT(deltaTNew);
-
-		    //Info << "New timestep = " << runTime.deltaTValue() << endl;
-
-		    //Info << "Courant = " << Cofactor*runTime.deltaTValue() << endl;
-
-		    
-    	
+    pimpleControl pimple(mesh);
 
 
-		    if (runTime.write() && restartCapabale)
-		    {    
-
-				thermo.Te().write();
-
-			    thermo.T().write();
-
-			    thermo.Tion().write();
-
-			    thermo.p().write();
-
-			    Phi.write();
-
-				eps.write();
-
-				//E.write();
-
-				surfC.write();
-
-				forAll(dielectricRegions, i)
-				{
-					PhiD[i].write();
-
-					ED[i].write();
-
-					epsD[i].write();
+    if (solutionDomain == "plasmaDielectric")
+    {
 
 
-				}
+        #include "createDielectricMesh.H"
+        #include "createDielectricFields.H"
 
-			    forAll(composition.Y(), i)
-			    {
-					volScalarField specN
-					(
-						IOobject
-						(
-							composition.species()[i],
-							runTime.timeName(),
-							mesh
-						),
-						mspm().N(i),
-						Y[i].boundaryField().types()
-					);
-					specN.write();
-					//mspm().N(i).write();
-			    }
-		    }
-		}
-	}
-	else if (solutionDomain == "plasma")
-	{
-		while (runTime.run())
-		{
+        while (runTime.run())
+        {
+
+            runTime++;
+
+            Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
+                    << runTime.elapsedCpuTime() << "s" << endl;
+
+            while (pimple.loop())
+            {
+
+                #include "attachPatches.H"
+
+                while (pimple.correct())
+                {
+                        #include "solvePoissonD.H"
+                }
+                #include "detachPatches.H"
+
+                #include "plasmaEqn.H"
+
+                #include "surfaceCharge.H"
 
 
-			runTime++;
+            }
 
-			Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
-		        << runTime.elapsedCpuTime() << "s" << endl;
+            gradTe = mspm().gradTe();
 
-		    while (pimple.loop())
-		    {
-			
-			/*while (pimple.correct())
-			{
-				#include "solvePoisson.H"	
-			}*/
 
-		    while (pimple.correct())
-		    {
-		   		#include "solvePoisson.H" 	
-		    }
-		    
+                scalar Cofactor = mspm().divFe();
 
-			#include "plasmaEqn.H"	
-			#include "surfaceCharge_new.H"
-			
-			
-			
+                scalar Cofactor2 = pem.ecorrect(chemistry, E);
 
-		    }
+                scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 
-			gradTe = mspm().gradTe();
-			
-		    scalar Cofactor1 = mspm().divFe();
-      
+                deltaTNew = min(deltaTNew,deltaTMax);
+
+                deltaTNew = max(deltaTNew,deltaTMin);
+
+                runTime.setDeltaT(deltaTNew);
+
+
+            if (runTime.write() && restartCapabale)
+            {
+
+                thermo.Te().write();
+
+                thermo.T().write();
+
+                thermo.Tion().write();
+
+                thermo.p().write();
+
+                Phi.write();
+
+                eps.write();
+
+
+                surfC.write();
+
+                forAll(dielectricRegions, i)
+                {
+                    PhiD[i].write();
+
+                    ED[i].write();
+
+                    epsD[i].write();
+
+
+                }
+
+                forAll(composition.Y(), i)
+                {
+                    volScalarField specN
+                    (
+                        IOobject
+                        (
+                            composition.species()[i],
+                            runTime.timeName(),
+                            mesh
+                        ),
+                        mspm().N(i),
+                        Y[i].boundaryField().types()
+                    );
+                    specN.write();
+                }
+            }
+        }
+    }
+    else if (solutionDomain == "plasma")
+    {
+        while (runTime.run())
+        {
+
+
+            runTime++;
+
+            Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
+                << runTime.elapsedCpuTime() << "s" << endl;
+
+            while (pimple.loop())
+            {
+
+
+            while (pimple.correct())
+            {
+                #include "solvePoisson.H"
+            }
+
+
+            #include "plasmaEqn.H"
+            #include "surfaceCharge_new.H"
+
+
+            }
+
+            gradTe = mspm().gradTe();
+
+            scalar Cofactor1 = mspm().divFe();
+
         scalar Cofactor2 = pem.ecorrect(chemistry, E);
-            
+
         scalar Cofactor = max(Cofactor1,Cofactor2);
 
         meshSize = mspm().meshParameter();
 
-		    //Info << "Cofactor1 = " << Cofactor1 << endl;
-            
-        //Info << "Cofactor2 = " << Cofactor2 << endl;
-        
-        //Info << "Cofactor = " << Cofactor << endl;
 
         Info << "Mesh Size Reciprocal = " << gMax(meshSize) << endl;
 
-		    scalar deltaTNew = MaxCo/(Cofactor+1e-10);
+            scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 
-		    deltaTNew = min(deltaTNew,deltaTMax);
+            deltaTNew = min(deltaTNew,deltaTMax);
 
-		    deltaTNew = max(deltaTNew,deltaTMin);
+            deltaTNew = max(deltaTNew,deltaTMin);
 
-		    runTime.setDeltaT(deltaTNew);
+            runTime.setDeltaT(deltaTNew);
 
-		    Info << "New timestep = " << runTime.deltaTValue() << endl;
+            Info << "New timestep = " << runTime.deltaTValue() << endl;
 
-		    //Info << "Courant = " << Cofactor*runTime.deltaTValue() << endl;
 
-		    if (runTime.write() && restartCapabale)
-		    {   
-				thermo.Te().write();
+            if (runTime.write() && restartCapabale)
+            {
+                thermo.Te().write();
 
-			    thermo.T().write();
+                thermo.T().write();
 
-			    thermo.Tion().write();
+                thermo.Tion().write();
 
-			    thermo.p().write();
+                thermo.p().write();
 
-			    Phi.write();
+                Phi.write();
 
-			    forAll(composition.Y(), i)
-			    {
-					volScalarField specN
-					(
-						IOobject
-						(
-							composition.species()[i],
-							runTime.timeName(),
-							mesh
-						),
-						mspm().N(i)
-					);
-					specN.write();
-					//mspm().N(i).write();
-				}
-		    }
-		}
-	}
+                forAll(composition.Y(), i)
+                {
+                    volScalarField specN
+                    (
+                        IOobject
+                        (
+                            composition.species()[i],
+                            runTime.timeName(),
+                            mesh
+                        ),
+                        mspm().N(i)
+                    );
+                    specN.write();
+                }
+            }
+        }
+    }
     return(0);
 }
 

@@ -1,1 +1,0 @@
-../sampledSurface/sampledCuttingPlane/sampledCuttingPlane.H

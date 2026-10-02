@@ -33,7 +33,7 @@ public fixedValueFvPatchScalarField
     // Private data
 
     scalarField voltage() const;
-	
+
   public:
 
     //- Runtime type information
@@ -70,35 +70,35 @@ public fixedValueFvPatchScalarField
     //- Construct as copy
     plasmaExtendedPotential
     (
-     	const plasmaExtendedPotential&
+        const plasmaExtendedPotential&
     );
 
     //- Construct and return a clone
     virtual tmp<fvPatchScalarField> clone() const
     {
-      	return tmp<fvPatchScalarField>
-		(
-		 new plasmaExtendedPotential(*this)
-		);
+        return tmp<fvPatchScalarField>
+        (
+         new plasmaExtendedPotential(*this)
+        );
     }
 
     //- Construct as copy setting internal field reference
     plasmaExtendedPotential
     (
-		 const plasmaExtendedPotential&,
-		 const DimensionedField<scalar, volMesh>&
+         const plasmaExtendedPotential&,
+         const DimensionedField<scalar, volMesh>&
     );
 
     //- Construct and return a clone setting internal field reference
     virtual tmp<fvPatchScalarField> clone
     (
-     	const DimensionedField<scalar, volMesh>& iF
+        const DimensionedField<scalar, volMesh>& iF
     ) const
     {
-		return tmp<fvPatchScalarField>
-		(
-			new plasmaExtendedPotential(*this, iF)
-		);
+        return tmp<fvPatchScalarField>
+        (
+            new plasmaExtendedPotential(*this, iF)
+        );
     }
 
     //- Map (and resize as needed) from self given a mapping object

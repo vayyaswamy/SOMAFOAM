@@ -1,1 +1,0 @@
-../fields/pointPatchFields/pointPatchField/pointConstraint/pointConstraint.H

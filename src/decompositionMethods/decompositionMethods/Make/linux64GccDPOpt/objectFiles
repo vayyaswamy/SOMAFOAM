@@ -1,7 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/decompositionMethod.o\
-$(OBJECTS_DIR)/manualDecomp.o\
-$(OBJECTS_DIR)/geomDecomp.o\
-$(OBJECTS_DIR)/simpleGeomDecomp.o\
-$(OBJECTS_DIR)/hierarchGeomDecomp.o\
-$(OBJECTS_DIR)/patchConstrainedDecomp.o

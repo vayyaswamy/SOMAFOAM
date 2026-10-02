@@ -1,3 +1,0 @@
-LOCAL_OBJECTS = \
-extrude2DMesh.o\
-doExtrude2DMesh.o

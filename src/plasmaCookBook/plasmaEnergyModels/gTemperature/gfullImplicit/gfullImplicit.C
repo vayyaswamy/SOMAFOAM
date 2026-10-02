@@ -39,9 +39,9 @@ Foam::gfullImplicit::gfullImplicit
         (
             "gasTempSource",
             thermo.T().mesh().time().timeName(),
-			thermo.T().mesh(),
-			IOobject::NO_READ,
-			IOobject::NO_WRITE
+            thermo.T().mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
         ),
         thermo.T().mesh(),
         dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0)
@@ -52,9 +52,9 @@ Foam::gfullImplicit::gfullImplicit
         (
             "gasTempSourcetemp",
             thermo.T().mesh().time().timeName(),
-			thermo.T().mesh(),
-			IOobject::NO_READ,
-			IOobject::NO_WRITE
+            thermo.T().mesh(),
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
         ),
         thermo.T().mesh(),
         dimensionedScalar("zero", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0)
@@ -69,45 +69,28 @@ Foam::gfullImplicit::gfullImplicit
 void Foam::gfullImplicit::correct
 (
     psiChemistryModel& chemistry,
-	const volVectorField& E
+    const volVectorField& E
 )
 {
-	volScalarField& Tc = thermo().T();
+    volScalarField& Tc = thermo().T();
 
-    //if(tavesource == "frequency")
-    //{
-    //    gasTempSourcetemp += mspm().ionTempSource(chemistry, E) + chemistry.Sh()();
-    //    timeCountn++;
-    //    if(runTime().value()-timeCount > cycleavevalue)
-		//{
-    //        timeCount = runTime().value();
-    //        gasTempSource = gasTempSourcetemp/timeCountn;
-    //        gasTempSourcetemp = 0.0*gasTempSource;
-    //        timeCountn = 0.0;
-    //    }
-    //}
 
     gasTempSource = mspm().ionTempSource(chemistry, E);
     volScalarField kappa = thermo().Cp()*thermo().rho()*thermo().alpha();
     volScalarField rhoCp = thermo().Cp()*thermo().rho();
-    
-    //Info << "Cp = " << thermo().Cp() << endl;
-    //Info << "rho = " << thermo().rho() << endl;
-    //Info << "alpha = " << thermo().alpha() << endl;
-    //Info << "chemistry = " << chemistry.Sh() << endl;
 
 
     fvScalarMatrix TEqn
     (
       - fvm::laplacian(kappa, Tc, "laplacian(alpha,T)")
-	  ==
+      ==
       gasTempSource
     );
 
     TEqn.relax();
 
-	TEqn.solve();
- 
+    TEqn.solve();
+
     Tc.relax();
 }
 

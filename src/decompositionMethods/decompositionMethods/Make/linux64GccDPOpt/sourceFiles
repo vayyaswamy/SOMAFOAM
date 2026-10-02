@@ -1,7 +1,0 @@
-SOURCE = \
-decompositionMethod/decompositionMethod.C\
-manualDecomp/manualDecomp.C\
-geomDecomp/geomDecomp.C\
-simpleGeomDecomp/simpleGeomDecomp.C\
-hierarchGeomDecomp/hierarchGeomDecomp.C\
-patchConstrainedDecomp/patchConstrainedDecomp.C

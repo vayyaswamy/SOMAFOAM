@@ -1,1 +1,0 @@
-../primitives/VectorN/vector3/sphericalTensor3.H

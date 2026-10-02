@@ -46,17 +46,15 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting iteration loop\n" << endl;
 
-    //scalar e = 1.602E-19;
-    //scalar epsilon0 = 8.854E-12;
     //
-    dimensionedScalar e 
+    dimensionedScalar e
     (
         "e",
         dimensionSet(0,0,1,0,0,1,0),
         scalar(1.602e-19)
     );
 
-    dimensionedScalar epsilon0 
+    dimensionedScalar epsilon0
     (
         "epsilon0",
         dimensionSet(-1,-3,4,0,0,2,0),
@@ -67,72 +65,72 @@ int main(int argc, char *argv[])
     {
         Info<< "Iteration = " << runTime.timeName() << nl << endl;
 
-	// Continuity equation for electrons
-	solve
-	(
-	    fvm::ddt(ne) + fvm::div(neFlux,ne) - Se
-	);
+    // Continuity equation for electrons
+    solve
+    (
+        fvm::ddt(ne) + fvm::div(neFlux,ne) - Se
+    );
 
-	// Momentum equation for electrons
+    // Momentum equation for electrons
         solve
-	(
-	    fvm::ddt(ne,Ue) + fvm::div(UeFlux,Ue) + e*ne*E/me + e*fvc::grad(ne*Te)/me
-	);
+    (
+        fvm::ddt(ne,Ue) + fvm::div(UeFlux,Ue) + e*ne*E/me + e*fvc::grad(ne*Te)/me
+    );
 
 
-	// Continuity equation for ion 1
+    // Continuity equation for ion 1
         solve
-	(
- 	    fvm::ddt(n1) + fvm::div(n1Flux,n1) - S1 
-	);
+    (
+        fvm::ddt(n1) + fvm::div(n1Flux,n1) - S1
+    );
 
-	// Momentum equation for ion 1
-	solve
-	(
- 	    fvm::ddt(n1,U1) + fvm::div(U1Flux,U1) - e*n1*E/m1 + e*fvc::grad(n1*T1)/m1 
-	);
+    // Momentum equation for ion 1
+    solve
+    (
+        fvm::ddt(n1,U1) + fvm::div(U1Flux,U1) - e*n1*E/m1 + e*fvc::grad(n1*T1)/m1
+    );
 
 
-	// Continuity equation for ion 2
-	solve
-	(
+    // Continuity equation for ion 2
+    solve
+    (
             fvm::ddt(n2) + fvm::div(n2Flux,n2) - S2
-	);
+    );
 
-	// Momentum equation for ion 2
-	solve
-	(
-	    fvm::ddt(n2,U2) + fvm::div(U2Flux,U2) - e*n2*E/m2 +e*fvc::grad(n2*T2)/m2
-	);
+    // Momentum equation for ion 2
+    solve
+    (
+        fvm::ddt(n2,U2) + fvm::div(U2Flux,U2) - e*n2*E/m2 +e*fvc::grad(n2*T2)/m2
+    );
 
         // Poisson's equation
-	solve
-	(
-	    fvm::laplacian(phi) + e*(n1 + n2 - ne)/epsilon0
-	);
+    solve
+    (
+        fvm::laplacian(phi) + e*(n1 + n2 - ne)/epsilon0
+    );
 
         Gammae = ne*Ue;
 
-	Gamma1 = n1*U1;
+    Gamma1 = n1*U1;
 
-	Gamma2 = n2*U2;
+    Gamma2 = n2*U2;
 
         // Update electron flux
-	neFlux = fvc::interpolate(Ue) & mesh.Sf();
-	UeFlux = fvc::interpolate(ne)*neFlux;
+    neFlux = fvc::interpolate(Ue) & mesh.Sf();
+    UeFlux = fvc::interpolate(ne)*neFlux;
 
-	// Update ion 1 flux
-	n1Flux = fvc::interpolate(U1) & mesh.Sf();
-	U1Flux = fvc::interpolate(n1)*n1Flux;
-       
+    // Update ion 1 flux
+    n1Flux = fvc::interpolate(U1) & mesh.Sf();
+    U1Flux = fvc::interpolate(n1)*n1Flux;
+
         // Update ion 2 flux
-	n2Flux = fvc::interpolate(U2) & mesh.Sf();
-	U2Flux = fvc::interpolate(n2)*n2Flux;
+    n2Flux = fvc::interpolate(U2) & mesh.Sf();
+    U2Flux = fvc::interpolate(n2)*n2Flux;
 
         // Calculate E-field
         E = -fvc::grad(phi);
 
-	ni = n1 + n2;
+    ni = n1 + n2;
 
         runTime.write();
 

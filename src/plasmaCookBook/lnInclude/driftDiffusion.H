@@ -1,1 +1,0 @@
-../multiSpeciesPlasmaModels/driftDiffusion/driftDiffusion.H

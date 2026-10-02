@@ -1,1 +1,0 @@
-../primitives/SymmTensor/symmTensor/symmTensor.H

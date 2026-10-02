@@ -1,1 +1,0 @@
-../meshes/pointMesh/pointPatches/basic/coupled/coupledPointPatch.C

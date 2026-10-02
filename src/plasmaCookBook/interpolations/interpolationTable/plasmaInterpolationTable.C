@@ -113,7 +113,6 @@ Foam::plasmaInterpolationTable<Type>::plasmaInterpolationTable
 {}
 
 
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>

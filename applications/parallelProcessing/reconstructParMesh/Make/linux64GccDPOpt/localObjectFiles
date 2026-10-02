@@ -1,9 +1,0 @@
-LOCAL_OBJECTS = \
-processorMeshesReconstructor.o\
-processorMeshesRebuild.o\
-processorFaMeshes.o\
-fvFieldReconstructor.o\
-faFieldReconstructor.o\
-pointFieldReconstructor.o\
-reconstructLagrangianPositions.o\
-reconstructParMesh.o

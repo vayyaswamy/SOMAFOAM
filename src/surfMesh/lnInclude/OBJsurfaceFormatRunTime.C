@@ -1,1 +1,0 @@
-../surfaceFormats/obj/OBJsurfaceFormatRunTime.C

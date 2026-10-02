@@ -1,1 +1,0 @@
-../plasmaBoundaryConditions/driftDiffusionOpenBoundary/driftDiffusionOpenBoundary.H

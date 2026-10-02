@@ -1,1 +1,0 @@
-../fields/fvPatchFields/derived/fan/fanFvPatchField.C

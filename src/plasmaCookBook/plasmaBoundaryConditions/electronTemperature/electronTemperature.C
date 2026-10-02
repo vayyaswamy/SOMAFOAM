@@ -33,7 +33,6 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::electronTemperature::electronTemperature
@@ -55,7 +54,6 @@ Foam::electronTemperature::electronTemperature
     this->refGrad() = 0;
     this->valueFraction() = 0;
 
-    //Info << "Constructor 1 for Te " << endl;
 }
 
 
@@ -103,7 +101,6 @@ Foam::electronTemperature::electronTemperature
 }
 
 
-
 Foam::electronTemperature::electronTemperature
 (
     const electronTemperature& ptf
@@ -118,7 +115,6 @@ Foam::electronTemperature::electronTemperature
     beta_(ptf.beta_),
     wf_(ptf.wf_)
 {}
-
 
 
 Foam::electronTemperature::electronTemperature
@@ -150,7 +146,6 @@ void Foam::electronTemperature::updateCoeffs()
 
     vectorField n = patch().nf();
 
-    //Info << "electronTemperature updateCoeffs " << endl;
 
     const fvPatchField<scalar>& Nef=
         patch().lookupPatchField<volScalarField, scalar>("N_electron");
@@ -161,18 +156,6 @@ void Foam::electronTemperature::updateCoeffs()
     const fvPatchField<scalar>& Tef=
         patch().lookupPatchField<volScalarField, scalar>("Te");
 
-    //Info << "Tef = " << Tef << endl;
-
-    //Info << "kappef = " << kappaef << endl;
-
-    //Info << "Nef = " << Nef << endl;
-
-    //Info << "Tecell = " << this->patchInternalField() << endl;
-
-    //Info << "1 - f " << 1.0-this->valueFraction() << endl;
-
-    //const fvPatchField<scalar>& gradTef=
-    //    patch().lookupPatchField<volScalarField, scalar>("gradTe");    
 
     const fvPatchField<vector>& Ef=
         patch().lookupPatchField<volVectorField, vector>("E");
@@ -180,19 +163,18 @@ void Foam::electronTemperature::updateCoeffs()
     const fvPatchField<vector>& Fif=
         patch().lookupPatchField<volVectorField, vector>("ionFlux");
 
-   // Info << "Step 1" << endl ;
 
     scalarField Enorm = Ef&n ;
 
     scalarField Fifnorm = Fif&n;
 
-    scalarField a = pos(mag(Enorm));  
+    scalarField a = pos(mag(Enorm));
 
     scalarField b = pos(Fifnorm);
 
     if (Edepend_)
     {
-        a = pos(Enorm);    
+        a = pos(Enorm);
     }
 
     scalarField c = pos(Enorm); // to ensure field emission happens only if E-field is pointing inward even if Edepend is set to false
@@ -203,17 +185,14 @@ void Foam::electronTemperature::updateCoeffs()
 
     if (FE_)
     {
-        //Info << "Enorm = " << Enorm << endl;
 
         scalarField vofy = 0.95 - sqr(3.79E-4)*beta_*c*mag(Enorm)*1E-2/sqr(wf_) ; // 1E-2 is for converting V/m to V/cm
 
-        //Info << "vofy = " << vofy << endl;
 
         Gamma_FE = 1.54E-6/1.602e-19*sqr(beta_*c*mag(Enorm) )/1.1/wf_*exp(-6.85E9*pow(wf_,1.5)*vofy/beta_/(c*mag(Enorm) + SMALL) ) ;
 
-        //Info << "Gamma_FE = " << Gamma_FE << endl;
     }
-    
+
 
     const scalarField C1 = 0.5*1.38e-23*0.25*Nef*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0)) - 2.5*1.38e-23*(Gamma_se + Gamma_FE);
 
@@ -223,22 +202,16 @@ void Foam::electronTemperature::updateCoeffs()
 
     this->refValue() = 0.0;
 
-    
 
     this->valueFraction() = a*C1/(C1-C2*this->patch().deltaCoeffs()) ;
 
-    //Info << "value Fraction = " << this->valueFraction() << endl;
 
     this->refGrad() = C3/(C2+SMALL);
 
-    //Info << "ref Grad = " << this->refGrad() << endl;
-
-    //Info << "value fraction = " << this->valueFraction() << endl;
-    
 
     mixedFvPatchField<scalar>::updateCoeffs();
 
-    
+
 }
 
 
@@ -276,7 +249,7 @@ void Foam::electronTemperature::operator=
         this->valueFraction()*this->refValue()
         + (1 - this->valueFraction())*ptf
     );
-   
+
 }
 
 

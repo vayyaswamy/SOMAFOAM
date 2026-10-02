@@ -11,7 +11,7 @@ Class
 
 Description
     zeroD equation.
-  
+
 SourceFiles
     zeroD.C
 
@@ -35,19 +35,19 @@ template<class ThermoType>
 class zeroD
 :
     public multiSpeciesPlasmaModel
-{  
+{
 
 protected:
-  
+
     // Protected data
-  
+
         const PtrList<ThermoType>& speciesThermo_;
 
 public:
 
-		//- Runtime type information
-		TypeName("zeroD");
-    
+        //- Runtime type information
+        TypeName("zeroD");
+
     // Constructors
 
         //- Construct from components
@@ -61,7 +61,7 @@ public:
         {}
 
     // Member Functions
-    
+
         scalar W(label i) const
         {
             return speciesThermo_[i].W();
@@ -70,17 +70,17 @@ public:
         virtual inline scalar correct
         (
             psiChemistryModel& chemistry,
-			const volVectorField& E,
+            const volVectorField& E,
             multivariateSurfaceInterpolationScheme<scalar>::fieldTable& fields
         );
-                
+
         //- Read dictionary
         virtual bool read();
   };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-}	// End namespace Foam
+}   // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 

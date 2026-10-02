@@ -131,7 +131,6 @@ public:
             virtual tmp<scalarField> kw() const;
 
 
-
         // Evaluation functions
 
             //- Initialise the evaluation of the patch field

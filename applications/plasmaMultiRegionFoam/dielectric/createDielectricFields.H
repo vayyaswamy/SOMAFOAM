@@ -57,7 +57,7 @@
                     IOobject::NO_WRITE
                 ),
                 dielectricRegions[i],
-			    dimensionedVector("E", dimensionSet(0, 0, 0, 1, 0), vector::zero)
+                dimensionedVector("E", dimensionSet(0, 0, 0, 1, 0), vector::zero)
             )
         );
 
@@ -75,7 +75,7 @@
                     IOobject::NO_WRITE
                 ),
                 dielectricRegions[i],
-			    dimensionedScalar("epsilon", dimensionSet(0, 0, 0, 1, 0), dielectricProperties[i].lookup("epsilon"))
+                dimensionedScalar("epsilon", dimensionSet(0, 0, 0, 1, 0), dielectricProperties[i].lookup("epsilon"))
             )
         );
 
@@ -93,7 +93,7 @@
                     IOobject::NO_WRITE
                 ),
                 dielectricRegions[i],
-			    dimensionedScalar("surfC", dimensionSet(0, 0, 0, 1, 0), 0.0)
+                dimensionedScalar("surfC", dimensionSet(0, 0, 0, 1, 0), 0.0)
             )
         );
-	}
+    }

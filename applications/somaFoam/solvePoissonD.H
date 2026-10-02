@@ -1,227 +1,173 @@
 {
-	emc->correct(voltageDict);
+    emc->correct(voltageDict);
 
-	//Info << "solvePoissonD" << endl;
 
-	scalar relativePhiResidual = 1.0;
+    scalar relativePhiResidual = 1.0;
 
-	int iCorr = 0;
+    int iCorr = 0;
 
 
+    do
+    {
 
-	do
-	{
+    Phi.storePrevIter();
 
-	Phi.storePrevIter();
+    if (poissonEquationSolver == "semiImplicit")
+    {
 
-	if (poissonEquationSolver == "semiImplicit")
-	{
-		
 
-		coupledFvScalarMatrix phiEqns(dielectricRegions.size()+1);
+        coupledFvScalarMatrix phiEqns(dielectricRegions.size()+1);
 
-		//Info << "eps plasma " << endl;
 
-		eps.correctBoundaryConditions();
+        eps.correctBoundaryConditions();
 
-		volScalarField epsSource = eps + runTime.deltaTValue()*eCharge*mspm().potentialImpSource();
+        volScalarField epsSource = eps + runTime.deltaTValue()*eCharge*mspm().potentialImpSource();
 
-		//Info << "eps = " << eps << endl;
 
-		
+        fvScalarMatrix* phiPlasmaEqn = new fvScalarMatrix
+        (
+            fvm::laplacian(epsSource, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().potentialExpSource())
 
-		//Info << "eps dielectric " << endl;
+        );
 
-		
-		//Info << "Done with eps" << endl;
 
-		//Info << "eps corrected" << endl;
+        phiEqns.set(0, phiPlasmaEqn);
 
-		//Info << "setting matrix " << endl;
 
-		fvScalarMatrix* phiPlasmaEqn = new fvScalarMatrix
-		(
-			fvm::laplacian(epsSource, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().potentialExpSource())
+        forAll(dielectricRegions, i)
+        {
+            epsD[i].correctBoundaryConditions();
 
-			//fvm::laplacian(epsSource, Phi, "laplacian(eps,Phi)") == 0
-		);
+        }
 
-		//Info << "intermediate " << endl;
 
-		phiEqns.set(0, phiPlasmaEqn);
+        forAll(dielectricRegions, i)
+        {
 
-		//Info << "Done setting " << endl;
+            phiEqns.set(i+1, new fvScalarMatrix
+            (
+                fvm::laplacian(epsD[i], PhiD[i], "laplacian(eps,Phi)")
+            ));
+        }
 
-		//Info << "setting dielectric matrix " << endl;
 
-		forAll(dielectricRegions, i)
-		{
-			epsD[i].correctBoundaryConditions();
+        phiEqns.solve();
 
-		}
 
-		//Info << "epsD = " << epsD << endl;
+    }
+    else if (poissonEquationSolver == "explicit")
+    {
+        coupledFvScalarMatrix phiEqns(dielectricRegions.size()+1);
 
 
+        eps.correctBoundaryConditions();
 
-		forAll(dielectricRegions, i)
-		{
+        forAll(dielectricRegions, i)
+        {
+            epsD[i].correctBoundaryConditions();
 
-			phiEqns.set(i+1, new fvScalarMatrix
-			(
-				fvm::laplacian(epsD[i], PhiD[i], "laplacian(eps,Phi)") 
-			));
-		}
-		//Info << "Done setting dielectric matrix " << endl;
+        }
 
 
+        fvScalarMatrix* phiPlasmaEqn = new fvScalarMatrix
+        (
+            fvm::laplacian(eps, Phi, "laplacian(eps,Phi)") == -(eCharge*mspm().netCharge())
+        );
 
-		phiEqns.solve();
+        phiEqns.set(0, phiPlasmaEqn);
 
-	
-	}
-	else if (poissonEquationSolver == "explicit")
-	{
-		coupledFvScalarMatrix phiEqns(dielectricRegions.size()+1);
 
-		//Info << "eps = " << eps << endl;
+        forAll(dielectricRegions, i)
+        {
 
-		//Info << "eps correct " << endl;
+            phiEqns.set(i+1, new fvScalarMatrix
+            (
+                fvm::laplacian(epsD[i], PhiD[i], "laplacian(eps,Phi)")
+            ));
+        }
 
-		eps.correctBoundaryConditions();
 
-		forAll(dielectricRegions, i)
-		{
-			epsD[i].correctBoundaryConditions();
+        phiEqns.solve();
 
-		}
 
-		//Info << "eps correct done " << endl;
+        E = -fvc::grad(Phi);
 
-		//Info << "Stage 2 " << endl;
+        forAll(dielectricRegions, i)
+        {
+            ED[i] = -fvc::grad(PhiD[i]);
+        }
 
-		fvScalarMatrix* phiPlasmaEqn = new fvScalarMatrix
-		(
-			fvm::laplacian(eps, Phi, "laplacian(eps,Phi)") == -(eCharge*mspm().netCharge())
-		);
+    }
+    else if (poissonEquationSolver == "linearized")
+    {
+        coupledFvScalarMatrix phiEqns(dielectricRegions.size()+1);
 
-		phiEqns.set(0, phiPlasmaEqn);
+        eps.correctBoundaryConditions();
 
-		//Info << "Stage 3" << endl;
+        fvScalarMatrix* phiPlasmaEqn = new fvScalarMatrix
+        (
+            fvm::laplacian(eps, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().netCharge()) //+ runTime.deltaTValue()*fvc::div(F.oldTime()))
+        );
 
-		//Info << "eps = " << eps << endl;
+        phiEqns.set(0, phiPlasmaEqn);
 
-		//Info << "epsD before correctBoundaryConditions = " << epsD << endl;
+        forAll(dielectricRegions, i)
+        {
+            epsD[i].correctBoundaryConditions();
 
-		forAll(dielectricRegions, i)
-		{
+            phiEqns.set(i+1, new fvScalarMatrix
+            (
+                fvm::laplacian(epsD[i], PhiD[i], "laplacian(eps,Phi)")
+            ));
+        }
 
-			phiEqns.set(i+1, new fvScalarMatrix
-			(
-				fvm::laplacian(epsD[i], PhiD[i], "laplacian(eps,Phi)")  
-			));
-		}
+        phiEqns.solve();
 
-		//Info << "Stage 4" << endl;
+        E = -fvc::reconstruct(phiPlasmaEqn->flux())/eps;
 
-		//Info << "epsD = " << epsD << endl;
+        forAll(dielectricRegions, i)
+        {
+            ED[i] = -fvc::grad(PhiD[i]);
+        }
+    }
 
-		//Info << "phiEqns solving " << endl;
+    #include "checkPhiConvergence.H"
 
-		phiEqns.solve();
+    if (iCorr > 10)
+    {
 
-		//Info << "Done " << endl;
+        Info << "iCorr = " << iCorr << "relativePhiResidual = " << relativePhiResidual << endl;
+    }
 
-		//Info << "Stage 4a" << endl;
 
-		//Info << "eps = " << eps.boundaryField() << endl;
+    }
+    while
+    (
+    (relativePhiResidual >= 1e-4)
+    && ++iCorr <= 100
+    );
 
-		//E = -fvc::reconstruct(phiPlasmaEqn->flux())/(eps+SMALL);
+    Info << "Calculating E " << endl;
 
-		E = -fvc::grad(Phi);
+    Phi.correctBoundaryConditions();
 
-		forAll(dielectricRegions, i)
-		{
-			ED[i] = -fvc::grad(PhiD[i]);
-		}   
+    E = -fvc::grad(Phi);
 
-		//Info << "Stage 5" << endl;
-	}
-	else if (poissonEquationSolver == "linearized")
-	{
-		coupledFvScalarMatrix phiEqns(dielectricRegions.size()+1);
+    E.write();
 
-		eps.correctBoundaryConditions();
+    Info << "Calculating E done " << endl;
 
-		fvScalarMatrix* phiPlasmaEqn = new fvScalarMatrix
-		(
-			fvm::laplacian(eps, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().netCharge()) //+ runTime.deltaTValue()*fvc::div(F.oldTime()))
-		);
 
-		phiEqns.set(0, phiPlasmaEqn);
+    forAll(dielectricRegions, i)
+    {
+        ED[i] = -fvc::grad(PhiD[i]);
+    }
 
-		forAll(dielectricRegions, i)
-		{
-			epsD[i].correctBoundaryConditions();
+    forAll(dielectricRegions, i)
+    {
 
-			phiEqns.set(i+1, new fvScalarMatrix
-			(
-				fvm::laplacian(epsD[i], PhiD[i], "laplacian(eps,Phi)") 
-			));
-		}
+        JtotD[i] = epsD[i]*(ED[i] - ED[i].oldTime())/runTime.deltaT().value() ;
 
-		phiEqns.solve();
-
-		E = -fvc::reconstruct(phiPlasmaEqn->flux())/eps;
-
-		forAll(dielectricRegions, i)
-		{
-			ED[i] = -fvc::grad(PhiD[i]);
-		}   
-	}
-
-	#include "checkPhiConvergence.H"
-
-	if (iCorr > 10)
-	{
-
-		Info << "iCorr = " << iCorr << "relativePhiResidual = " << relativePhiResidual << endl;	
-	}
-
-	
-
-	} 
-	while 
-	(
-	(relativePhiResidual >= 1e-4) 
-	&& ++iCorr <= 100
-	);
-
-	Info << "Calculating E " << endl;
-
-	Phi.correctBoundaryConditions();
-
-	E = -fvc::grad(Phi);
-
-	E.write();
-
-	Info << "Calculating E done " << endl;
- 
-  //Pout << "I am doing E calc" << endl;
-
-	//Info << "ddt of E = " << fvc::ddt(E) << endl;
-
-	forAll(dielectricRegions, i)
-	{
-		ED[i] = -fvc::grad(PhiD[i]);
-	}
-
-	forAll(dielectricRegions, i)
-	{
-
-		JtotD[i] = epsD[i]*(ED[i] - ED[i].oldTime())/runTime.deltaT().value() ;
-		//Info << "ddt of ED in somaFoam = " << JtotD[i] << endl;
-			
-	}  
+    }
 
 }

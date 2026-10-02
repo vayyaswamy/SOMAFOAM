@@ -1,1 +1,0 @@
-../derivedFvPatchFields/fixedInternalEnergy/fixedInternalEnergyFvPatchScalarField.H

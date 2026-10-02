@@ -1,1 +1,0 @@
-../writeRegisteredObject/IOwriteRegisteredObject.H

@@ -1,1 +1,0 @@
-../equationOfState/cubicEquationOfState/aungierRedlichKwong/aungierRedlichKwong.H

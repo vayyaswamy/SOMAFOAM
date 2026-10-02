@@ -123,7 +123,6 @@ class electronTemperatureOpenBoundary
 
     // Member functions
 
-        
 
         //- Update the coefficients associated with the patch field
         virtual void updateCoeffs();
@@ -144,9 +143,6 @@ class electronTemperatureOpenBoundary
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//#ifdef NoRepository
-//#   include "inletOutletFvPatchField.C"
-//#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

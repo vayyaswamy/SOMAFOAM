@@ -1,1 +1,0 @@
-../fields/GeometricFields/pointFields/pointFieldsFwd.H

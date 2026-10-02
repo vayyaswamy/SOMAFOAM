@@ -1,1 +1,0 @@
-../derivedFvPatchFields/fixedEnthalpy/fixedEnthalpyFvPatchScalarField.H

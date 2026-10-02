@@ -1,3 +1,27 @@
+# Build output is machine-specific (compiler, glibc, absolute paths).
+# Commit sources only; build on each machine with ./install.sh
+
+# Compiled libraries and applications (keep lib/ itself)
+/lib/*/
+/bin/linux64*/
+/wmake/bin/
+
+# wmake intermediate files
+**/Make/linux64*/
+**/lnInclude/
 *.o
-*.dep
 *.so
+*.dep
+
+# Third-party build trees. metis/packages (prebuilt static metis) stays tracked:
+# rebuilding it needs rpm, which not every machine has.
+/metis/rpmBuild/BUILD/
+/metis/rpmBuild/RPMS/
+/metis/rpmBuild/TGZS/
+/metis/rpmBuild/rpmDB/
+
+# Simulation results in example cases (inputs are 0/, constant/, system/)
+/examples/**/processor*/
+/examples/**/*e-[0-9]*/
+/examples/**/postProcessing/
+/examples/**/log.*

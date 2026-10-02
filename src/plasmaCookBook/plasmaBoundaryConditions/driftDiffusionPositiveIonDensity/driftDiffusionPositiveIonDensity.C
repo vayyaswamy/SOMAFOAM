@@ -33,7 +33,6 @@ License
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::driftDiffusionPositiveIonDensity::driftDiffusionPositiveIonDensity
@@ -46,7 +45,6 @@ Foam::driftDiffusionPositiveIonDensity::driftDiffusionPositiveIonDensity
     seec_(0.0),
     fieldName_(iF.name())
 {
-    //Info << "ion Constructor 1" << endl;
     this->refValue() = 0;
     this->refGrad() = 0;
     this->valueFraction() = 0;
@@ -79,15 +77,12 @@ Foam::driftDiffusionPositiveIonDensity::driftDiffusionPositiveIonDensity
     seec_(readScalar(dict.lookup("seec"))),
     fieldName_(iF.name())
 {
-    //Info << "Constructor 2 " << endl;
-    //Info << "fieldName = " << iF.name() << endl;
     this->refValue() = 0.0;
 
     this->refGrad() = 0.0;
     this->valueFraction() = 0.0;
     fvPatchField<scalar>::operator=(this->patchInternalField());
 }
-
 
 
 Foam::driftDiffusionPositiveIonDensity::driftDiffusionPositiveIonDensity
@@ -99,7 +94,6 @@ Foam::driftDiffusionPositiveIonDensity::driftDiffusionPositiveIonDensity
     seec_(ptf.seec_),
     fieldName_(ptf.fieldName_)
 {}
-
 
 
 Foam::driftDiffusionPositiveIonDensity::driftDiffusionPositiveIonDensity
@@ -124,25 +118,19 @@ void Foam::driftDiffusionPositiveIonDensity::updateCoeffs()
         return;
     }
 
-    //Info << "Inside updateCoeffs " << endl;
     vectorField n = patch().nf();
 
-    
-
-    //Info << "fieldName = " << fieldName_ << endl;
 
     const fvPatchField<scalar>& muf=
         patch().lookupPatchField<volScalarField, scalar>("mu_" + fieldName_);
 
     const fvPatchField<scalar>& Df=
         patch().lookupPatchField<volScalarField, scalar>("D_" + fieldName_);
-       
+
 
     const fvPatchField<vector>& Ef=
         patch().lookupPatchField<volVectorField, vector>("E");
 
-   // const fvPatchField<vector>& Fif=
-     //   patch().lookupPatchField<volVectorField, vector>("ionFlux");
 
     const scalarField C1 = -muf*(Ef&n);
 
@@ -152,25 +140,16 @@ void Foam::driftDiffusionPositiveIonDensity::updateCoeffs()
 
     scalarField a = pos(Enorm);
 
-    //Info << "Ef = " << Ef << endl;
 
-    //Info << "n = " << n << endl;
-
-    //Info << "Enorm = " << Enorm << endl;
-
-    //Info << "a = " << a << endl;
- 
     this->refValue() = 0.0;
 
     this->valueFraction() = (1-a)*C1/(C1+C2*this->patch().deltaCoeffs());
 
-    //this->valueFraction() = 0.0;
 
     this->refGrad() = 0;
 
     mixedFvPatchField<scalar>::updateCoeffs();
 
-    //Info << "Nef = " << Nef << endl;
 }
 
 
@@ -199,7 +178,6 @@ void Foam::driftDiffusionPositiveIonDensity::operator=
         + (1 - this->valueFraction())*ptf
     );
 
-    //Info << "operator " << endl;
 }
 
 

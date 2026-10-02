@@ -1,1 +1,0 @@
-../fields/Fields/symmTensorField/symmTensorIOField.C

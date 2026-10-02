@@ -1,1 +1,0 @@
-../decompositionMethod/decompositionMethod.C

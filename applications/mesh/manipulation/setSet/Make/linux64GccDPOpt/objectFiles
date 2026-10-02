@@ -1,5 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/writePointSet.o\
-$(OBJECTS_DIR)/writeFuns.o\
-$(OBJECTS_DIR)/writePatch.o\
-$(OBJECTS_DIR)/setSet.o

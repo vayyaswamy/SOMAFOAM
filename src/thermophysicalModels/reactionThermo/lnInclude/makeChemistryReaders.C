@@ -1,1 +1,0 @@
-../chemistryReaders/chemistryReader/makeChemistryReaders.C

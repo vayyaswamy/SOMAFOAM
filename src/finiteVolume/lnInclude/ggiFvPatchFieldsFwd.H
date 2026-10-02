@@ -1,1 +1,0 @@
-../fields/fvPatchFields/constraint/ggi/ggiFvPatchFieldsFwd.H

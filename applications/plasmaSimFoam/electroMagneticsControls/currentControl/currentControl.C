@@ -12,20 +12,20 @@ look for license file include with distribution.
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 namespace Foam
 {
-	namespace emcModels
-	{
-		defineTypeNameAndDebug(current, 0);
-		addToRunTimeSelectionTable(emcModel, current, dictionary);
-	};
+    namespace emcModels
+    {
+        defineTypeNameAndDebug(current, 0);
+        addToRunTimeSelectionTable(emcModel, current, dictionary);
+    };
 };
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 Foam::emcModels::current::current
 (
-	const dictionary& electroMagnetics,
-	multiSpeciesPlasmaModel& mspm,
-	const volVectorField& E,
-	const Time& runTime
+    const dictionary& electroMagnetics,
+    multiSpeciesPlasmaModel& mspm,
+    const volVectorField& E,
+    const Time& runTime
 )
 :
 emcModel(electroMagnetics, mspm, E, runTime),
@@ -62,26 +62,26 @@ meshV_
         IOobject::NO_WRITE
     ),
     E_.mesh(),
-	dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
+    dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
 )
 
 {
-	meshV_.internalField() = E_.mesh().V();
+    meshV_.internalField() = E_.mesh().V();
 
-	forAll(E_,celli)
-	{
-		ncells_ = ncells_ + 1;
-	}
+    forAll(E_,celli)
+    {
+        ncells_ = ncells_ + 1;
+    }
 
     if (Pstream::master())
-	{
-    	LogFilePtr_ = new OFstream(fileName("current_voltage_logfile"));
-    	OFstream& resistanceLogFile = *LogFilePtr_;
-    	resistanceLogFile << "time" << tab;
-    	resistanceLogFile << "input" << tab;
-    	resistanceLogFile << "RMScurrent" << tab;
-    	resistanceLogFile << "AVGpower" << endl;
-	}
+    {
+        LogFilePtr_ = new OFstream(fileName("current_voltage_logfile"));
+        OFstream& resistanceLogFile = *LogFilePtr_;
+        resistanceLogFile << "time" << tab;
+        resistanceLogFile << "input" << tab;
+        resistanceLogFile << "RMScurrent" << tab;
+        resistanceLogFile << "AVGpower" << endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * * Destructors * * * * * * * * * * * * * * * //
@@ -93,171 +93,171 @@ Foam::emcModels::current::~current()
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 Foam::scalar Foam::emcModels::current::currentDensitySum() const
 {
-	const objectRegistry& db = E_.db();
-	const volVectorField& currentDensity = db.lookupObject<volVectorField>("totalCurrent");
-	volScalarField scalarCurrentDensity = currentDensity.component(0);
+    const objectRegistry& db = E_.db();
+    const volVectorField& currentDensity = db.lookupObject<volVectorField>("totalCurrent");
+    volScalarField scalarCurrentDensity = currentDensity.component(0);
 
-	scalar j = (gSum(scalarCurrentDensity)/ncells_)*(gSum(scalarCurrentDensity)/ncells_);
+    scalar j = (gSum(scalarCurrentDensity)/ncells_)*(gSum(scalarCurrentDensity)/ncells_);
 
-	return j;
+    return j;
 }
 
 Foam::scalar Foam::emcModels::current::powerSumMesh() const
 {
-	const objectRegistry& db = E_.db();
+    const objectRegistry& db = E_.db();
     const volVectorField& tddtE = db.lookupObject<volVectorField>("ddtE");
 
-	volScalarField tpowerSumMesh = meshV_*((mspm_.netChargeFlux() + plasmaConstants::epsilon0*tddtE) & E_);
+    volScalarField tpowerSumMesh = meshV_*((mspm_.netChargeFlux() + plasmaConstants::epsilon0*tddtE) & E_);
 
-	return gSum(tpowerSumMesh);
+    return gSum(tpowerSumMesh);
 }
 
 
 void Foam::emcModels::current::correct(dictionary& voltageDict)
 {
-	if (mode_ == "continuousFrequencyModulated")
-	{
-		const scalar& tcurrentDensity = currentDensitySum();
-		const scalar& tpower = powerSumMesh();
+    if (mode_ == "continuousFrequencyModulated")
+    {
+        const scalar& tcurrentDensity = currentDensitySum();
+        const scalar& tpower = powerSumMesh();
 
-		currentSum_ += (tcurrentDensity+tcurrentDensityOld_)*time_.deltaT().value()*0.5;
-		tcurrentDensityOld_ = tcurrentDensity;
+        currentSum_ += (tcurrentDensity+tcurrentDensityOld_)*time_.deltaT().value()*0.5;
+        tcurrentDensityOld_ = tcurrentDensity;
 
-		curTimeIndex_ = time_.timeIndex();
+        curTimeIndex_ = time_.timeIndex();
 
-		powerSum_ += (tpower+tpowerOld_)*time_.deltaT().value()*0.5;
-		tpowerOld_ = tpower;
+        powerSum_ += (tpower+tpowerOld_)*time_.deltaT().value()*0.5;
+        tpowerOld_ = tpower;
 
-		if (curTimeIndex_ == 1)
-		{
-			amplitude_ = initialAmplitude_;
-		}
+        if (curTimeIndex_ == 1)
+        {
+            amplitude_ = initialAmplitude_;
+        }
 
-		timeCount_ = timeCount_ + time_.deltaT().value();
+        timeCount_ = timeCount_ + time_.deltaT().value();
 
-		if (timeCount_ >= 1/frequency_)
-		{
-			scalar rmsCurrent_ = Foam::sqrt(frequency_*currentSum_);
-			scalar powerSumAve_ = powerSum_*frequency_;
+        if (timeCount_ >= 1/frequency_)
+        {
+            scalar rmsCurrent_ = Foam::sqrt(frequency_*currentSum_);
+            scalar powerSumAve_ = powerSum_*frequency_;
 
-			powerSum_ = 0.0;
-			currentSum_ = 0.0;
-			timeCount_ = 0.0;
+            powerSum_ = 0.0;
+            currentSum_ = 0.0;
+            timeCount_ = 0.0;
 
-			scalar amplitudeOld_(amplitude_);
+            scalar amplitudeOld_(amplitude_);
 
-			amplitude_ = amplitudeOld_*(1.0-dampingFactor_*((rmsCurrent_/rms_)-1.0));
+            amplitude_ = amplitudeOld_*(1.0-dampingFactor_*((rmsCurrent_/rms_)-1.0));
 
-			scalar dif = Foam::mag((rmsCurrent_-rms_)/((rmsCurrent_+rms_)/2.0))*100;
-			Info << "percentage of difference calculated between desired and" << endl;
-			Info << "calculated RMS current is " << dif << endl;
+            scalar dif = Foam::mag((rmsCurrent_-rms_)/((rmsCurrent_+rms_)/2.0))*100;
+            Info << "percentage of difference calculated between desired and" << endl;
+            Info << "calculated RMS current is " << dif << endl;
 
-			if (dif<=tolerance_)
-			{
-				amplitude_=amplitudeOld_;
-			}
-			else
-			{
-				if((amplitude_/amplitudeOld_) >= 1.1)
-				{
-					amplitude_ = 1.1*amplitudeOld_;
-				}
-				else if((amplitude_/amplitudeOld_) <= 0.9)
-				{
-					amplitude_ = 0.9*amplitudeOld_;
-				}
-			}
+            if (dif<=tolerance_)
+            {
+                amplitude_=amplitudeOld_;
+            }
+            else
+            {
+                if((amplitude_/amplitudeOld_) >= 1.1)
+                {
+                    amplitude_ = 1.1*amplitudeOld_;
+                }
+                else if((amplitude_/amplitudeOld_) <= 0.9)
+                {
+                    amplitude_ = 0.9*amplitudeOld_;
+                }
+            }
 
-			if (Pstream::master())
-			{
-				OFstream& resistanceLogFile = *LogFilePtr_;
-				resistanceLogFile << time_.value() << tab;
-				resistanceLogFile << amplitude_ << tab;
-				resistanceLogFile << rmsCurrent_ << tab;
-				resistanceLogFile << powerSumAve_ << endl;
-			}
-		}
+            if (Pstream::master())
+            {
+                OFstream& resistanceLogFile = *LogFilePtr_;
+                resistanceLogFile << time_.value() << tab;
+                resistanceLogFile << amplitude_ << tab;
+                resistanceLogFile << rmsCurrent_ << tab;
+                resistanceLogFile << powerSumAve_ << endl;
+            }
+        }
 
-		if (operation_ == "sinusoidal")
-		{
-			scalar voltageValue = amplitude_*Foam::cos(2.0*M_PI*frequency_*time_.value()) + bias_;
-			voltageDict.set("voltage", voltageValue);
-		}
-		if (operation_ == "cosinusoidal")
-		{
-			scalar voltageValue = amplitude_*Foam::cos(2.0*M_PI*frequency_*time_.value()) + bias_;
-			voltageDict.set("voltage", voltageValue);
-		}
-		else if (operation_ == "pulsed")
-		{
-			scalar period = 1/frequency_;
-			scalar period_duty = period*dutyCycle_/100;
-			const scalar wd_ = w_*Foam::sqrt(1-Foam::sqr(e_));
+        if (operation_ == "sinusoidal")
+        {
+            scalar voltageValue = amplitude_*Foam::cos(2.0*M_PI*frequency_*time_.value()) + bias_;
+            voltageDict.set("voltage", voltageValue);
+        }
+        if (operation_ == "cosinusoidal")
+        {
+            scalar voltageValue = amplitude_*Foam::cos(2.0*M_PI*frequency_*time_.value()) + bias_;
+            voltageDict.set("voltage", voltageValue);
+        }
+        else if (operation_ == "pulsed")
+        {
+            scalar period = 1/frequency_;
+            scalar period_duty = period*dutyCycle_/100;
+            const scalar wd_ = w_*Foam::sqrt(1-Foam::sqr(e_));
 
-			scalar n = floor((this->db().time().value())/period);
-			scalar pTime_ = db().time().value() - period*n;
+            scalar n = floor((this->db().time().value())/period);
+            scalar pTime_ = db().time().value() - period*n;
 
-			if (waveform_ == "symmetricalBipolar")
-			{
-				if (this->db().time().value() < period*n+(period/2))
-				{
-					scalar voltageValue = amplitude_;
-					voltageDict.set("voltage", voltageValue);
-				}
-				else if (this->db().time().value() > period*n+(period/2))
-				{
-					scalar voltageValue = -amplitude_;
-					voltageDict.set("voltage",voltageValue);
-				}
-			}
-			else if (waveform_ == "unipolar")
-			{
-				if (this->db().time().value() < period*n+period_duty)
-				{
-					scalar voltageValue = amplitude_;
-					voltageDict.set("voltage", voltageValue);
-				}
-				else if (this->db().time().value() > period*n+period_duty)
-				{
-					scalar voltageValue = 0;
-					voltageDict.set("voltage", voltageValue);
-				}
-			}
-			else if (waveform_ == "bias")
-			{
-				if (this->db().time().value() < period*n+period_duty)
-				{
-					scalar voltageValue = amplitude_+bias_;
-					voltageDict.set("voltage", voltageValue);
-				}
-				else if (this->db().time().value() > period*n+period_duty)
-				{
-					scalar voltageValue = -amplitude_+bias_;
-					voltageDict.set("voltage",voltageValue);
-				}
-			}
-			else if (waveform_ == "underDamped")
-			{
-				if (this->db().time().value() < period*n+period_duty)
-				{
-					scalar voltageValue = Foam::exp(-e_*w_*pTime_)*(amplitude_*Foam::cos(wd_*pTime_)+(1/wd_+e_*amplitude_-e_*2*Foam::sin(wd_*pTime_))) + bias_;
-					voltageDict.set("voltage",voltageValue);
-				}
-				else if (this->db().time().value() > period*n+period_duty)
-				{
-					scalar voltageValue = bias_;
-					voltageDict.set("voltage",voltageValue);
-				}
-			}
-		}
-	}
-	else
-	{
+            if (waveform_ == "symmetricalBipolar")
+            {
+                if (this->db().time().value() < period*n+(period/2))
+                {
+                    scalar voltageValue = amplitude_;
+                    voltageDict.set("voltage", voltageValue);
+                }
+                else if (this->db().time().value() > period*n+(period/2))
+                {
+                    scalar voltageValue = -amplitude_;
+                    voltageDict.set("voltage",voltageValue);
+                }
+            }
+            else if (waveform_ == "unipolar")
+            {
+                if (this->db().time().value() < period*n+period_duty)
+                {
+                    scalar voltageValue = amplitude_;
+                    voltageDict.set("voltage", voltageValue);
+                }
+                else if (this->db().time().value() > period*n+period_duty)
+                {
+                    scalar voltageValue = 0;
+                    voltageDict.set("voltage", voltageValue);
+                }
+            }
+            else if (waveform_ == "bias")
+            {
+                if (this->db().time().value() < period*n+period_duty)
+                {
+                    scalar voltageValue = amplitude_+bias_;
+                    voltageDict.set("voltage", voltageValue);
+                }
+                else if (this->db().time().value() > period*n+period_duty)
+                {
+                    scalar voltageValue = -amplitude_+bias_;
+                    voltageDict.set("voltage",voltageValue);
+                }
+            }
+            else if (waveform_ == "underDamped")
+            {
+                if (this->db().time().value() < period*n+period_duty)
+                {
+                    scalar voltageValue = Foam::exp(-e_*w_*pTime_)*(amplitude_*Foam::cos(wd_*pTime_)+(1/wd_+e_*amplitude_-e_*2*Foam::sin(wd_*pTime_))) + bias_;
+                    voltageDict.set("voltage",voltageValue);
+                }
+                else if (this->db().time().value() > period*n+period_duty)
+                {
+                    scalar voltageValue = bias_;
+                    voltageDict.set("voltage",voltageValue);
+                }
+            }
+        }
+    }
+    else
+    {
         FatalErrorIn("emcModels::power::correct(dictionary& voltageDict)")
             << " incorrect mode:  flag 'continuousFrequencyModulated' for"
             << " mode not found"
             << exit(FatalError);
-	}
+    }
 }
 
 bool Foam::emcModels::current::read(const dictionary& electroMagnetics)

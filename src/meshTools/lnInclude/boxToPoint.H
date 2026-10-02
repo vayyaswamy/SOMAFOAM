@@ -1,1 +1,0 @@
-../sets/pointSources/boxToPoint/boxToPoint.H
