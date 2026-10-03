@@ -248,6 +248,8 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
                 )
             );
 
+            // Read on restart: the wall boundary conditions need the ion
+            // flux (secondary emission) from the first step on
             J_.set
             (
                 i, new volVectorField
@@ -257,7 +259,7 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
                         "J_" + species()[i],
                         mesh_.time().timeName(),
                         mesh_,
-                        IOobject::NO_READ,
+                        IOobject::READ_IF_PRESENT,
                         IOobject::NO_WRITE
                     ),
                     mesh_,
