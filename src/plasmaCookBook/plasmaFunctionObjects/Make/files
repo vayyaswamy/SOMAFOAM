@@ -5,4 +5,6 @@ electricalCharacteristics/electricalCharacteristics.C
 
 specieDynamics/specieDynamics.C
 
+electrodeVoltageCurrent/electrodeVoltageCurrent.C
+
 LIB = $(FOAM_LIBBIN)/libplasmaFunctionObjects
