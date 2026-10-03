@@ -8,6 +8,7 @@ look for license file include with distribution.
 \*---------------------------------------------------------------------------*/
 
 #include "dynamicRefine1DFvMesh.H"
+#include "refinementIndicators.H"
 #include "addToRunTimeSelectionTable.H"
 #include "directTopoChange.H"
 #include "polyAddPoint.H"
@@ -19,8 +20,6 @@ look for license file include with distribution.
 #include "volFields.H"
 #include "HashTable.H"
 #include "Map.H"
-#include "PtrList.H"
-#include "dictionary.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -104,67 +103,6 @@ void restorePairAverages
     }
 }
 
-
-
-//- Add the contribution of one field to the indicator (maximum is kept)
-template<class Type>
-void addIndicator
-(
-    const fvMesh& mesh,
-    const GeometricField<Type, fvPatchField, volMesh>& fld,
-    const word& type,
-    const scalar weight,
-    const scalar scale,
-    const scalar floor,
-    scalarField& indicator
-)
-{
-    const Field<Type>& f = fld.internalField();
-
-    if (type == "magnitude")
-    {
-        forAll(f, cellI)
-        {
-            indicator[cellI] =
-                max(indicator[cellI], weight*mag(f[cellI])/scale);
-        }
-    }
-    else if (type == "relativeGradient" || type == "gradient")
-    {
-        const unallocLabelList& own = mesh.owner();
-        const unallocLabelList& nei = mesh.neighbour();
-
-        forAll(nei, faceI)
-        {
-            const label a = own[faceI];
-            const label b = nei[faceI];
-
-            scalar value = mag(f[a] - f[b]);
-
-            if (type == "relativeGradient")
-            {
-                value /= 0.5*(mag(f[a]) + mag(f[b])) + floor + VSMALL;
-            }
-            else
-            {
-                value /= scale;
-            }
-
-            value *= weight;
-
-            indicator[a] = max(indicator[a], value);
-            indicator[b] = max(indicator[b], value);
-        }
-    }
-    else
-    {
-        FatalErrorIn("dynamicRefine1DFvMesh::calcIndicator(const dictionary&)")
-            << "Unknown indicator type " << type << " for field "
-            << fld.name() << nl << "Valid types are relativeGradient,"
-            << " gradient and magnitude" << abort(FatalError);
-    }
-}
-
 } // End namespace Foam
 
 
@@ -196,57 +134,8 @@ const Foam::volScalarField& Foam::dynamicRefine1DFvMesh::calcIndicator
     }
 
     scalarField& indicator = indicatorPtr_().internalField();
-    indicator = 0.0;
 
-    const PtrList<dictionary> entries(refineDict.lookup("indicators"));
-
-    forAll(entries, i)
-    {
-        const dictionary& dict = entries[i];
-
-        const word type(dict.lookup("type"));
-        const word fieldName(dict.lookup("field"));
-        const scalar weight = dict.lookupOrDefault<scalar>("weight", 1.0);
-        const scalar scale = dict.lookupOrDefault<scalar>("scale", 1.0);
-        const scalar floor = dict.lookupOrDefault<scalar>("floor", 0.0);
-
-        if (foundObject<volScalarField>(fieldName))
-        {
-            addIndicator
-            (
-                *this,
-                lookupObject<volScalarField>(fieldName),
-                type,
-                weight,
-                scale,
-                floor,
-                indicator
-            );
-        }
-        else if (foundObject<volVectorField>(fieldName))
-        {
-            addIndicator
-            (
-                *this,
-                lookupObject<volVectorField>(fieldName),
-                type,
-                weight,
-                scale,
-                floor,
-                indicator
-            );
-        }
-        else
-        {
-            FatalErrorIn
-            (
-                "dynamicRefine1DFvMesh::calcIndicator(const dictionary&)"
-            )   << "Indicator field " << fieldName << " not found among the"
-                << " volScalarFields " << names<volScalarField>()
-                << " and volVectorFields " << names<volVectorField>()
-                << abort(FatalError);
-        }
-    }
+    refinementIndicators::calculate(*this, refineDict, indicator);
 
     indicatorPtr_().correctBoundaryConditions();
 

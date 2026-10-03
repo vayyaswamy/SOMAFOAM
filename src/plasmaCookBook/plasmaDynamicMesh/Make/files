@@ -1,3 +1,7 @@
+refinementIndicators/refinementIndicators.C
+
 dynamicRefine1DFvMesh/dynamicRefine1DFvMesh.C
+
+plasmaIndicatorRefinement/plasmaIndicatorRefinement.C
 
 LIB = $(FOAM_LIBBIN)/libplasmaDynamicMesh
