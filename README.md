@@ -34,6 +34,27 @@ source <path-to>/SOMAFOAM/etc/bashrc
 Run the cases in `examples/plasma` with `somaFoam` (some `controlDict` files
 still name the older `plasmaSimFoam`, which no longer runs them).
 
+## Electrode voltage and current
+
+The `electrodeVoltageCurrent` function object writes, for each listed patch,
+the voltage and the conduction, displacement and total current versus time to
+`<case>/<name>/<start time>/<patch>.dat` (currents positive from the electrode
+into the plasma; the last column is the total current density). In
+`system/controlDict`:
+
+```
+functions
+{
+    electrodes
+    {
+        type                electrodeVoltageCurrent;
+        functionObjectLibs  ("libplasmaFunctionObjects.so");
+        patches             (electrode ground);
+        // optional: outputInterval 1;
+    }
+}
+```
+
 ## Adaptive mesh refinement (1D)
 
 `somaFoam` can refine and coarsen a one-dimensional mesh during the run. It is
