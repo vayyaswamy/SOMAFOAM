@@ -1,0 +1,3 @@
+dynamicRefine1DFvMesh/dynamicRefine1DFvMesh.C
+
+LIB = $(FOAM_LIBBIN)/libplasmaDynamicMesh

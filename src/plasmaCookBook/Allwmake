@@ -5,3 +5,4 @@ set -x
 wmake libso
 wmake plasmaDictionary
 wmake libso plasmaFunctionObjects
+wmake libso plasmaDynamicMesh
