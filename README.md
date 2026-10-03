@@ -107,6 +107,67 @@ and the `temporal` chemistry mode has not been adapted. Tested with the
 `driftDiffusion` model on the 100 Torr argon case at 100 V: 75 cells with two
 levels reproduce a uniform 300-cell mesh within 3 %.
 
+## Adaptive mesh refinement (2D and 3D)
+
+For 2D (one cell thick, `empty` front and back) and 3D meshes `somaFoam` uses
+the polyhedral refinement of foam-extend 4.1 (`dynamicPolyRefinementFvMesh`,
+ported into `src/dynamicMesh`): cells are split in four (2D) or eight (3D)
+with hanging nodes, and merged again. The same indicators as in 1D are
+available through the `plasmaIndicatorRefinement` selection.
+`constant/dynamicMeshDict`:
+
+```
+dynamicFvMesh   dynamicPolyRefinementFvMesh;
+
+dynamicPolyRefinementFvMeshCoeffs
+{
+    refineInterval      50;        // time steps between refinements
+    unrefineInterval    50;
+    separateUpdates     false;
+
+    active              yes;
+    maxCells            200000;
+    maxRefinementLevel  2;
+    nRefinementBufferLayers   2;
+    nUnrefinementBufferLayers 4;
+    edgeBasedConsistency yes;
+
+    refinementSelection
+    {
+        type            plasmaIndicatorRefinement;
+        indicators
+        (
+            { type relativeGradient; field N_electron; floor 1e12; }
+            { type relativeGradient; field N_Arp1;     floor 1e12; }
+        );
+        lowerRefineLevel    0.2;
+        unrefineLevel       0.07;
+    }
+}
+```
+
+and in `system/controlDict`:
+
+```
+libs ( "libfoam.so" "liblduSolvers.so" "libplasmaCookBook.so" "libtopoChangerFvMesh.so" "libplasmaDynamicMesh.so" );
+```
+
+The 4.1 selections (`fieldBoundsRefinement`, `minCellSizeRefinement`,
+`compositeRefinementSelection`, ...) can be used as well.
+
+With hanging nodes the faces between fine and coarse cells are non-orthogonal:
+use `corrected` Laplacian and `snGrad` schemes in `system/fvSchemes`.
+
+`examples/plasma/2DAdaptiveMeshArgon` is a worked example (seeded plasma blob,
+one refinement level).
+
+Limits: `solutionDomain plasma` only; serial runs only so far (the 4.1 load
+balancing is not ported); merged cells take the volume average of all fields.
+Tested with the `driftDiffusion` model: the 100 V argon case on a thin 2D
+mesh matches the 1D result within 1 %, the seeded-blob example matches a
+uniform fine mesh within 2 % (0.4 % RMS), and runs restart from a refined
+mesh.
+
 Contributors:
 1) Venkattraman Ayyaswamy (https://me.ucmerced.edu/content/venkattraman-venkatt-ayyaswamy)
 2) Abhishek Kumar Verma 

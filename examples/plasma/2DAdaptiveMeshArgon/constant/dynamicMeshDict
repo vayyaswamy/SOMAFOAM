@@ -1,0 +1,35 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      dynamicMeshDict;
+}
+
+dynamicFvMesh   dynamicPolyRefinementFvMesh;
+
+dynamicPolyRefinementFvMeshCoeffs
+{
+    refineInterval      50;
+    unrefineInterval    50;
+    separateUpdates     false;
+
+    active              yes;
+    maxCells            200000;
+    maxRefinementLevel  1;
+    nRefinementBufferLayers   2;
+    nUnrefinementBufferLayers 4;
+    edgeBasedConsistency yes;
+
+    refinementSelection
+    {
+        type            plasmaIndicatorRefinement;
+        indicators
+        (
+            { type relativeGradient; field N_electron; floor 1e12; }
+            { type relativeGradient; field N_Arp1;     floor 1e12; }
+        );
+        lowerRefineLevel    0.1;
+        unrefineLevel       0.03;
+    }
+}
