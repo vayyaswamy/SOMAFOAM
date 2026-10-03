@@ -1,0 +1,6 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+# Remove results and the refinement data; keep the base mesh
+rm -rf [1-9]* *e-[0-9]* electrodes log.*
+rm -f constant/polyMesh/cellLevel constant/polyMesh/pointLevel constant/polyMesh/meshModifiers
