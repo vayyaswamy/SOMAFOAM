@@ -798,7 +798,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
     {
         RR_[i].setSize(rho.size());
         dRRDi_[i].setSize(rho.size());
+        collFreq_[i].setSize(rho.size());
     }
+
+    // The number of cells changes with adaptive mesh refinement
+    eChemSource_.setSize(rho.size());
+    dEChemSourceDTe_.setSize(rho.size());
 
     Info << "In calculate" << endl;
 
@@ -1050,7 +1055,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
     {
         RR_[i].setSize(rho.size());
         dRRDi_[i].setSize(rho.size());
+        collFreq_[i].setSize(rho.size());
     }
+
+    // The number of cells changes with adaptive mesh refinement
+    eChemSource_.setSize(rho.size());
+    dEChemSourceDTe_.setSize(rho.size());
 
     if (this->chemistry_)
     {
