@@ -1,4 +1,5 @@
 EXE_INC = \
+    -include refinementCompat.H \
     -I$(LIB_SRC)/meshTools/lnInclude
 
 LIB_LIBS = \
