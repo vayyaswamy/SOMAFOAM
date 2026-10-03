@@ -98,4 +98,10 @@ directTopoChange/boundaryMesh/boundaryMesh.C
 
 directTopoChange/repatchPolyTopoChanger/repatchPolyTopoChanger.C
 
+refinement = $(polyMeshModifiers)/refinement
+$(refinement)/refinementCompat/refinementCompat.C
+$(refinement)/refinement/refinement.C
+$(refinement)/polyhedralRefinement/polyhedralRefinement.C
+$(refinement)/prismatic2DRefinement/prismatic2DRefinement.C
+
 LIB = $(FOAM_LIBBIN)/libdynamicMesh

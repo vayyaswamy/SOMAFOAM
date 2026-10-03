@@ -5345,10 +5345,14 @@ void Foam::hexRef8::setUnrefinement
 
     // Insert all commands to combine cells. Never fails so don't have to
     // test for success.
+    // Dummy pointRegionMaster, ignored (as in foam-extend 4.1)
+    labelList pointRegionMaster(cellRegionMaster.size(), label(-1));
+
     faceRemover_.setRefinement
     (
         facesToRemove,
         cellRegion,
+        pointRegionMaster,
         cellRegionMaster,
         meshMod
     );

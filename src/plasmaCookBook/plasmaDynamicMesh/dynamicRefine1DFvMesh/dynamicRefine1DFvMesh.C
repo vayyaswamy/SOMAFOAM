@@ -655,10 +655,14 @@ Foam::label Foam::dynamicRefine1DFvMesh::unrefine
 
     directTopoChange meshMod(*this);
 
+    // Dummy pointRegionMaster, ignored for cell merging
+    labelList pointRegionMaster(cellRegionMaster.size(), label(-1));
+
     faceRemover.setRefinement
     (
         allFacesToRemove,
         cellRegion,
+        pointRegionMaster,
         cellRegionMaster,
         meshMod
     );
