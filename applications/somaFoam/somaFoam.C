@@ -23,6 +23,8 @@ Description
 #include "thermoPhysicsTypes.H"
 #include "emcModels.H"
 #include "pimpleControl.H"
+#include "dynamicFvMesh.H"
+#include "staticFvMesh.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -145,6 +147,15 @@ int main(int argc, char *argv[])
 
             Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
                 << runTime.elapsedCpuTime() << "s" << endl;
+
+            // Adaptive mesh refinement: the fields are mapped onto the new
+            // mesh, and the Poisson equation below is solved on it before
+            // the plasma equations use the electric field
+            if (mesh.update())
+            {
+                Info<< "Mesh changed: " << mesh.nCells() << " cells" << endl;
+            }
+
 
             while (pimple.loop())
             {

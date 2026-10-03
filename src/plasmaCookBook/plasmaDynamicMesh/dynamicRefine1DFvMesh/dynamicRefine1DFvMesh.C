@@ -19,6 +19,8 @@ look for license file include with distribution.
 #include "volFields.H"
 #include "HashTable.H"
 #include "Map.H"
+#include "PtrList.H"
+#include "dictionary.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -102,10 +104,155 @@ void restorePairAverages
     }
 }
 
+
+
+//- Add the contribution of one field to the indicator (maximum is kept)
+template<class Type>
+void addIndicator
+(
+    const fvMesh& mesh,
+    const GeometricField<Type, fvPatchField, volMesh>& fld,
+    const word& type,
+    const scalar weight,
+    const scalar scale,
+    const scalar floor,
+    scalarField& indicator
+)
+{
+    const Field<Type>& f = fld.internalField();
+
+    if (type == "magnitude")
+    {
+        forAll(f, cellI)
+        {
+            indicator[cellI] =
+                max(indicator[cellI], weight*mag(f[cellI])/scale);
+        }
+    }
+    else if (type == "relativeGradient" || type == "gradient")
+    {
+        const unallocLabelList& own = mesh.owner();
+        const unallocLabelList& nei = mesh.neighbour();
+
+        forAll(nei, faceI)
+        {
+            const label a = own[faceI];
+            const label b = nei[faceI];
+
+            scalar value = mag(f[a] - f[b]);
+
+            if (type == "relativeGradient")
+            {
+                value /= 0.5*(mag(f[a]) + mag(f[b])) + floor + VSMALL;
+            }
+            else
+            {
+                value /= scale;
+            }
+
+            value *= weight;
+
+            indicator[a] = max(indicator[a], value);
+            indicator[b] = max(indicator[b], value);
+        }
+    }
+    else
+    {
+        FatalErrorIn("dynamicRefine1DFvMesh::calcIndicator(const dictionary&)")
+            << "Unknown indicator type " << type << " for field "
+            << fld.name() << nl << "Valid types are relativeGradient,"
+            << " gradient and magnitude" << abort(FatalError);
+    }
+}
+
 } // End namespace Foam
 
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+const Foam::volScalarField& Foam::dynamicRefine1DFvMesh::calcIndicator
+(
+    const dictionary& refineDict
+)
+{
+    if (!indicatorPtr_.valid())
+    {
+        indicatorPtr_.set
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "refinementIndicator",
+                    time().timeName(),
+                    *this,
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                *this,
+                dimensionedScalar("zero", dimless, 0.0)
+            )
+        );
+    }
+
+    scalarField& indicator = indicatorPtr_().internalField();
+    indicator = 0.0;
+
+    const PtrList<dictionary> entries(refineDict.lookup("indicators"));
+
+    forAll(entries, i)
+    {
+        const dictionary& dict = entries[i];
+
+        const word type(dict.lookup("type"));
+        const word fieldName(dict.lookup("field"));
+        const scalar weight = dict.lookupOrDefault<scalar>("weight", 1.0);
+        const scalar scale = dict.lookupOrDefault<scalar>("scale", 1.0);
+        const scalar floor = dict.lookupOrDefault<scalar>("floor", 0.0);
+
+        if (foundObject<volScalarField>(fieldName))
+        {
+            addIndicator
+            (
+                *this,
+                lookupObject<volScalarField>(fieldName),
+                type,
+                weight,
+                scale,
+                floor,
+                indicator
+            );
+        }
+        else if (foundObject<volVectorField>(fieldName))
+        {
+            addIndicator
+            (
+                *this,
+                lookupObject<volVectorField>(fieldName),
+                type,
+                weight,
+                scale,
+                floor,
+                indicator
+            );
+        }
+        else
+        {
+            FatalErrorIn
+            (
+                "dynamicRefine1DFvMesh::calcIndicator(const dictionary&)"
+            )   << "Indicator field " << fieldName << " not found among the"
+                << " volScalarFields " << names<volScalarField>()
+                << " and volVectorFields " << names<volVectorField>()
+                << abort(FatalError);
+        }
+    }
+
+    indicatorPtr_().correctBoundaryConditions();
+
+    return indicatorPtr_();
+}
+
 
 Foam::labelPair Foam::dynamicRefine1DFvMesh::directionFaces
 (
@@ -533,6 +680,65 @@ Foam::label Foam::dynamicRefine1DFvMesh::unrefine
     storePairAverages<scalar>(*this, pairs, scalarAverages);
     storePairAverages<vector>(*this, pairs, vectorAverages);
 
+    // Fields averaged with an additional weight, e.g. Te with the electron
+    // density; the old-time fields are treated alike
+    {
+        const scalarField& V = this->V().field();
+
+        forAll(weightedAverages_, wI)
+        {
+            for (label old = 0; old < 2; old++)
+            {
+                const word fName
+                (
+                    weightedAverages_[wI].first() + (old ? "_0" : "")
+                );
+                const word wName
+                (
+                    weightedAverages_[wI].second() + (old ? "_0" : "")
+                );
+
+                if
+                (
+                    !foundObject<volScalarField>(fName)
+                 || !foundObject<volScalarField>(wName)
+                )
+                {
+                    if (!old)
+                    {
+                        FatalErrorIn
+                        (
+                            "dynamicRefine1DFvMesh::unrefine(const labelList&)"
+                        )   << "weightedAverages: field " << fName
+                            << " or weight " << wName << " not found"
+                            << abort(FatalError);
+                    }
+                    continue;
+                }
+
+                const scalarField& f =
+                    lookupObject<volScalarField>(fName).internalField();
+                const scalarField& w =
+                    lookupObject<volScalarField>(wName).internalField();
+
+                scalarField& avg = scalarAverages[fName];
+
+                forAll(pairs, i)
+                {
+                    const label a = pairs[i].first();
+                    const label b = pairs[i].second();
+                    const scalar wa = V[a]*mag(w[a]);
+                    const scalar wb = V[b]*mag(w[b]);
+
+                    if (wa + wb > VSMALL)
+                    {
+                        avg[i] = (wa*f[a] + wb*f[b])/(wa + wb);
+                    }
+                }
+            }
+        }
+    }
+
     // The merged cell gets the level and family of the parent
     forAll(pairs, i)
     {
@@ -786,7 +992,9 @@ Foam::dynamicRefine1DFvMesh::dynamicRefine1DFvMesh(const IOobject& io)
         ),
         labelList(0)
     ),
-    nChanges_(0)
+    nChanges_(0),
+    indicatorPtr_(),
+    weightedAverages_()
 {
     const dictionary refineDict
     (
@@ -864,7 +1072,6 @@ bool Foam::dynamicRefine1DFvMesh::update()
         const label maxCells = readLabel(refineDict.lookup("maxCells"));
         const label maxRefinement =
             readLabel(refineDict.lookup("maxRefinement"));
-        const word fieldName(refineDict.lookup("field"));
         const scalar lowerRefineLevel =
             readScalar(refineDict.lookup("lowerRefineLevel"));
         const scalar upperRefineLevel =
@@ -874,7 +1081,20 @@ bool Foam::dynamicRefine1DFvMesh::update()
         const label nBufferLayers =
             readLabel(refineDict.lookup("nBufferLayers"));
 
-        const volScalarField& vFld = lookupObject<volScalarField>(fieldName);
+        weightedAverages_ = refineDict.lookupOrDefault<List<Pair<word> > >
+        (
+            "weightedAverages",
+            List<Pair<word> >(0)
+        );
+
+        // Indicator: built here from the indicators entries, or a field
+        // provided by the solver
+        const volScalarField& vFld =
+        (
+            refineDict.found("indicators")
+          ? calcIndicator(refineDict)
+          : lookupObject<volScalarField>(word(refineDict.lookup("field")))
+        );
 
         // Cells refined in this update are not merged again straight away
         boolList protectedCell(nCells(), false);
@@ -903,6 +1123,50 @@ bool Foam::dynamicRefine1DFvMesh::update()
                 << endl;
 
             hasChanged = true;
+        }
+
+        // Cells in the buffer layers around cells that call for refinement
+        // stay refined, otherwise they would be merged and split again at
+        // every update
+        {
+            const scalarField& v = vFld.internalField();
+            const labelListList& cc = cellCells();
+
+            boolList keep(nCells(), false);
+
+            forAll(v, cellI)
+            {
+                if (v[cellI] >= lowerRefineLevel && v[cellI] <= upperRefineLevel)
+                {
+                    keep[cellI] = true;
+                }
+            }
+
+            for (label layer = 0; layer < nBufferLayers; layer++)
+            {
+                boolList extended(keep);
+
+                forAll(keep, cellI)
+                {
+                    if (keep[cellI])
+                    {
+                        forAll(cc[cellI], i)
+                        {
+                            extended[cc[cellI][i]] = true;
+                        }
+                    }
+                }
+
+                keep.transfer(extended);
+            }
+
+            forAll(keep, cellI)
+            {
+                if (keep[cellI])
+                {
+                    protectedCell[cellI] = true;
+                }
+            }
         }
 
         const labelList facesToRemove

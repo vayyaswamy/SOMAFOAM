@@ -20,9 +20,26 @@ Description
     take the volume-weighted average of the pair for all volScalarFields and
     volVectorFields.
 
-    Cells are selected from a volScalarField, as in dynamicRefineFvMesh:
-    refine where lowerRefineLevel <= field <= upperRefineLevel, merge
-    siblings where field < unrefineLevel.
+    Cells are selected from a refinement indicator: refine where
+    lowerRefineLevel <= indicator <= upperRefineLevel, merge siblings where
+    indicator < unrefineLevel. The indicator is either an existing
+    volScalarField (keyword field, as in dynamicRefineFvMesh) or is built
+    from a list of entries (keyword indicators) as the maximum over the
+    entries of weight*value, with value depending on the entry type:
+
+        relativeGradient  jump between neighbouring cells relative to their
+                          mean, |f1 - f2|/(0.5(|f1| + |f2|) + floor);
+                          the relative gradient times the cell size
+        gradient          |f1 - f2|/scale
+        magnitude         |f|/scale
+
+    The fields may be volScalarFields or volVectorFields. The indicator is
+    stored as the volScalarField refinementIndicator and written with the
+    other fields.
+
+    Fields listed in weightedAverages as (field weightField) are averaged
+    with weight volume*weightField when cells merge, e.g. (Te N_electron)
+    to conserve the electron thermal energy.
 
     Example (constant/dynamicMeshDict):
     \verbatim
@@ -32,7 +49,13 @@ Description
         {
             direction           (1 0 0);
             refineInterval      10;       // time steps; 0 = never
-            field               refinementIndicator;
+            indicators
+            (
+                { type relativeGradient; field N_electron; floor 1e14; }
+                { type relativeGradient; field N_Arp1; weight 0.5; }
+                { type magnitude;        field E;  scale 1e6; }
+            );
+            weightedAverages    ((Te N_electron));
             lowerRefineLevel    0.5;
             upperRefineLevel    1e30;
             unrefineLevel       0.1;
@@ -53,6 +76,9 @@ SourceFiles
 #include "dynamicFvMesh.H"
 #include "labelIOList.H"
 #include "boolList.H"
+#include "volFieldsFwd.H"
+#include "Pair.H"
+#include "autoPtr.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -87,6 +113,12 @@ class dynamicRefine1DFvMesh
         //- Number of mesh changes so far
         label nChanges_;
 
+        //- Refinement indicator built from the indicators entries
+        mutable autoPtr<volScalarField> indicatorPtr_;
+
+        //- (field weightField) pairs averaged with weight on merging
+        List<Pair<word> > weightedAverages_;
+
 
     // Private Member Functions
 
@@ -100,6 +132,9 @@ class dynamicRefine1DFvMesh
         //- Merge the sibling cells on both sides of the given faces;
         //  returns the number of faces removed
         label unrefine(const labelList& facesToRemove);
+
+        //- Build the refinement indicator from the indicators entries
+        const volScalarField& calcIndicator(const dictionary& refineDict);
 
         //- Cells to refine
         labelList selectRefineCells
