@@ -87,6 +87,16 @@ Tolerances
 functions
 {
 
+    // Voltage and current of the electrodes versus time, written to
+    // electrodes/<start time>/<patch>.dat
+    electrodes
+    {
+        type                electrodeVoltageCurrent;
+        functionObjectLibs  ("libplasmaFunctionObjects.so");
+        patches             (electrode ground);
+    }
+
+
 	dumpObjects
 	{
 		type            writeRegisteredObject;
