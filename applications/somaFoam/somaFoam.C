@@ -43,6 +43,16 @@ int main(int argc, char *argv[])
 
     if (solutionDomain == "plasmaDielectric")
     {
+        // The plasma-dielectric coupling assumes a fixed mesh
+        if (!isA<staticFvMesh>(mesh))
+        {
+            FatalErrorIn(args.executable())
+                << "A dynamic mesh (" << mesh.type() << ") is selected in"
+                << " constant/dynamicMeshDict, but mesh changes are only"
+                << " supported for solutionDomain plasma." << nl
+                << "Remove constant/dynamicMeshDict or select staticFvMesh."
+                << exit(FatalError);
+        }
 
 
         #include "createDielectricMesh.H"

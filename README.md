@@ -31,8 +31,60 @@ The libraries go to `lib/linux64GccDPOpt` and the applications to
 source <path-to>/SOMAFOAM/etc/bashrc
 ```
 
-Run the cases in `examples/plasma` with `somaFoam` (their `controlDict` still
-names the older `plasmaSimFoam`, which no longer runs them).
+Run the cases in `examples/plasma` with `somaFoam` (some `controlDict` files
+still name the older `plasmaSimFoam`, which no longer runs them).
+
+## Adaptive mesh refinement (1D)
+
+`somaFoam` can refine and coarsen a one-dimensional mesh during the run. It is
+switched on per case by adding `constant/dynamicMeshDict`; without that file
+the mesh is static and results are unchanged.
+
+```
+dynamicFvMesh   dynamicRefine1DFvMesh;
+
+dynamicRefine1DFvMeshCoeffs
+{
+    direction           (1 0 0);   // direction of the 1D mesh
+    refineInterval      50;        // time steps between mesh updates
+    indicators                     // indicator = maximum over the entries
+    (
+        { type relativeGradient; field N_electron; floor 1e12; }
+        { type relativeGradient; field N_Arp1;     floor 1e12; }
+    );
+    weightedAverages    ((Te N_electron));
+    lowerRefineLevel    0.2;       // refine where indicator is above this
+    upperRefineLevel    1e30;
+    unrefineLevel       0.07;      // merge where indicator is below this
+    nBufferLayers       2;
+    maxRefinement       2;         // each level halves the cell size
+    maxCells            2000;
+}
+```
+
+and loading the library in `system/controlDict`:
+
+```
+libs ( "libfoam.so" "liblduSolvers.so" "libplasmaCookBook.so" "libplasmaDynamicMesh.so" );
+```
+
+Indicator types, for any `volScalarField` or `volVectorField` of the solver
+(`N_<specie>`, `Te`, `Phi`, `E`, ...), each with an optional `weight`:
+
+| type | value |
+|---|---|
+| `relativeGradient` | `|f1 - f2| / (0.5(|f1| + |f2|) + floor)` between neighbouring cells, i.e. the relative gradient times the cell size |
+| `gradient` | `|f1 - f2| / scale` |
+| `magnitude` | `|f| / scale` |
+
+Keep `floor` well below the densities in the sheaths, otherwise they are not
+refined, and `unrefineLevel` below half of `lowerRefineLevel`.
+
+Limits: 1D meshes only (a single row of hexahedral cells; other meshes stop
+with an error), `solutionDomain plasma` only (not with dielectric regions),
+and the `temporal` chemistry mode has not been adapted. Tested with the
+`driftDiffusion` model on the 100 Torr argon case at 100 V: 75 cells with two
+levels reproduce a uniform 300-cell mesh within 3 %.
 
 Contributors:
 1) Venkattraman Ayyaswamy (https://me.ucmerced.edu/content/venkattraman-venkatt-ayyaswamy)
