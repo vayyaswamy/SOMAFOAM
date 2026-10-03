@@ -31,7 +31,7 @@ boundaryField
         type            plasmaPotential;
         value           uniform 0;
         model           sinFrequencyModulated;
-        amplitude       uniform 10;
+        amplitude       uniform 100;
         frequency       40E6;
         bias            50.0;
     }

@@ -21,19 +21,19 @@ FoamFile
     {
         type            patch;
         nFaces          1;
-        startFace       99;
+        startFace       299;
     }
     ground
     {
         type            patch;
         nFaces          1;
-        startFace       100;
+        startFace       300;
     }
     otherfaces
     {
         type            empty;
-        nFaces          400;
-        startFace       101;
+        nFaces          1200;
+        startFace       301;
     }
 )
 

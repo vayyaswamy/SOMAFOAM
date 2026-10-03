@@ -20,7 +20,7 @@ libs (
       "libplasmaCookBook.so"
      );
 
-application     plasmaSimFoam;
+application     somaFoam;
 
 startFrom       startTime;
 
