@@ -148,10 +148,14 @@ int main(int argc, char *argv[])
     directTopoChange meshMod(mesh);
 
     // Insert mesh refinement into directTopoChange.
+    // Dummy pointRegionMaster, ignored (as in foam-extend 4.1)
+    labelList pointRegionMaster(cellRegionMaster.size(), label(-1));
+
     faceRemover.setRefinement
     (
         facesToRemove,
         cellRegion,
+        pointRegionMaster,
         cellRegionMaster,
         meshMod
     );
