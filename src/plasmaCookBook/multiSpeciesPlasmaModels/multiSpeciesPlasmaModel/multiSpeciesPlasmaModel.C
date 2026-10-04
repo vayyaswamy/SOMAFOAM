@@ -114,6 +114,7 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     accelerate_(false),
     accSpecies_(0),
     accPeriod_(0),
+    accStartTime_(0),
     accFullCycles_(0),
     accAverageCycles_(1),
     accSteady_(false),

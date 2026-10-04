@@ -74,6 +74,7 @@ slowSpeciesAcceleration
 {
     species         (Arm);
     period          2.5e-8;   // period of the applied voltage [s]
+    startTime       1e-5;     // no advances before this time (default 0)
     fullCycles      20;       // periods of full simulation per block
     averageCycles   2;        // periods at the end of a block over which
                               // the chemistry source is averaged
@@ -92,6 +93,12 @@ charged species, the electron temperature and the potential are left
 unchanged and adjust during the next block. Only neutral species transported
 by diffusion can be listed. The time reported by the solver does not include
 the advances.
+
+The advance assumes that the plasma repeats from one period to the next. Use
+`startTime` to begin after the discharge has ignited, and keep each advance
+(`nSteps*deltaT`) short compared with any slower evolution of the discharge
+itself; a long advance or a steady solve otherwise drives the species to a
+balance with a plasma state that is still changing.
 
 With `steadyState yes` the averaged equation is solved for its steady state
 once per block, and `deltaT` and `nSteps` are optional. Sources that are
