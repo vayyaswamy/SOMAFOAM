@@ -146,6 +146,9 @@ protected:
             //- Period of the applied voltage [s]
             scalar accPeriod_;
 
+            //- Time after which the acceleration is active [s]
+            scalar accStartTime_;
+
             //- Periods of full simulation between two advances, and periods
             //  at the end of them over which the sources are averaged
             label accFullCycles_;

@@ -27,6 +27,8 @@ Description
     {
         species         (Arm);
         period          7.374631e-8;  // period of the applied voltage [s]
+        startTime       0;      // no advances before this time [s], e.g.
+                                // until the discharge has ignited
         fullCycles      5;      // periods of full simulation per block
         averageCycles   1;      // periods at the end of a block over which
                                 // the sources are averaged
@@ -129,6 +131,7 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
     }
 
     accPeriod_ = readScalar(dict.lookup("period"));
+    accStartTime_ = dict.lookupOrDefault<scalar>("startTime", 0);
     accFullCycles_ = readLabel(dict.lookup("fullCycles"));
     accAverageCycles_ = dict.lookupOrDefault<label>("averageCycles", 1);
     accSteady_ = dict.lookupOrDefault<Switch>("steadyState", false);
@@ -213,7 +216,12 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         );
     }
 
-    Info<< "Slow species acceleration: " << names;
+    Info<< "Slow species acceleration:";
+
+    forAll(names, k)
+    {
+        Info<< " " << names[k];
+    }
 
     if (accSteady_)
     {
@@ -225,7 +233,14 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
     }
 
     Info<< " after every " << accFullCycles_ << " periods of " << accPeriod_
-        << " s" << endl;
+        << " s";
+
+    if (accStartTime_ > 0)
+    {
+        Info<< ", from time " << accStartTime_ << " s";
+    }
+
+    Info<< endl;
 }
 
 
@@ -249,6 +264,12 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
     }
 
     accLastTime_ = t;
+
+    // The first block starts at startTime
+    if (t < accStartTime_ + 0.5*dt)
+    {
+        return;
+    }
 
     if (accBlockStart_ < -0.5*GREAT)
     {
