@@ -1147,7 +1147,10 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
                     {
                         label si = R.lhs()[i].index;
                         scalar el = R.lhs()[i].exponent;
-                        if (si == sj)
+                        // Differentiate the j-th factor only: a species may appear
+                        // more than once on the left-hand side (A + A), as in
+                        // calculate() and jacobian()
+                        if (i == j)
                         {
                             if (el < 1.0)
                             {
