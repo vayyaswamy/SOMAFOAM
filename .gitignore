@@ -25,3 +25,7 @@
 /examples/**/*e-[0-9]*/
 /examples/**/postProcessing/
 /examples/**/log.*
+
+# Python bytecode
+__pycache__/
+*.pyc

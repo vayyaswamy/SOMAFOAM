@@ -59,4 +59,22 @@ energyModel
 	gas none;
 }
 
+// Acceleration of the metastable (see README, "Acceleration of slow neutral
+// species"). Inactive by default. The applied voltage is 40 MHz, so the
+// period is 2.5e-8 s; each 1 us block of full simulation is followed by a
+// 2 us advance of Arm alone, starting after ignition at 12 us.
+slowSpeciesAcceleration
+{
+    active          no;
+    species         (Arm);
+    period          2.5e-8;
+    startTime       1.2e-5;
+    fullCycles      40;
+    averageCycles   2;
+    deltaT          1e-7;
+    nSteps          20;
+    maxChangeFactor 2;
+    tolerance       0;
+}
+
 // ************************************************************************* //
