@@ -153,7 +153,10 @@
 
     E = -fvc::grad(Phi);
 
-    E.write();
+    if (runTime.outputTime())
+    {
+        E.write();
+    }
 
     Info << "Calculating E done " << endl;
 

@@ -262,7 +262,11 @@ void Foam::fvPatchField<Type>::patchInterpolate
     const label patchI = this->patch().index();
 
      // Virtual function for patch face interpolate.  HJ, 13/Jun/2013
-     if (this->coupled())
+     // On region-couple patches (plasma-dielectric interfaces) the patch
+     // field holds the interface value, which is not the distance-weighted
+     // average of the two cells when the permittivities differ or the
+     // interface carries a surface charge: use it as it is
+     if (this->coupled() && this->patch().type() != "regionCouple")
      {
          // Coupled patch
          fField.boundaryField()[patchI] =
