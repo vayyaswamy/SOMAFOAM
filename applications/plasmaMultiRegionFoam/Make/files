@@ -1,13 +1,4 @@
-electroMagneticsControls/emcModels/emcModels.C
-electroMagneticsControls/emcModels/newEmcModels.C
-electroMagneticsControls/voltageControl/voltageControl.C
-electroMagneticsControls/powerControl/powerControl.C
-electroMagneticsControls/none/none.C
-
-regionProperties/regionProperties.C
-
-derivedFvPatchFields/plasmaDielectricWallCoupled/plasmaDielectricWallCoupledFvPatchScalarField.C
-
+sharedSources.C
 plasmaMultiRegionFoam.C
 
 EXE = $(FOAM_APPBIN)/plasmaMultiRegionFoam
