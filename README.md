@@ -109,6 +109,13 @@ moderate. A steady state needs a net loss of the species in every cell; where
 there is none, the time-step advance is used if `deltaT` and `nSteps` are
 given and the advance is skipped otherwise.
 
+## Post-processing
+
+`postprocessing/` holds Python scripts that plot profiles and time histories
+of 1D cases (`plot_1d.py`), maps and line cuts of 2D cases including refined
+and parallel ones (`plot_2d.py`), and electrode voltage and current
+(`plot_electrodes.py`). See `postprocessing/README.md`.
+
 ## Electrode voltage and current
 
 The `electrodeVoltageCurrent` function object writes, for each listed patch,
