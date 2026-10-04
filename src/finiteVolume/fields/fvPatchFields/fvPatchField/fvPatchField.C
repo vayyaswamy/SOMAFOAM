@@ -262,14 +262,12 @@ void Foam::fvPatchField<Type>::patchInterpolate
     const label patchI = this->patch().index();
 
      // Virtual function for patch face interpolate.  HJ, 13/Jun/2013
-    // no interpolation for coupled patch. Use face values like normal boundary condition
      if (this->coupled())
      {
          // Coupled patch
-         //fField.boundaryField()[patchI] =
-         //    pL*this->patchInternalField()
-         //  + (1 - pL)*this->patchNeighbourField();
-        fField.boundaryField()[patchI] = *this;
+         fField.boundaryField()[patchI] =
+             pL*this->patchInternalField()
+           + (1 - pL)*this->patchNeighbourField();
      }
      else
      {

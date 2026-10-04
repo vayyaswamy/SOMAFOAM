@@ -161,12 +161,15 @@ use `corrected` Laplacian and `snGrad` schemes in `system/fvSchemes`.
 `examples/plasma/2DAdaptiveMeshArgon` is a worked example (seeded plasma blob,
 one refinement level).
 
-Limits: `solutionDomain plasma` only; serial runs only so far (the 4.1 load
-balancing is not ported); merged cells take the volume average of all fields.
+Limits: `solutionDomain plasma` only; parallel runs keep the initial
+decomposition (the 4.1 load balancing is not ported); merged cells take the
+volume average of all fields.
 Tested with the `driftDiffusion` model: the 100 V argon case on a thin 2D
 mesh matches the 1D result within 1 %, the seeded-blob example matches a
 uniform fine mesh within 2 % (0.4 % RMS), and runs restart from a refined
-mesh.
+mesh. On 2 and 4 processors the refined mesh is identical to the
+serial one and the fields agree with the serial run to 5e-5 of their peak
+(5e-4 for the electron temperature).
 
 Contributors:
 1) Venkattraman Ayyaswamy (https://me.ucmerced.edu/content/venkattraman-venkatt-ayyaswamy)
