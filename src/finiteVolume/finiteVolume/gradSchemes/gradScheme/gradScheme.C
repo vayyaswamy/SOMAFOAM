@@ -331,8 +331,13 @@ void gradScheme<Type>::correctBoundaryConditions
             );
             //Info << n* (n & gGrad.boundaryField()[patchi]) << endl;
         }
-        else
+        else if (vsf.boundaryField()[patchi].patch().type() != "processor")
         {
+            // Not on processor patches: there the patch field must stay the
+            // gradient of the cell on the other processor, as set by
+            // correctBoundaryConditions() above, so that interpolation to
+            // the processor faces gives the same face value as in a serial
+            // run
             vectorField n = vsf.mesh().boundary()[patchi].nf();
 
             gGrad.boundaryField()[patchi] += n*
