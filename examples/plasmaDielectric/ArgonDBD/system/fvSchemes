@@ -41,6 +41,7 @@ divSchemes
 	div(F,Ni)	Gauss limitedLinear 1;
 	div((interpolate(eeFlux)&S),Te)  Gauss limitedLinear 1;
 	div(F_electron)	Gauss linear;
+	div(eeFlux)	Gauss linear;
 }
 
 laplacianSchemes
