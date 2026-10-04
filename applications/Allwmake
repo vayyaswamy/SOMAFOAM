@@ -3,7 +3,6 @@ cd ${0%/*} || exit 1    # run from this directory
 
 set -x
 
-wmake plasmaSimFoam
 wmake plasmaMultiRegionFoam
 wmake somaFoam
 wmake all mesh
