@@ -149,6 +149,8 @@ int main(int argc, char *argv[])
     }
     else if (solutionDomain == "plasma")
     {
+        #include "refreshProcessorPatches.H"
+
         while (runTime.run())
         {
 
