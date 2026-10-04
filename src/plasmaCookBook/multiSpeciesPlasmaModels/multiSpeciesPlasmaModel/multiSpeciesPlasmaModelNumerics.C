@@ -8,6 +8,18 @@ look for license file include with distribution.
 Description
     Numerical controls of multiSpeciesPlasmaModel read from plasmaProperties:
 
+    Limits (defaults shown; there is no upper limit on the electron
+    temperature unless TeMax is given):
+    \verbatim
+    limits
+    {
+        densityFloor    1e4;    // lowest number density of a transported
+                                // species [1/m3]
+        TeMin           300;    // [K]
+        TeMax           1e6;    // [K], default: none
+    }
+    \endverbatim
+
     Inner iterations (defaults shown):
     \verbatim
     innerIterations
@@ -84,6 +96,37 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
             << ", neutral species " << nCorrNeutral_
             << ", electron temperature " << nCorrTe_
             << ", tolerance " << innerTolerance_ << endl;
+    }
+
+    if (found("limits"))
+    {
+        const dictionary& dict = subDict("limits");
+
+        dict.readIfPresent("densityFloor", densityFloor_);
+        dict.readIfPresent("TeMin", TeMin_);
+        dict.readIfPresent("TeMax", TeMax_);
+
+        if (densityFloor_ < 0 || TeMin_ <= 0 || TeMax_ <= TeMin_)
+        {
+            FatalIOErrorIn
+            (
+                "multiSpeciesPlasmaModel::readNumericalControls()",
+                dict
+            )   << "Need densityFloor >= 0 and 0 < TeMin < TeMax"
+                << exit(FatalIOError);
+        }
+
+        Info<< "Limits: densities not below " << densityFloor_
+            << " 1/m3, electron temperature between " << TeMin_ << " and ";
+
+        if (TeMax_ < 0.5*GREAT)
+        {
+            Info<< TeMax_ << " K" << endl;
+        }
+        else
+        {
+            Info<< "unlimited" << endl;
+        }
     }
 
     if (!found("slowSpeciesAcceleration"))
@@ -362,7 +405,7 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
 
             NEqn.solve(mesh_.solutionDict().solver("Nin"));
 
-            Ni.max(1e4);
+            Ni.max(densityFloor_);
         }
 
         for
@@ -386,7 +429,7 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
 
             NEqn.solve(mesh_.solutionDict().solver("Nin"));
 
-            Ni.max(1e4);
+            Ni.max(densityFloor_);
         }
 
         // Limit the change, since the plasma has not yet responded to it

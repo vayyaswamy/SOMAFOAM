@@ -135,6 +135,16 @@ protected:
             //- Report loops that end without reaching the tolerance
             Switch reportUnconverged_;
 
+        // Limits, optional dictionary limits in plasmaProperties
+
+            //- Lower limit of the number densities of the transported
+            //  species [1/m3]
+            scalar densityFloor_;
+
+            //- Lower and upper limit of the electron temperature [K]
+            scalar TeMin_;
+            scalar TeMax_;
+
         // Acceleration of slow neutral species (e.g. metastables), optional
         // dictionary slowSpeciesAcceleration in plasmaProperties
 
@@ -347,6 +357,23 @@ public:
             scalar innerTolerance() const
             {
                 return innerTolerance_;
+            }
+
+        // Limits
+
+            scalar densityFloor() const
+            {
+                return densityFloor_;
+            }
+
+            scalar TeMin() const
+            {
+                return TeMin_;
+            }
+
+            scalar TeMax() const
+            {
+                return TeMax_;
             }
 
             //- Report an inner loop that ended above the tolerance

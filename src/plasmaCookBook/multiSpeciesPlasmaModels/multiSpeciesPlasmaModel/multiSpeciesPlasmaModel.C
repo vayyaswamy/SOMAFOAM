@@ -111,6 +111,10 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     innerTolerance_(1e-5),
     reportUnconverged_(true),
 
+    densityFloor_(1e4),
+    TeMin_(300),
+    TeMax_(GREAT),
+
     accelerate_(false),
     accSpecies_(0),
     accPeriod_(0),

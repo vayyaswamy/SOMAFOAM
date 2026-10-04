@@ -623,7 +623,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         relaxFinal(N_[i]);
 
-                        N_[i].max(1e4);
+                        N_[i].max(densityFloor_);
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
@@ -722,7 +722,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                             initialResidual = solverPerf.initialResidual();
 
 
-                            N_[i].max(1e4);
+                            N_[i].max(densityFloor_);
 
 
                             yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
@@ -743,7 +743,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         relaxFinal(N_[i]);
 
 
-                        N_[i].max(1e4);
+                        N_[i].max(densityFloor_);
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
