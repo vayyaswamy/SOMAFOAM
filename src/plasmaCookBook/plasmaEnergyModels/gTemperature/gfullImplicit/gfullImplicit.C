@@ -91,7 +91,7 @@ void Foam::gfullImplicit::correct
 
     TEqn.solve();
 
-    Tc.relax();
+    relaxFinal(Tc);
 }
 
 

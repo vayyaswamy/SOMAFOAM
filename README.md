@@ -34,6 +34,63 @@ source <path-to>/SOMAFOAM/etc/bashrc
 Run the cases in `examples/plasma` with `somaFoam` (some `controlDict` files
 still name the older `plasmaSimFoam`, which no longer runs them).
 
+## Inner iterations and field relaxation
+
+The number of passes per time step over each species equation and the
+electron temperature equation, which resolve the nonlinear chemistry source,
+can be set in `constant/plasmaProperties` (defaults shown). A loop that ends
+above the tolerance is reported in the log.
+
+```
+innerIterations
+{
+    chargedSpecies      4;
+    neutralSpecies      2;
+    electronTemperature 6;
+    tolerance           1e-5;   // initial residual that ends the passes
+    reportUnconverged   yes;
+}
+```
+
+Field relaxation factors in `system/fvSolution` follow the usual convention:
+`<field>Final` applies on the final PIMPLE iteration of a time step, so that
+
+```
+fields { ".*" 0.8; ".*Final" 1.0; }
+```
+
+relaxes intermediate iterations only and a run with a single PIMPLE iteration
+is not relaxed. (Before this was honoured, every time step took 80 % of its
+change with these settings.)
+
+## Acceleration of slow neutral species
+
+Metastables reach their periodic steady state over times that are thousands
+of periods of the applied voltage. They can be advanced alone, with a large
+time step, between blocks of full simulation (`constant/plasmaProperties`):
+
+```
+slowSpeciesAcceleration
+{
+    species         (Arm);
+    period          2.5e-8;   // period of the applied voltage [s]
+    fullCycles      20;       // periods of full simulation per block
+    averageCycles   2;        // periods at the end of a block over which
+                              // the chemistry source is averaged
+    deltaT          1e-6;     // time step of the advance [s]
+    nSteps          20;       // steps per advance
+    maxChangeFactor 2;        // limit on the density change per advance
+    tolerance       1e-3;     // advances stop below this relative change
+}
+```
+
+After each block the listed species are advanced by `nSteps*deltaT` with the
+period-averaged source, linearised in their own density, and diffusion; the
+charged species, the electron temperature and the potential are left
+unchanged and adjust during the next block. Only neutral species transported
+by diffusion can be listed. The time reported by the solver does not include
+the advances.
+
 ## Electrode voltage and current
 
 The `electrodeVoltageCurrent` function object writes, for each listed patch,

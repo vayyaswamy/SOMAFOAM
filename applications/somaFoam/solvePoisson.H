@@ -29,7 +29,7 @@
 
         phiPlasmaEqn.solve();
 
-        Phi.relax();
+        relaxFinal(Phi);
 
 
         E = -fvc::grad(Phi);

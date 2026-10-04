@@ -1,6 +1,7 @@
 plasmaConstants/plasmaConstants.C
 
 multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModel.C
+multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModelNumerics.C
 multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/newMultiSpeciesPlasmaModel.C
 multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModels.C
 

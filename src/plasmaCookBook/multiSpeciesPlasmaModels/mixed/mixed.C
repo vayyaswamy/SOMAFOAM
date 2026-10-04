@@ -585,7 +585,11 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         initialResidual = 1.0;
 
-                        while ((initialResidual >= 1e-5) && (icorr++ <= 3))
+                        while
+                        (
+                            (initialResidual >= innerTolerance_)
+                         && (icorr++ < nCorrCharged_)
+                        )
                         {
 
                             tmp<fvScalarMatrix> NEqn
@@ -610,7 +614,14 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         }
 
-                        N_[i].relax(); // field relax
+                        reportInnerIterations
+                        (
+                            species()[i],
+                            nCorrCharged_,
+                            initialResidual
+                        );
+
+                        relaxFinal(N_[i]);
 
                         N_[i].max(1e4);
 
@@ -689,7 +700,11 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         N_[i].storePrevIter();
 
-                        while ((initialResidual >= 1e-5) && (icorr++ <= 1))
+                        while
+                        (
+                            (initialResidual >= innerTolerance_)
+                         && (icorr++ < nCorrNeutral_)
+                        )
                         {
                             tmp<fvScalarMatrix> NnEqn
                             (
@@ -718,7 +733,14 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         }
 
-                        N_[i].relax();
+                        reportInnerIterations
+                        (
+                            species()[i],
+                            nCorrNeutral_,
+                            initialResidual
+                        );
+
+                        relaxFinal(N_[i]);
 
 
                         N_[i].max(1e4);

@@ -184,7 +184,7 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
     }
 
     const word solverName(charged ? "Ni" : "Nin");
-    const label nCorr = charged ? 3 : 1;
+    const label nCorr = charged ? nCorrCharged_ : nCorrNeutral_;
 
     Ni.storePrevIter();
 
@@ -192,7 +192,7 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
     scalar initialResidual = 1.0;
     label iCorr = 0;
 
-    while ((initialResidual >= 1e-5) && (iCorr++ <= nCorr))
+    while ((initialResidual >= innerTolerance_) && (iCorr++ < nCorr))
     {
         fvScalarMatrix NEqn
         (
@@ -226,7 +226,9 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
         updateChemistryCollFreq(chemistry);
     }
 
-    Ni.relax();
+    reportInnerIterations(species()[i], nCorr, initialResidual);
+
+    relaxFinal(Ni);
 
     Ni.max(1e4);
 

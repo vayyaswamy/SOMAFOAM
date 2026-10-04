@@ -103,8 +103,30 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
         ),
         mesh_,
         dimensionedScalar("zero", dimMass/dimTime/dimVolume, 0.0)
-    )
+    ),
+
+    nCorrCharged_(4),
+    nCorrNeutral_(2),
+    nCorrTe_(6),
+    innerTolerance_(1e-5),
+    reportUnconverged_(true),
+
+    accelerate_(false),
+    accSpecies_(0),
+    accPeriod_(0),
+    accFullCycles_(0),
+    accAverageCycles_(1),
+    accDeltaT_(0),
+    accNSteps_(0),
+    accMaxChangeFactor_(2),
+    accTolerance_(0),
+    accBlockStart_(-GREAT),
+    accAveragedTime_(0),
+    accLastTime_(-GREAT),
+    accConverged_(false)
 {
+    readNumericalControls();
+
     graphDiffData_.setSize(species().size());
 
     graphMuData_.setSize(activeSpecies_);
@@ -507,7 +529,11 @@ Foam::scalar Foam::multiSpeciesPlasmaModel::correct
 
     NG_.correctBoundaryConditions();
 
-    return correct(chemistry, E, fields);
+    const scalar result = correct(chemistry, E, fields);
+
+    accelerateSlowSpecies(chemistry);
+
+    return result;
 }
 
 Foam::scalar

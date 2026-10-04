@@ -30,6 +30,7 @@ SourceFiles
 #include "plasmaInterpolateXY.H"
 #include "dimensionedConstants.H"
 #include "plasmaConstants.H"
+#include "relaxFinal.H"
 #include <math.h>
 #include "foamTime.H"
 #include "speciesTable.H"
@@ -118,6 +119,64 @@ protected:
         PtrList<volScalarField> collFrequency_;
 
         volScalarField NG_;
+
+        // Inner (nonlinear) iterations per time step, optional dictionary
+        // innerIterations in plasmaProperties
+
+            //- Maximum number of passes for charged species, neutral
+            //  species and the electron temperature
+            label nCorrCharged_;
+            label nCorrNeutral_;
+            label nCorrTe_;
+
+            //- Initial residual below which the passes stop
+            scalar innerTolerance_;
+
+            //- Report loops that end without reaching the tolerance
+            Switch reportUnconverged_;
+
+        // Acceleration of slow neutral species (e.g. metastables), optional
+        // dictionary slowSpeciesAcceleration in plasmaProperties
+
+            Switch accelerate_;
+
+            //- Indices of the accelerated species
+            labelList accSpecies_;
+
+            //- Period of the applied voltage [s]
+            scalar accPeriod_;
+
+            //- Periods of full simulation between two advances, and periods
+            //  at the end of them over which the sources are averaged
+            label accFullCycles_;
+            label accAverageCycles_;
+
+            //- Time step and number of steps of the advance
+            scalar accDeltaT_;
+            label accNSteps_;
+
+            //- Largest factor by which the density may change in one advance
+            scalar accMaxChangeFactor_;
+
+            //- Relative change per advance below which the advances stop
+            scalar accTolerance_;
+
+            //- Start time of the current block, averaged time so far
+            scalar accBlockStart_;
+            scalar accAveragedTime_;
+            scalar accLastTime_;
+            bool accConverged_;
+
+            //- Time integrals of the explicit and implicit source parts
+            PtrList<volScalarField> accSu_;
+            PtrList<volScalarField> accSp_;
+
+        //- Read the innerIterations and slowSpeciesAcceleration dictionaries
+        void readNumericalControls();
+
+        //- Average the sources of the slow species over the applied period
+        //  and advance these species alone with a large time step
+        void accelerateSlowSpecies(psiChemistryModel& chemistry);
 
 
 private:
@@ -257,6 +316,36 @@ public:
         );
 
         virtual void input();
+
+        // Inner iteration controls
+
+            label nCorrCharged() const
+            {
+                return nCorrCharged_;
+            }
+
+            label nCorrNeutral() const
+            {
+                return nCorrNeutral_;
+            }
+
+            label nCorrTe() const
+            {
+                return nCorrTe_;
+            }
+
+            scalar innerTolerance() const
+            {
+                return innerTolerance_;
+            }
+
+            //- Report an inner loop that ended above the tolerance
+            void reportInnerIterations
+            (
+                const word& name,
+                const label maxPasses,
+                const scalar initialResidual
+            ) const;
 
         virtual bool read() = 0;
 };
