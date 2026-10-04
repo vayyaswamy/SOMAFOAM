@@ -16,6 +16,15 @@ FoamFile
 
 solvers
 {
+    // Used by plasmaMultiRegionFoam
+    Phi
+    {
+        solver           PCG;
+        preconditioner   Cholesky;
+        tolerance        1e-14;
+        relTol           0;
+        minIter          1;
+    };
 }
 
 relaxationFactors

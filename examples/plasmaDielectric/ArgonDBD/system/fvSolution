@@ -40,6 +40,16 @@ solvers
         minIter          1;
     };
 
+    // Used by plasmaMultiRegionFoam, which solves the regions in turn
+    Phi
+    {
+        solver           PCG;
+        preconditioner   Cholesky;
+        tolerance        1e-14;
+        relTol           0;
+        minIter          1;
+    };
+    // Used by somaFoam, which solves the regions in one matrix
     Phi_Phi_Phi
     {
         solver           BiCGStab;

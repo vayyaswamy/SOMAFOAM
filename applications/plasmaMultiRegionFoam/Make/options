@@ -1,15 +1,16 @@
 EXE_INC = \
-    -Iplasma \
-    -Idielectric \
-    -IregionProperties \
-    -IelectroMagneticsControls/emcModels \
+    -I../somaFoam \
+    -I../somaFoam/electroMagneticsControls/emcModels \
+    -I../somaFoam/regionProperties \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude \
     -I$(LIB_SRC)/plasmaCookBook/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
-    -I$(LIB_SRC)/meshTools/lnInclude 
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/dynamicMesh/dynamicMesh/lnInclude \
+    -I$(LIB_SRC)/dynamicMesh/dynamicFvMesh/lnInclude
 
 EXE_LIBS = \
 	-lreactionThermophysicalModels \
@@ -17,5 +18,9 @@ EXE_LIBS = \
 	-lchemistryModel \
 	-lfiniteVolume \
 	-lmeshTools \
+	-ldynamicMesh \
+	-ldynamicFvMesh \
 	-lspecie \
+	-lfoam \
+	-ldl \
 	-lplasmaCookBook

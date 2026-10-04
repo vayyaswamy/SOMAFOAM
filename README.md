@@ -31,8 +31,7 @@ The libraries go to `lib/linux64GccDPOpt` and the applications to
 source <path-to>/SOMAFOAM/etc/bashrc
 ```
 
-Run the cases in `examples/plasma` with `somaFoam` (some `controlDict` files
-still name the older `plasmaSimFoam`, which no longer runs them).
+Run the cases in `examples/plasma` with `somaFoam`.
 
 ## Inner iterations and field relaxation
 
@@ -62,6 +61,59 @@ fields { ".*" 0.8; ".*Final" 1.0; }
 relaxes intermediate iterations only and a run with a single PIMPLE iteration
 is not relaxed. (Before this was honoured, every time step took 80 % of its
 change with these settings.)
+
+## Plasma with dielectric regions
+
+Two solvers handle a plasma bounded by dielectrics (`solutionDomain
+plasmaDielectric` in `constant/electroMagnetics`, regions listed in
+`constant/regionProperties`, interfaces as `regionCouple` patches). They use
+the same case and the same plasma step and differ in how the potential is
+coupled across the interfaces:
+
+| Solver | Coupling | Potential on the interface patches |
+|---|---|---|
+| `somaFoam` | plasma and dielectrics in one matrix | `coupledPotential` |
+| `plasmaMultiRegionFoam` | regions solved in turn and iterated within each time step | `iterativeCoupledPotential` |
+
+For `plasmaMultiRegionFoam`, set the type of `Phi` on both sides of every
+interface (`0/Phi` and `0/<dielectric>/Phi`) to `iterativeCoupledPotential`,
+keeping the `remoteField` and `surfaceCharge` entries, and provide a linear
+solver for `Phi` in `system/fvSolution` of every region. The plasma side
+fixes the interface potential and each dielectric imposes the normal gradient
+that satisfies Gauss's law with the surface charge; the interface potential
+is relaxed (Aitken) until both agree. Optional controls in the plasma's
+`system/fvSolution`:
+
+```
+plasmaDielectricCoupling
+{
+    maxIterations       50;
+    tolerance           1e-8;   // change of the interface potential relative
+                                // to the largest potential
+    initialRelaxation   0.5;
+}
+```
+
+On `examples/plasmaDielectric/ArgonDBD` the iteration takes 3 to 5 passes per
+time step and the two solvers agree within 1e-3 of the field peaks, also
+while the plasma conducts and charges the dielectric surfaces.
+
+## Limits on densities and electron temperature
+
+Optional, in `constant/plasmaProperties` (defaults shown):
+
+```
+limits
+{
+    densityFloor    1e4;    // lowest number density of a transported species [1/m3]
+    TeMin           300;    // lowest electron temperature [K]
+    // TeMax        1e6;    // highest electron temperature [K]; default: no limit
+}
+```
+
+Where the electron density is negligible, for example in a sheath without
+secondary emission, the electron energy equation is poorly conditioned; a
+higher `densityFloor` and a `TeMax` keep the solution bounded there.
 
 ## Acceleration of slow neutral species
 

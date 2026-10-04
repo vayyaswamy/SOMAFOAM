@@ -1,3 +1,4 @@
+    // The regions are solved in turn: the regionCouple patches stay detached
     regionProperties rp(runTime);
 
     PtrList<fvMesh> dielectricRegions(rp.dielectricRegionNames().size());
