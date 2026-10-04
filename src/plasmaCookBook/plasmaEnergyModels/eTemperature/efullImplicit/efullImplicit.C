@@ -65,7 +65,11 @@ Foam::scalar Foam::efullImplicit::correct
 
     int icorr = 0;
 
-    while ((icorr++ <= 5) & (initialResidual >= 1e-5))
+    while
+    (
+        (icorr++ < mspm().nCorrTe())
+     && (initialResidual >= mspm().innerTolerance())
+    )
 
     {
 
@@ -107,7 +111,10 @@ Foam::scalar Foam::efullImplicit::correct
 
     }
 
-    TeC.relax();
+    mspm().reportInnerIterations("Te", mspm().nCorrTe(), initialResidual);
+
+    // Solved once per time step, after the PIMPLE loop
+    relaxFinal(TeC, true);
 
     TeC.max(300.0);
 
