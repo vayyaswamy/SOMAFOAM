@@ -79,6 +79,8 @@ slowSpeciesAcceleration
                               // the chemistry source is averaged
     deltaT          1e-6;     // time step of the advance [s]
     nSteps          20;       // steps per advance
+    steadyState     no;       // yes: one steady solve per block instead
+    relaxation      1;        // fraction of the change that is applied
     maxChangeFactor 2;        // limit on the density change per advance
     tolerance       1e-3;     // advances stop below this relative change
 }
@@ -90,6 +92,15 @@ charged species, the electron temperature and the potential are left
 unchanged and adjust during the next block. Only neutral species transported
 by diffusion can be listed. The time reported by the solver does not include
 the advances.
+
+With `steadyState yes` the averaged equation is solved for its steady state
+once per block, and `deltaT` and `nSteps` are optional. Sources that are
+nonlinear in the species' own density, such as metastable pooling, are
+linearised about the density of the block, so successive blocks act as the
+nonlinear iteration; `relaxation` and `maxChangeFactor` keep the changes
+moderate. A steady state needs a net loss of the species in every cell; where
+there is none, the time-step advance is used if `deltaT` and `nSteps` are
+given and the advance is skipped otherwise.
 
 ## Electrode voltage and current
 
