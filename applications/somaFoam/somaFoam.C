@@ -165,7 +165,9 @@ int main(int argc, char *argv[])
             // the plasma equations use the electric field
             if (mesh.update())
             {
-                Info<< "Mesh changed: " << mesh.nCells() << " cells" << endl;
+                Info<< "Mesh changed: "
+                    << returnReduce(mesh.nCells(), sumOp<label>())
+                    << " cells" << endl;
             }
 
 

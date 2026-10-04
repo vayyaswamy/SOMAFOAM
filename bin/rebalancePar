@@ -1,0 +1,92 @@
+#!/bin/sh
+#------------------------------------------------------------------------------
+# Script
+#     rebalancePar
+#
+# Description
+#     Decomposes an adaptively refined parallel case again at its latest time,
+#     so that the processors carry equal loads when the run is restarted.
+#     Run it in the case directory between two parallel runs:
+#
+#         mpirun -np 4 somaFoam -parallel     # stops at endTime
+#         rebalancePar
+#         (raise endTime in system/controlDict)
+#         mpirun -np 4 somaFoam -parallel     # continues, balanced
+#
+#     system/controlDict must have "startFrom latestTime". The number of
+#     processors and the method are taken from system/decomposeParDict and
+#     may be changed before rebalancePar is called. The old processor
+#     directories are kept in beforeRebalance_<time>.
+#
+#     Steps: reconstructParMesh (mesh and fields), refinementLevelsPar
+#     -reconstruct (refinement levels), decomposePar, refinementLevelsPar
+#     -decompose.
+#------------------------------------------------------------------------------
+
+if [ ! -f system/controlDict ] || [ ! -d processor0 ]
+then
+    echo "rebalancePar: run in a case directory with processor* directories"
+    exit 1
+fi
+
+if ! grep -Eq '^[[:space:]]*startFrom[[:space:]]+latestTime' system/controlDict
+then
+    echo "rebalancePar: set 'startFrom latestTime;' in system/controlDict"
+    exit 1
+fi
+
+run()
+{
+    log=log.rebalancePar.$1
+    echo "Running $*"
+
+    if ! "$@" > $log 2>&1
+    then
+        echo "rebalancePar: $1 failed, see $log"
+        exit 1
+    fi
+}
+
+log=log.rebalancePar.reconstructParMesh
+run reconstructParMesh -latestTime
+
+log=log.rebalancePar.refinementLevelsPar.reconstruct
+echo "Running refinementLevelsPar -reconstruct -latestTime"
+refinementLevelsPar -reconstruct -latestTime > $log 2>&1 || {
+    echo "rebalancePar: refinementLevelsPar failed, see $log"
+    exit 1
+}
+
+latestTime=$(sed -n 's/^Time = //p' $log | tail -1)
+
+if [ -z "$latestTime" ] || [ ! -d "$latestTime/polyMesh" ]
+then
+    echo "rebalancePar: no reconstructed mesh in $latestTime/polyMesh"
+    exit 1
+fi
+
+old=beforeRebalance_$latestTime
+
+if [ -e "$old" ]
+then
+    echo "rebalancePar: $old exists already"
+    exit 1
+fi
+
+mkdir "$old" && mv processor[0-9]* "$old"/ || exit 1
+echo "Old processor directories moved to $old"
+
+run decomposePar
+
+log=log.rebalancePar.refinementLevelsPar.decompose
+echo "Running refinementLevelsPar -decompose -latestTime"
+refinementLevelsPar -decompose -latestTime > $log 2>&1 || {
+    echo "rebalancePar: refinementLevelsPar failed, see $log"
+    exit 1
+}
+
+echo
+echo "Cells per processor at time $latestTime:"
+grep 'Number of cells' log.rebalancePar.decomposePar
+
+#------------------------------------------------------------------------------

@@ -161,9 +161,27 @@ use `corrected` Laplacian and `snGrad` schemes in `system/fvSchemes`.
 `examples/plasma/2DAdaptiveMeshArgon` is a worked example (seeded plasma blob,
 one refinement level).
 
-Limits: `solutionDomain plasma` only; parallel runs keep the initial
-decomposition (the 4.1 load balancing is not ported); merged cells take the
-volume average of all fields.
+Parallel runs keep their decomposition while they run (the 4.1 load balancing
+is not ported), so refinement can leave the processors unevenly loaded. To
+balance them, stop the run, call `rebalancePar` in the case directory and
+restart:
+
+```
+mpirun -np 4 somaFoam -parallel     # stops at endTime
+rebalancePar                        # needs startFrom latestTime in controlDict
+mpirun -np 4 somaFoam -parallel     # after raising endTime
+```
+
+`rebalancePar` rebuilds the refined mesh and the fields from the processor
+directories (`reconstructParMesh`), decomposes them again according to
+`system/decomposeParDict` (the number of processors may be changed) and
+transfers the refinement levels with the `refinementLevelsPar` utility. The
+old processor directories are kept in `beforeRebalance_<time>`. Refined cells
+whose siblings end up on different processors cannot be merged again, so the
+mesh may stay slightly finer along the new processor boundaries.
+
+Limits: `solutionDomain plasma` only; merged cells take the volume average of
+all fields.
 Tested with the `driftDiffusion` model: the 100 V argon case on a thin 2D
 mesh matches the 1D result within 1 %, the seeded-blob example matches a
 uniform fine mesh within 2 % (0.4 % RMS), and runs restart from a refined
