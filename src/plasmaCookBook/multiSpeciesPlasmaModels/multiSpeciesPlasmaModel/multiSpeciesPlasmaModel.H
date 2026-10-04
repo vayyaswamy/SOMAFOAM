@@ -151,9 +151,16 @@ protected:
             label accFullCycles_;
             label accAverageCycles_;
 
+            //- Solve for the steady state of the averaged equation instead
+            //  of advancing in time
+            Switch accSteady_;
+
             //- Time step and number of steps of the advance
             scalar accDeltaT_;
             label accNSteps_;
+
+            //- Fraction of the computed change that is applied
+            scalar accRelaxation_;
 
             //- Largest factor by which the density may change in one advance
             scalar accMaxChangeFactor_;

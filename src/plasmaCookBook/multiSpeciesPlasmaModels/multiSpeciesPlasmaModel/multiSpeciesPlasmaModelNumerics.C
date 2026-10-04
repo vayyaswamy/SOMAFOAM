@@ -32,6 +32,11 @@ Description
                                 // the sources are averaged
         deltaT          1e-6;   // time step of the advance [s]
         nSteps          100;    // steps per advance
+        steadyState     no;     // yes: solve the steady state of the
+                                // averaged equation instead; deltaT and
+                                // nSteps are then optional and used only
+                                // where there is no steady state
+        relaxation      1;      // fraction of the change that is applied
         maxChangeFactor 2;      // limit on the density change per advance
         tolerance       1e-3;   // advances stop below this relative change
     }
@@ -42,6 +47,16 @@ Description
     the species' own density, and diffusion; the charged species, the
     electron temperature and the potential are left as they are and adjust
     during the next block.
+
+    With steadyState the averaged equation
+        - laplacian(D, N) - Sp*N = Su
+    is solved once per block instead. Sources that are nonlinear in the
+    species' own density (e.g. metastable pooling) are linearised about the
+    density of the block, so the blocks act as the nonlinear iteration; use
+    relaxation and maxChangeFactor to keep the changes moderate. A steady
+    state requires a net loss (Sp < 0) in every cell; otherwise the time
+    step advance is used if deltaT and nSteps are given, and the advance is
+    skipped if not.
 
 \*---------------------------------------------------------------------------*/
 
@@ -116,16 +131,29 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
     accPeriod_ = readScalar(dict.lookup("period"));
     accFullCycles_ = readLabel(dict.lookup("fullCycles"));
     accAverageCycles_ = dict.lookupOrDefault<label>("averageCycles", 1);
-    accDeltaT_ = readScalar(dict.lookup("deltaT"));
-    accNSteps_ = readLabel(dict.lookup("nSteps"));
+    accSteady_ = dict.lookupOrDefault<Switch>("steadyState", false);
+    accRelaxation_ = dict.lookupOrDefault<scalar>("relaxation", 1);
+
+    if (accSteady_)
+    {
+        // Only used where there is no steady state
+        accDeltaT_ = dict.lookupOrDefault<scalar>("deltaT", 0);
+        accNSteps_ = dict.lookupOrDefault<label>("nSteps", 0);
+    }
+    else
+    {
+        accDeltaT_ = readScalar(dict.lookup("deltaT"));
+        accNSteps_ = readLabel(dict.lookup("nSteps"));
+    }
     accMaxChangeFactor_ = dict.lookupOrDefault<scalar>("maxChangeFactor", 2);
     accTolerance_ = dict.lookupOrDefault<scalar>("tolerance", 0);
 
     if
     (
         accPeriod_ <= 0
-     || accDeltaT_ <= 0
-     || accNSteps_ < 1
+     || (!accSteady_ && (accDeltaT_ <= 0 || accNSteps_ < 1))
+     || accRelaxation_ <= 0
+     || accRelaxation_ > 1
      || accAverageCycles_ < 1
      || accFullCycles_ < accAverageCycles_
      || accMaxChangeFactor_ <= 1
@@ -135,7 +163,8 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         (
             "multiSpeciesPlasmaModel::readNumericalControls()",
             dict
-        )   << "Need period > 0, deltaT > 0, nSteps >= 1,"
+        )   << "Need period > 0, deltaT > 0 and nSteps >= 1 (unless"
+            << " steadyState), 0 < relaxation <= 1,"
             << " 1 <= averageCycles <= fullCycles and maxChangeFactor > 1"
             << exit(FatalIOError);
     }
@@ -184,9 +213,19 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         );
     }
 
-    Info<< "Slow species acceleration: " << names << " advanced by "
-        << accNSteps_*accDeltaT_ << " s after every " << accFullCycles_
-        << " periods of " << accPeriod_ << " s" << endl;
+    Info<< "Slow species acceleration: " << names;
+
+    if (accSteady_)
+    {
+        Info<< " solved for their steady state";
+    }
+    else
+    {
+        Info<< " advanced by " << accNSteps_*accDeltaT_ << " s";
+    }
+
+    Info<< " after every " << accFullCycles_ << " periods of " << accPeriod_
+        << " s" << endl;
 }
 
 
@@ -255,7 +294,7 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
     (
         "rDeltaT",
         dimless/dimTime,
-        1.0/accDeltaT_
+        accDeltaT_ > 0 ? 1.0/accDeltaT_ : 0.0
     );
 
     scalar maxChange = 0;
@@ -270,9 +309,47 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
         accSp_[k].internalField() /= accAveragedTime_;
         accSp_[k].correctBoundaryConditions();
 
+        // The source is Su + Sp*N. fvm::SuSp(-Sp, N) on the left-hand side
+        // makes a loss (Sp < 0) implicit and a gain explicit
+
         const scalarField N0(Ni.internalField());
 
-        for (label stepI = 0; stepI < accNSteps_; stepI++)
+        // A steady state needs a net loss everywhere
+        bool steady = accSteady_;
+
+        if (steady && gMax(accSp_[k].internalField()) >= 0)
+        {
+            steady = false;
+
+            WarningIn("multiSpeciesPlasmaModel::accelerateSlowSpecies(...)")
+                << species()[i] << " has no net loss in part of the domain"
+                << " (largest averaged dRRDi "
+                << gMax(accSp_[k].internalField()) << "): no steady state, "
+                << (accNSteps_ > 0 ? "advancing in time" : "advance skipped")
+                << endl;
+        }
+
+        if (steady)
+        {
+            fvScalarMatrix NEqn
+            (
+              - fvm::laplacian(D_[i], Ni, "laplacian(D,Nin)")
+              + fvm::SuSp(-accSp_[k], Ni)
+            );
+
+            NEqn.source() += mesh_.V()*accSu_[k].internalField();
+
+            NEqn.solve(mesh_.solutionDict().solver("Nin"));
+
+            Ni.max(1e4);
+        }
+
+        for
+        (
+            label stepI = 0;
+            !steady && accDeltaT_ > 0 && stepI < accNSteps_;
+            stepI++
+        )
         {
             const scalarField Nk(Ni.internalField());
 
@@ -280,7 +357,7 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
             (
                 fvm::Sp(rDeltaT, Ni)
               - fvm::laplacian(D_[i], Ni, "laplacian(D,Nin)")
-              - fvm::SuSp(accSp_[k], Ni)
+              + fvm::SuSp(-accSp_[k], Ni)
             );
 
             NEqn.source() +=
@@ -294,6 +371,8 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
         // Limit the change, since the plasma has not yet responded to it
         scalarField& NiI = Ni.internalField();
 
+        NiI = N0 + accRelaxation_*(NiI - N0);
+
         NiI = min(max(NiI, N0/accMaxChangeFactor_), N0*accMaxChangeFactor_);
 
         Ni.correctBoundaryConditions();
@@ -303,9 +382,18 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
 
         maxChange = max(maxChange, change);
 
-        Info<< "Slow species acceleration: " << species()[i]
-            << " advanced by " << accNSteps_*accDeltaT_
-            << " s, maximum density " << gMax(N0) << " -> " << gMax(NiI)
+        Info<< "Slow species acceleration: " << species()[i];
+
+        if (steady)
+        {
+            Info<< " solved for steady state";
+        }
+        else
+        {
+            Info<< " advanced by " << accNSteps_*accDeltaT_ << " s";
+        }
+
+        Info<< ", maximum density " << gMax(N0) << " -> " << gMax(NiI)
             << ", largest change relative to the maximum " << change
             << endl;
 
