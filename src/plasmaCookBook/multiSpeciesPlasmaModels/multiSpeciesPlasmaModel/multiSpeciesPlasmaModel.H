@@ -31,6 +31,7 @@ SourceFiles
 #include "dimensionedConstants.H"
 #include "plasmaConstants.H"
 #include "relaxFinal.H"
+#include "scharfetterGummel.H"
 #include <math.h>
 #include "foamTime.H"
 #include "speciesTable.H"
@@ -135,6 +136,15 @@ protected:
 
             //- Report loops that end without reaching the tolerance
             Switch reportUnconverged_;
+
+        //- Scharfetter-Gummel fluxes instead of the convection and
+        //  Laplacian schemes of fvSchemes, optional entry fluxScheme in
+        //  plasmaProperties
+        bool scharfetterGummel_;
+
+        //- Scharfetter-Gummel fluxes of the species through the faces
+        //  [1/s], set after each species has been solved
+        PtrList<surfaceScalarField> faceFlux_;
 
         // Limits, optional dictionary limits in plasmaProperties
 
@@ -373,6 +383,48 @@ public:
             scalar innerTolerance() const
             {
                 return innerTolerance_;
+            }
+
+        // Flux scheme
+
+            bool scharfetterGummel() const
+            {
+                return scharfetterGummel_;
+            }
+
+            //- Implicit drift and diffusion terms of a species equation,
+            //  div(F Ni) - laplacian(D, Ni), for a drift velocity F
+            tmp<fvScalarMatrix> driftDiffusionTerms
+            (
+                const volVectorField& F,
+                const volScalarField& D,
+                const volScalarField& Ni
+            ) const;
+
+            //- With Scharfetter-Gummel fluxes: store the flux of species i
+            //  through the faces and reconstruct its flux J in the cells
+            //  from it, so that the electron energy equation and the
+            //  currents use the flux of the species equation. Called after
+            //  species i has been solved and J has been set.
+            void correctDriftDiffusionFlux
+            (
+                const label i,
+                const volVectorField& F,
+                const volScalarField& D,
+                const volScalarField& Ni
+            );
+
+            //- Is the Scharfetter-Gummel flux of species i available? Not
+            //  for species with another transport model
+            bool hasFaceFlux(const label i) const
+            {
+                return scharfetterGummel_ && faceFlux_.set(i);
+            }
+
+            //- Scharfetter-Gummel flux of species i through the faces
+            const surfaceScalarField& faceFlux(const label i) const
+            {
+                return faceFlux_[i];
             }
 
         // Limits

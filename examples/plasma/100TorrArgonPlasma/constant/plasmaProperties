@@ -23,6 +23,10 @@ backgroundGas Ar;
 
 multiTimeStep false;
 
+// Flux scheme: fvSchemes (default, the schemes of system/fvSchemes) or
+// scharfetterGummel (see README, "Scharfetter-Gummel fluxes")
+//fluxScheme      scharfetterGummel;
+
 electron
 {
 	diffusionModel eTemp;

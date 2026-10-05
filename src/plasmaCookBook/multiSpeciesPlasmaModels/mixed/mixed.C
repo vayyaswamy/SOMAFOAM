@@ -450,8 +450,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         tmp<fvScalarMatrix> NEqn
                         (
                             fvm::ddt(Ni)
-                            + fvm::div((fvc::interpolate(F_[i]) & mesh_.Sf()), Ni, "div(F,Ni)")
-                            - fvm::laplacian(D_[i], Ni, "laplacian(D,Ni)")
+                            + this->driftDiffusionTerms(F_[i], D_[i], Ni)
                             - fvc::laplacian((mu_[i]*plasmaConstants::KBE*Ni), Ti, "laplacian(D,T)")
                             + fvm::SuSp((-Sy_[i]*plasmaConstants::A/W(i)/Ni), Ni)
                         );
@@ -595,8 +594,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                             tmp<fvScalarMatrix> NEqn
                             (
                                 fvm::ddt(Ni)
-                                + fvm::div((fvc::interpolate(F_[i]) & mesh_.Sf()), Ni, "div(F,Ni)")
-                                - fvm::laplacian(D_[i], Ni, "laplacian(D,Ni)")
+                                + this->driftDiffusionTerms(F_[i], D_[i], Ni)
                                 - chemistry.RR(i)*plasmaConstants::A/W(i)
                                 + chemistry.dRRDi(i)*Ni
                                 - fvm::Sp(chemistry.dRRDi(i),Ni)
@@ -637,6 +635,8 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         {
                             J_[i] == (-D_[i]*fvc::grad(N_[i]) - plasmaConstants::KBE*mu_[i]*N_[i]*fvc::grad(Ti) + N_[i]*mu_[i]*sign(z_[i])*E);
                         }
+
+                        this->correctDriftDiffusionFlux(i, F_[i], D_[i], N_[i]);
 
                     }
                     else if( transportModel_[i] == "momentum")
