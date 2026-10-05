@@ -118,7 +118,7 @@ Foam::scalar Foam::efullImplicit::correct
         // Convection with the electron flux and conduction
         tmp<fvScalarMatrix> transport
         (
-            mspm().scharfetterGummel()
+            mspm().scharfetterGummel(eIndex_)
           ? scharfetterGummel(eeFluxF, eConductivity, TeC)
           : fvm::div(eeFluxF, TeC)
           - fvm::laplacian(eConductivity, TeC, "laplacian(eC,Te)")

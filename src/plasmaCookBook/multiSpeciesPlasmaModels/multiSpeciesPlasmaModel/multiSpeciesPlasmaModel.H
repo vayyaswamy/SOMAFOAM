@@ -137,13 +137,16 @@ protected:
             //- Report loops that end without reaching the tolerance
             Switch reportUnconverged_;
 
-        //- Scharfetter-Gummel fluxes instead of the convection and
-        //  Laplacian schemes of fvSchemes, optional entry fluxScheme in
-        //  plasmaProperties
-        bool scharfetterGummel_;
+        //- Per species: Scharfetter-Gummel fluxes instead of the convection
+        //  and Laplacian schemes of fvSchemes. Optional entry fluxScheme in
+        //  plasmaProperties, and in the dictionary of a species for that
+        //  species alone
+        boolList scharfetterGummel_;
 
-        //- Scharfetter-Gummel fluxes of the species through the faces
-        //  [1/s], set after each species has been solved
+        //- Fluxes of the drift-diffusion species through the faces [1/s],
+        //  as discretised in their equations; set after each species has
+        //  been solved. The electron energy equation and the fluxes in the
+        //  cells use them
         PtrList<surfaceScalarField> faceFlux_;
 
         // Limits, optional dictionary limits in plasmaProperties
@@ -387,25 +390,28 @@ public:
 
         // Flux scheme
 
-            bool scharfetterGummel() const
+            //- Does species i use Scharfetter-Gummel fluxes?
+            bool scharfetterGummel(const label i) const
             {
-                return scharfetterGummel_;
+                return scharfetterGummel_[i];
             }
 
-            //- Implicit drift and diffusion terms of a species equation,
-            //  div(F Ni) - laplacian(D, Ni), for a drift velocity F
+            //- Implicit drift and diffusion terms of the equation of
+            //  species i, div(F Ni) - laplacian(D, Ni), for a drift
+            //  velocity F
             tmp<fvScalarMatrix> driftDiffusionTerms
             (
+                const label i,
                 const volVectorField& F,
                 const volScalarField& D,
                 const volScalarField& Ni
             ) const;
 
-            //- With Scharfetter-Gummel fluxes: store the flux of species i
-            //  through the faces and reconstruct its flux J in the cells
-            //  from it, so that the electron energy equation and the
-            //  currents use the flux of the species equation. Called after
-            //  species i has been solved and J has been set.
+            //- Store the flux of species i through the faces, as
+            //  discretised in its equation, and reconstruct its flux J in
+            //  the cells from it, so that the electron energy equation and
+            //  the currents use the flux of the species equation. Called
+            //  after species i has been solved and J has been set.
             void correctDriftDiffusionFlux
             (
                 const label i,
@@ -414,14 +420,14 @@ public:
                 const volScalarField& Ni
             );
 
-            //- Is the Scharfetter-Gummel flux of species i available? Not
-            //  for species with another transport model
+            //- Is the flux of species i through the faces available? Only
+            //  for drift-diffusion species
             bool hasFaceFlux(const label i) const
             {
-                return scharfetterGummel_ && faceFlux_.set(i);
+                return faceFlux_.set(i);
             }
 
-            //- Scharfetter-Gummel flux of species i through the faces
+            //- Flux of species i through the faces
             const surfaceScalarField& faceFlux(const label i) const
             {
                 return faceFlux_[i];

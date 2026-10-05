@@ -28,8 +28,10 @@ multiTimeStep false;
 //   fvSchemes          the convection and Laplacian schemes of system/fvSchemes,
 //                      treated as separate terms (default if the entry is absent)
 //   scharfetterGummel  drift and diffusion as one flux, exact between two
-//                      neighbouring cells; the same face flux carries the
-//                      electron energy and gives the heating by the field
+//                      neighbouring cells
+// It can also be set in the dictionary of a species, for that species alone.
+// With either scheme the electron energy equation uses the flux of the
+// electron equation through the faces.
 fluxScheme      scharfetterGummel;
 
 electron

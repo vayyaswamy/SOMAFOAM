@@ -83,6 +83,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "multiSpeciesPlasmaModel.H"
+#include "snGradScheme.H"
 #include "zeroGradientFvPatchFields.H"
 #include "fvm.H"
 #include "OSspecific.H"
@@ -92,6 +93,7 @@ Description
 Foam::tmp<Foam::fvScalarMatrix>
 Foam::multiSpeciesPlasmaModel::driftDiffusionTerms
 (
+    const label i,
     const volVectorField& F,
     const volScalarField& D,
     const volScalarField& Ni
@@ -99,7 +101,7 @@ Foam::multiSpeciesPlasmaModel::driftDiffusionTerms
 {
     const surfaceScalarField phi(fvc::interpolate(F) & mesh_.Sf());
 
-    if (scharfetterGummel_)
+    if (scharfetterGummel_[i])
     {
         return Foam::scharfetterGummel(phi, D, Ni);
     }
@@ -118,12 +120,38 @@ void Foam::multiSpeciesPlasmaModel::correctDriftDiffusionFlux
     const volScalarField& Ni
 )
 {
-    if (!scharfetterGummel_)
-    {
-        return;
-    }
-
     const surfaceScalarField phi(fvc::interpolate(F) & mesh_.Sf());
+
+    // The flux as discretised in the equation of the species
+    tmp<surfaceScalarField> tflux;
+
+    if (scharfetterGummel_[i])
+    {
+        tflux = Foam::scharfetterGummelFlux(phi, D, Ni);
+    }
+    else
+    {
+        // Interpolation and surface-normal gradient schemes of the
+        // Laplacian term, "Gauss <interpolation> <snGrad>"
+        ITstream& is = mesh_.schemesDict().laplacianScheme("laplacian(D,Ni)");
+
+        const word gauss(is);
+
+        tmp<surfaceInterpolationScheme<scalar> > tinterpolation
+        (
+            surfaceInterpolationScheme<scalar>::New(mesh_, is)
+        );
+
+        tmp<fv::snGradScheme<scalar> > tsnGrad
+        (
+            fv::snGradScheme<scalar>::New(mesh_, is)
+        );
+
+        tflux =
+            fvc::flux(phi, Ni, "div(F,Ni)")
+          - tinterpolation().interpolate(D)*mesh_.magSf()
+           *tsnGrad().snGrad(Ni);
+    }
 
     // Not registered: it is set again after every solution of the species,
     // also after the mesh has changed
@@ -141,7 +169,7 @@ void Foam::multiSpeciesPlasmaModel::correctDriftDiffusionFlux
                 IOobject::NO_WRITE,
                 false
             ),
-            Foam::scharfetterGummelFlux(phi, D, Ni)
+            tflux
         )
     );
 
@@ -169,27 +197,41 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
             << ", tolerance " << innerTolerance_ << endl;
     }
 
-    if (found("fluxScheme"))
+    // Flux scheme: for all species, and optionally per species
     {
-        const word scheme(lookup("fluxScheme"));
+        const word allScheme(lookupOrDefault<word>("fluxScheme", "fvSchemes"));
 
-        if (scheme == "scharfetterGummel")
+        Info<< "Drift-diffusion fluxes: " << allScheme;
+
+        forAll(species(), i)
         {
-            scharfetterGummel_ = true;
-            faceFlux_.setSize(species().size());
-        }
-        else if (scheme != "fvSchemes")
-        {
-            FatalIOErrorIn
-            (
-                "multiSpeciesPlasmaModel::readNumericalControls()",
-                *this
-            )   << "Unknown fluxScheme " << scheme
-                << "; valid entries are fvSchemes and scharfetterGummel"
-                << exit(FatalIOError);
+            word scheme(allScheme);
+
+            if (isDict(species()[i]))
+            {
+                subDict(species()[i]).readIfPresent("fluxScheme", scheme);
+            }
+
+            if (scheme != "fvSchemes" && scheme != "scharfetterGummel")
+            {
+                FatalIOErrorIn
+                (
+                    "multiSpeciesPlasmaModel::readNumericalControls()",
+                    *this
+                )   << "Unknown fluxScheme " << scheme
+                    << "; valid entries are fvSchemes and scharfetterGummel"
+                    << exit(FatalIOError);
+            }
+
+            scharfetterGummel_[i] = (scheme == "scharfetterGummel");
+
+            if (i < activeSpecies_ && scheme != allScheme)
+            {
+                Info<< ", " << species()[i] << " " << scheme;
+            }
         }
 
-        Info<< "Drift-diffusion fluxes: " << scheme << endl;
+        Info<< endl;
     }
 
     limitsTime_ = lastModified(filePath());
