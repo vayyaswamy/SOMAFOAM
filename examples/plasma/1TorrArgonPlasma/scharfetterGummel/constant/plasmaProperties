@@ -23,9 +23,14 @@ backgroundGas Ar;
 
 multiTimeStep false;
 
-// Flux scheme: fvSchemes (default, the schemes of system/fvSchemes) or
-// scharfetterGummel (see README, "Scharfetter-Gummel fluxes")
-//fluxScheme      scharfetterGummel;
+// Discretisation of the drift and diffusion fluxes of the charged species and
+// of the electron energy equation (see README, "Scharfetter-Gummel fluxes"):
+//   fvSchemes          the convection and Laplacian schemes of system/fvSchemes,
+//                      treated as separate terms (default if the entry is absent)
+//   scharfetterGummel  drift and diffusion as one flux, exact between two
+//                      neighbouring cells; the same face flux carries the
+//                      electron energy and gives the heating by the field
+fluxScheme      scharfetterGummel;
 
 electron
 {
@@ -48,7 +53,7 @@ Arp1
 Arm
 {
 	diffusionModel constant;
-	D 4.7082e-5;
+	D 4.7082e-3;
 	speciesSolution true;
 }
 Ar
@@ -61,24 +66,6 @@ energyModel
     electron efullImplicit;
 	ion gasTemp;
 	gas none;
-}
-
-// Acceleration of the metastable (see README, "Acceleration of slow neutral
-// species"). Inactive by default. The applied voltage is 40 MHz, so the
-// period is 2.5e-8 s; each 1 us block of full simulation is followed by a
-// 2 us advance of Arm alone, starting after ignition at 12 us.
-slowSpeciesAcceleration
-{
-    active          no;
-    species         (Arm);
-    period          2.5e-8;
-    startTime       1.2e-5;
-    fullCycles      40;
-    averageCycles   2;
-    deltaT          1e-7;
-    nSteps          20;
-    maxChangeFactor 2;
-    tolerance       0;
 }
 
 // ************************************************************************* //

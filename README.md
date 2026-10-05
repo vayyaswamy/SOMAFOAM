@@ -174,6 +174,37 @@ moderate. A steady state needs a net loss of the species in every cell; where
 there is none, the time-step advance is used if `deltaT` and `nSteps` are
 given and the advance is skipped otherwise.
 
+## Scharfetter-Gummel fluxes
+
+By default the drift and diffusion terms of the charged species and of the
+electron temperature equation are discretised separately, with the convection
+and Laplacian schemes of `system/fvSchemes`. With
+
+```
+fluxScheme      scharfetterGummel;      // default: fvSchemes
+```
+
+in `constant/plasmaProperties` they are treated as one flux with the
+Scharfetter-Gummel (exponential) scheme: between two neighbouring cells the
+flux is the exact solution of the steady one-dimensional drift-diffusion
+problem. It becomes central differencing where diffusion dominates and upwind
+differencing where drift dominates, and it keeps the densities non-negative at
+any cell size without a limiter.
+
+It applies to the species with `transportModel driftDiffusion` (models
+`driftDiffusion` and `mixed`) and to the `efullImplicit` electron temperature
+model; the `div(F,Ni)`, `laplacian(D,Ni)` and `laplacian(eC,Te)` entries of
+`fvSchemes` are then not used. The electron energy equation uses the flux of
+the electron equation through the faces, both to carry the energy and for the
+heating by the field (`J.E = Phi div(J) - div(J Phi)`), and the species fluxes
+in the cells are reconstructed from the face fluxes. Boundary conditions act as before, and the
+scheme works in parallel. There is no non-orthogonal correction, so on meshes
+that are not orthogonal (including the fine/coarse interfaces of adaptively
+refined 2D meshes) the default schemes with `corrected` are more accurate.
+
+`examples/plasma/1TorrArgonPlasma` has the same discharge set up with each
+scheme, with a comparison of the results on several meshes.
+
 ## Spatially varying initial conditions
 
 `setExpressionFields` sets the internal values of scalar fields from formulas

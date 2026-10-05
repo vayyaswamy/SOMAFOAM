@@ -89,6 +89,68 @@ Description
 
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
+Foam::tmp<Foam::fvScalarMatrix>
+Foam::multiSpeciesPlasmaModel::driftDiffusionTerms
+(
+    const volVectorField& F,
+    const volScalarField& D,
+    const volScalarField& Ni
+) const
+{
+    const surfaceScalarField phi(fvc::interpolate(F) & mesh_.Sf());
+
+    if (scharfetterGummel_)
+    {
+        return Foam::scharfetterGummel(phi, D, Ni);
+    }
+
+    return
+        fvm::div(phi, Ni, "div(F,Ni)")
+      - fvm::laplacian(D, Ni, "laplacian(D,Ni)");
+}
+
+
+void Foam::multiSpeciesPlasmaModel::correctDriftDiffusionFlux
+(
+    const label i,
+    const volVectorField& F,
+    const volScalarField& D,
+    const volScalarField& Ni
+)
+{
+    if (!scharfetterGummel_)
+    {
+        return;
+    }
+
+    const surfaceScalarField phi(fvc::interpolate(F) & mesh_.Sf());
+
+    // Not registered: it is set again after every solution of the species,
+    // also after the mesh has changed
+    faceFlux_.set
+    (
+        i,
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "faceFlux_" + species()[i],
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            Foam::scharfetterGummelFlux(phi, D, Ni)
+        )
+    );
+
+    // The boundary values of J, which give the currents to the walls, are
+    // kept
+    J_[i].internalField() = fvc::reconstruct(faceFlux_[i])().internalField();
+}
+
+
 void Foam::multiSpeciesPlasmaModel::readNumericalControls()
 {
     if (found("innerIterations"))
@@ -105,6 +167,29 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
             << ", neutral species " << nCorrNeutral_
             << ", electron temperature " << nCorrTe_
             << ", tolerance " << innerTolerance_ << endl;
+    }
+
+    if (found("fluxScheme"))
+    {
+        const word scheme(lookup("fluxScheme"));
+
+        if (scheme == "scharfetterGummel")
+        {
+            scharfetterGummel_ = true;
+            faceFlux_.setSize(species().size());
+        }
+        else if (scheme != "fvSchemes")
+        {
+            FatalIOErrorIn
+            (
+                "multiSpeciesPlasmaModel::readNumericalControls()",
+                *this
+            )   << "Unknown fluxScheme " << scheme
+                << "; valid entries are fvSchemes and scharfetterGummel"
+                << exit(FatalIOError);
+        }
+
+        Info<< "Drift-diffusion fluxes: " << scheme << endl;
     }
 
     limitsTime_ = lastModified(filePath());

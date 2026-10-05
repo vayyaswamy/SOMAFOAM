@@ -10,6 +10,7 @@ look for license file include with distribution.
 
 #include "efullImplicit.H"
 #include "addToRunTimeSelectionTable.H"
+#include "linear.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -77,9 +78,30 @@ Foam::scalar Foam::efullImplicit::correct
 
        surfaceScalarField eeFluxF = fvc::interpolate(eeFlux) & mesh().Sf();
 
-       volScalarField eeSource = - plasmaConstants::eCharge*(mspm().J(eIndex_) & E) - mspm().electronTempSource(chemistry);
+       // Electron flux times electric field
+       volScalarField jDotE = mspm().J(eIndex_) & E;
 
-        volScalarField eeSource_Su = plasmaConstants::eCharge*(mspm().J(eIndex_) & E)
+       if (mspm().hasFaceFlux(eIndex_))
+       {
+           // The flux of the electron equation through the faces carries
+           // the energy and does the work against the field:
+           // J.E = -J.grad(Phi) = Phi div(J) - div(J Phi)
+           const surfaceScalarField& Jf = mspm().faceFlux(eIndex_);
+
+           const volScalarField& Phi =
+               mesh().lookupObject<volScalarField>("Phi");
+
+           eeFluxF = 2.5*plasmaConstants::boltzC*Jf;
+
+           jDotE.internalField() =
+               Phi.internalField()*fvc::div(Jf)().internalField()
+             - fvc::div(Jf*linear<scalar>(mesh()).interpolate(Phi))()
+              .internalField();
+       }
+
+       volScalarField eeSource = - plasmaConstants::eCharge*jDotE - mspm().electronTempSource(chemistry);
+
+        volScalarField eeSource_Su = plasmaConstants::eCharge*jDotE
                                     + mspm().electronTempSource(chemistry)
                                     - mspm().dElectronTempSourceDTe(chemistry)*TeC;
 
@@ -88,11 +110,24 @@ Foam::scalar Foam::efullImplicit::correct
 
        const volScalarField& Ne = mspm().N(eIndex_);
 
+        const volScalarField eConductivity
+        (
+            mspm().electronConductivity(chemistry)
+        );
+
+        // Convection with the electron flux and conduction
+        tmp<fvScalarMatrix> transport
+        (
+            mspm().scharfetterGummel()
+          ? scharfetterGummel(eeFluxF, eConductivity, TeC)
+          : fvm::div(eeFluxF, TeC)
+          - fvm::laplacian(eConductivity, TeC, "laplacian(eC,Te)")
+        );
+
         fvScalarMatrix TeEqn
         (
             fvm::ddt((1.5*plasmaConstants::boltzC*Ne), TeC)
-            + fvm::div(eeFluxF, TeC)
-            - fvm::laplacian(mspm().electronConductivity(chemistry), TeC, "laplacian(eC,Te)")
+            + transport
             + fvm::SuSp(eeSource_SuSp, TeC)
             + eeSource_Su
         );

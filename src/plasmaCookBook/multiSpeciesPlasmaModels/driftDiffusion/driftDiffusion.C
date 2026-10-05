@@ -204,9 +204,7 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
 
         if (charged)
         {
-            NEqn +=
-                fvm::div((fvc::interpolate(F_[i]) & mesh_.Sf()), Ni, "div(F,Ni)")
-              - fvm::laplacian(D_[i], Ni, "laplacian(D,Ni)");
+            NEqn += this->driftDiffusionTerms(F_[i], D_[i], Ni);
         }
         else
         {
@@ -256,6 +254,8 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
               - plasmaConstants::KBE*mu_[i]*Ni*fvc::grad(Ti)
               + Ni*mu_[i]*z_[i]*E;
         }
+
+        this->correctDriftDiffusionFlux(i, F_[i], D_[i], Ni);
     }
 }
 

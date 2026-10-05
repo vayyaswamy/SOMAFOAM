@@ -1,5 +1,7 @@
 plasmaConstants/plasmaConstants.C
 
+finiteVolume/scharfetterGummel/scharfetterGummel.C
+
 multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModel.C
 multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModelNumerics.C
 multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/newMultiSpeciesPlasmaModel.C

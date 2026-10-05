@@ -156,6 +156,12 @@ Foam::lduSolverPerformance Foam::bicgStabSolver::solve
                 beta = 0;
             }
 
+            // The residual is exactly zero: the solution cannot be improved
+            if (rho == 0)
+            {
+                break;
+            }
+
             forAll (p, i)
             {
                 p[i] = r[i] + beta*p[i] - beta*omega*v[i];
