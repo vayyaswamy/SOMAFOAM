@@ -174,6 +174,40 @@ moderate. A steady state needs a net loss of the species in every cell; where
 there is none, the time-step advance is used if `deltaT` and `nSteps` are
 given and the advance is skipped otherwise.
 
+## Spatially varying initial conditions
+
+`setExpressionFields` sets the internal values of scalar fields from formulas
+of the cell centre coordinates `x`, `y`, `z` (in metres), given in
+`system/setExpressionFieldsDict`:
+
+```
+variables               // optional: constants and helper formulas
+{
+    nBackground 5e14;
+    nBlob       2e16;
+    x0          1e-3;
+    y0          4e-4;
+    radius      1.5e-4;
+    r2          "sqr(x - x0) + sqr(y - y0)";
+}
+
+fields
+{
+    electron    "nBackground + nBlob*exp(-r2/sqr(radius))";
+    Arp1        "nBackground + nBlob*exp(-r2/sqr(radius))";
+    Te          "10000 + 5000*x/2e-3";
+}
+```
+
+Run it in the case directory after the mesh exists and before the solver. Each
+listed field must already be in the time directory (default: the start time;
+`-time`, `-latestTime` and `-region` are available); its internal values are
+replaced and its boundary conditions are kept. The formulas may use
+`+ - * / ^`, functions such as `sqr`, `sqrt`, `exp`, `log`, `sin`, `cos`,
+`tanh`, `erf`, `min`, `max`, `mag`, `pos`, the constants `pi_` and `e_`, and
+the entries of `variables`. `examples/plasma/2DAdaptiveMeshArgon` contains the
+dictionary that creates its seeded blob.
+
 ## Post-processing
 
 `postprocessing/` holds Python scripts that plot profiles and time histories

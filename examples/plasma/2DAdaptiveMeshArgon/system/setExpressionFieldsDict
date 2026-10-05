@@ -1,0 +1,40 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setExpressionFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Initial plasma: a round blob in the middle of the gap on a uniform
+// background. Run setExpressionFields to (re)create 0/electron and 0/Arp1
+// from these formulas; x, y, z are the cell centre coordinates in metres.
+
+variables
+{
+    nBackground 5e14;       // [1/m3]
+    nBlob       2e16;       // [1/m3]
+    x0          1e-3;       // blob centre [m]
+    y0          4e-4;
+    radius      1.5e-4;     // [m]
+
+    r2          "sqr(x - x0) + sqr(y - y0)";
+    blob        "nBackground + nBlob*exp(-r2/sqr(radius))";
+}
+
+fields
+{
+    electron    "blob";
+    Arp1        "blob";
+}
+
+// ************************************************************************* //

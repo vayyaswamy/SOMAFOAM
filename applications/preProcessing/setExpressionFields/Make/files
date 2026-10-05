@@ -1,0 +1,3 @@
+setExpressionFields.C
+
+EXE = $(FOAM_APPBIN)/setExpressionFields
