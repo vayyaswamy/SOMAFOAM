@@ -218,7 +218,7 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
 
         if (!charged)
         {
-            Ni.max(densityFloor_);
+            this->limitField(Ni, densityFloor_);
         }
 
         yi = Ni*W(i)/thermo_.rho()/plasmaConstants::A;
@@ -230,7 +230,7 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
 
     relaxFinal(Ni);
 
-    Ni.max(densityFloor_);
+    this->limitField(Ni, densityFloor_);
 
     yi = Ni*W(i)/thermo_.rho()/plasmaConstants::A;
 

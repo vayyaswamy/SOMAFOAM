@@ -15,10 +15,12 @@
 
 
     pem.icorrect(chemistry);
+    mspm().limitField(thermo.Tion());
 
     Info << "About to gcorrect " << endl;
 
     pem.gcorrect(chemistry, E);
+    mspm().limitField(thermo.T());
 
 
     Jnet = mspm().netChargeFlux();

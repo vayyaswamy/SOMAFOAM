@@ -8,15 +8,23 @@ look for license file include with distribution.
 Description
     Numerical controls of multiSpeciesPlasmaModel read from plasmaProperties:
 
-    Limits (defaults shown; there is no upper limit on the electron
-    temperature unless TeMax is given):
+    Limits. densityFloor, TeMin and TeMax are the defaults for the number
+    densities of the transported species and for the electron temperature
+    (values shown; no upper limit on the electron temperature unless TeMax
+    is given). A sub-dictionary named after a field sets a floor (min)
+    and/or a ceiling (max) for that field alone and takes precedence:
+    N_<specie> for the number densities, Te, Tion and T. The dictionary is
+    read again when plasmaProperties is modified during the run.
     \verbatim
     limits
     {
-        densityFloor    1e4;    // lowest number density of a transported
-                                // species [1/m3]
+        densityFloor    1e4;    // [1/m3]
         TeMin           300;    // [K]
         TeMax           1e6;    // [K], default: none
+
+        N_electron      { min 1e10; }
+        N_Arm           { min 1e12; max 1e20; }
+        Te              { min 300; max 1.2e5; }
     }
     \endverbatim
 
@@ -77,6 +85,7 @@ Description
 #include "multiSpeciesPlasmaModel.H"
 #include "zeroGradientFvPatchFields.H"
 #include "fvm.H"
+#include "OSspecific.H"
 
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
@@ -98,36 +107,9 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
             << ", tolerance " << innerTolerance_ << endl;
     }
 
-    if (found("limits"))
-    {
-        const dictionary& dict = subDict("limits");
+    limitsTime_ = lastModified(filePath());
 
-        dict.readIfPresent("densityFloor", densityFloor_);
-        dict.readIfPresent("TeMin", TeMin_);
-        dict.readIfPresent("TeMax", TeMax_);
-
-        if (densityFloor_ < 0 || TeMin_ <= 0 || TeMax_ <= TeMin_)
-        {
-            FatalIOErrorIn
-            (
-                "multiSpeciesPlasmaModel::readNumericalControls()",
-                dict
-            )   << "Need densityFloor >= 0 and 0 < TeMin < TeMax"
-                << exit(FatalIOError);
-        }
-
-        Info<< "Limits: densities not below " << densityFloor_
-            << " 1/m3, electron temperature between " << TeMin_ << " and ";
-
-        if (TeMax_ < 0.5*GREAT)
-        {
-            Info<< TeMax_ << " K" << endl;
-        }
-        else
-        {
-            Info<< "unlimited" << endl;
-        }
-    }
+    readLimits(*this);
 
     if (!found("slowSpeciesAcceleration"))
     {
@@ -405,7 +387,7 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
 
             NEqn.solve(mesh_.solutionDict().solver("Nin"));
 
-            Ni.max(densityFloor_);
+            limitField(Ni, densityFloor_);
         }
 
         for
@@ -429,7 +411,7 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
 
             NEqn.solve(mesh_.solutionDict().solver("Nin"));
 
-            Ni.max(densityFloor_);
+            limitField(Ni, densityFloor_);
         }
 
         // Limit the change, since the plasma has not yet responded to it
@@ -486,7 +468,164 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
 }
 
 
+void Foam::multiSpeciesPlasmaModel::readLimitsIfModified()
+{
+    if
+    (
+       !runTime_.controlDict().lookupOrDefault<Switch>
+        (
+            "runTimeModifiable",
+            true
+        )
+    )
+    {
+        return;
+    }
+
+    const time_t fileTime = lastModified(filePath());
+
+    if (fileTime <= limitsTime_)
+    {
+        return;
+    }
+
+    limitsTime_ = fileTime;
+
+    // plasmaProperties may be registered more than once, so that this
+    // object is not told about the modification: read the file directly
+    IOdictionary properties
+    (
+        IOobject
+        (
+            name(),
+            instance(),
+            db(),
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE,
+            false
+        )
+    );
+
+    Info<< "Reading the limits again from the modified " << name() << endl;
+
+    readLimits(properties);
+}
+
+
+void Foam::multiSpeciesPlasmaModel::readLimits(const dictionary& properties)
+{
+    fieldMin_.clear();
+    fieldMax_.clear();
+
+    if (!properties.found("limits"))
+    {
+        return;
+    }
+
+    const dictionary& dict = properties.subDict("limits");
+
+    dict.readIfPresent("densityFloor", densityFloor_);
+    dict.readIfPresent("TeMin", TeMin_);
+    dict.readIfPresent("TeMax", TeMax_);
+
+    if (densityFloor_ < 0 || TeMin_ <= 0 || TeMax_ <= TeMin_)
+    {
+        FatalIOErrorIn("multiSpeciesPlasmaModel::readLimits()", dict)
+            << "Need densityFloor >= 0 and 0 < TeMin < TeMax"
+            << exit(FatalIOError);
+    }
+
+    Info<< "Limits: densities not below " << densityFloor_
+        << " 1/m3, electron temperature between " << TeMin_ << " and ";
+
+    if (TeMax_ < 0.5*GREAT)
+    {
+        Info<< TeMax_ << " K" << endl;
+    }
+    else
+    {
+        Info<< "unlimited" << endl;
+    }
+
+    // Limits of individual fields: a sub-dictionary named after the field
+    forAllConstIter(dictionary, dict, iter)
+    {
+        if (!iter().isDict())
+        {
+            continue;
+        }
+
+        const word& fieldName = iter().keyword();
+        const dictionary& fieldDict = iter().dict();
+
+        if (fieldDict.found("min"))
+        {
+            fieldMin_.insert(fieldName, readScalar(fieldDict.lookup("min")));
+        }
+
+        if (fieldDict.found("max"))
+        {
+            fieldMax_.insert(fieldName, readScalar(fieldDict.lookup("max")));
+        }
+
+        if
+        (
+            fieldMin_.found(fieldName)
+         && fieldMax_.found(fieldName)
+         && fieldMax_[fieldName] <= fieldMin_[fieldName]
+        )
+        {
+            FatalIOErrorIn("multiSpeciesPlasmaModel::readLimits()", fieldDict)
+                << "max must be above min for " << fieldName
+                << exit(FatalIOError);
+        }
+
+        Info<< "Limits: " << fieldName;
+
+        if (fieldMin_.found(fieldName))
+        {
+            Info<< " not below " << fieldMin_[fieldName];
+        }
+
+        if (fieldMax_.found(fieldName))
+        {
+            Info<< " not above " << fieldMax_[fieldName];
+        }
+
+        Info<< endl;
+    }
+}
+
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+void Foam::multiSpeciesPlasmaModel::limitField
+(
+    volScalarField& field,
+    const scalar defaultMin,
+    const scalar defaultMax
+) const
+{
+    const word& name = field.name();
+
+    const scalar lower =
+        fieldMin_.found(name) ? fieldMin_[name] : defaultMin;
+
+    const scalar upper =
+        fieldMax_.found(name) ? fieldMax_[name] : defaultMax;
+
+    if (lower > -0.5*GREAT)
+    {
+        field.max(lower);
+    }
+
+    if (upper < 0.5*GREAT)
+    {
+        field.min(upper);
+    }
+}
+
+
 
 void Foam::multiSpeciesPlasmaModel::reportInnerIterations
 (

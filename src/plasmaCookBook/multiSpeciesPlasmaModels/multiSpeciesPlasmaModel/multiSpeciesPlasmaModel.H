@@ -34,6 +34,7 @@ SourceFiles
 #include <math.h>
 #include "foamTime.H"
 #include "speciesTable.H"
+#include "HashTable.H"
 #include <algorithm>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -145,6 +146,14 @@ protected:
             scalar TeMin_;
             scalar TeMax_;
 
+            //- Lower and upper limits of individual fields, by field name
+            HashTable<scalar> fieldMin_;
+            HashTable<scalar> fieldMax_;
+
+            //- Modification time of plasmaProperties when the limits were
+            //  read
+            time_t limitsTime_;
+
         // Acceleration of slow neutral species (e.g. metastables), optional
         // dictionary slowSpeciesAcceleration in plasmaProperties
 
@@ -193,6 +202,13 @@ protected:
 
         //- Read the innerIterations and slowSpeciesAcceleration dictionaries
         void readNumericalControls();
+
+        //- Read the limits dictionary of plasmaProperties
+        void readLimits(const dictionary& properties);
+
+        //- Read the limits again if plasmaProperties has been modified
+        //  since they were last read
+        void readLimitsIfModified();
 
         //- Average the sources of the slow species over the applied period
         //  and advance these species alone with a large time step
@@ -375,6 +391,15 @@ public:
             {
                 return TeMax_;
             }
+
+            //- Apply the limits of a field: those given for it by name in
+            //  the limits dictionary, and the defaults passed here otherwise
+            void limitField
+            (
+                volScalarField& field,
+                const scalar defaultMin = -GREAT,
+                const scalar defaultMax = GREAT
+            ) const;
 
             //- Report an inner loop that ended above the tolerance
             void reportInnerIterations
