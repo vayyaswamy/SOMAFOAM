@@ -101,8 +101,7 @@ Foam::scalar Foam::efullImplicit::correct
 
         initialResidual = solverPerf.initialResidual();
 
-        TeC.max(mspm().TeMin());
-        TeC.min(mspm().TeMax());
+        mspm().limitField(TeC, mspm().TeMin(), mspm().TeMax());
 
         thermo().correct();
 
@@ -117,8 +116,7 @@ Foam::scalar Foam::efullImplicit::correct
     // Solved once per time step, after the PIMPLE loop
     relaxFinal(TeC, true);
 
-    TeC.max(mspm().TeMin());
-    TeC.min(mspm().TeMax());
+    mspm().limitField(TeC, mspm().TeMin(), mspm().TeMax());
 
     thermo().correct();
 

@@ -114,6 +114,7 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     densityFloor_(1e4),
     TeMin_(300),
     TeMax_(GREAT),
+    limitsTime_(0),
 
     accelerate_(false),
     accSpecies_(0),
@@ -535,6 +536,8 @@ Foam::scalar Foam::multiSpeciesPlasmaModel::correct
     NG_ = thermo_.p()/plasmaConstants::boltzC/thermo_.T();
 
     NG_.correctBoundaryConditions();
+
+    readLimitsIfModified();
 
     const scalar result = correct(chemistry, E, fields);
 

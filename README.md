@@ -98,22 +98,35 @@ On `examples/plasmaDielectric/ArgonDBD` the iteration takes 3 to 5 passes per
 time step and the two solvers agree within 1e-3 of the field peaks, also
 while the plasma conducts and charges the dielectric surfaces.
 
-## Limits on densities and electron temperature
+## Limits on the solved variables
 
-Optional, in `constant/plasmaProperties` (defaults shown):
+Floors and ceilings can be set in `constant/plasmaProperties`. The first
+three entries are the defaults for the number densities and the electron
+temperature (values shown; the electron temperature has no upper limit unless
+`TeMax` is given). A sub-dictionary named after a field sets `min` and/or
+`max` for that field alone and takes precedence: `N_<specie>` for the number
+densities, `Te`, `Tion` (ion temperature) and `T` (gas temperature).
 
 ```
 limits
 {
-    densityFloor    1e4;    // lowest number density of a transported species [1/m3]
-    TeMin           300;    // lowest electron temperature [K]
-    // TeMax        1e6;    // highest electron temperature [K]; default: no limit
+    densityFloor    1e4;    // [1/m3]
+    TeMin           300;    // [K]
+    // TeMax        1e6;    // [K]
+
+    N_electron      { min 1e10; }
+    N_Arm           { min 1e12; max 1e20; }
+    Te              { min 300; max 1.2e5; }
 }
 ```
 
-Where the electron density is negligible, for example in a sheath without
-secondary emission, the electron energy equation is poorly conditioned; a
-higher `densityFloor` and a `TeMax` keep the solution bounded there.
+The limits are applied after each solve of the field. They are read again
+when `plasmaProperties` is edited while the solver runs (with
+`runTimeModifiable yes` in `system/controlDict`), so they can be tightened or
+relaxed during a run; the log reports the limits in force. Where the electron
+density is negligible, for example in a sheath without secondary emission,
+the electron energy equation is poorly conditioned; a higher density floor
+and a ceiling on `Te` keep the solution bounded there.
 
 ## Acceleration of slow neutral species
 

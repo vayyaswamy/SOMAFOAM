@@ -280,7 +280,7 @@ void Foam::momentum<ThermoType>::solveSpecie
 
         NEqn.solve(mesh_.solutionDict().solver("Ni"));
 
-        Ni.max(1e6);
+        this->limitField(Ni, 1e6);
 
         J_[i] == Ni*U_[i];
 
@@ -299,7 +299,7 @@ void Foam::momentum<ThermoType>::solveSpecie
 
         NnEqn.solve(mesh_.solutionDict().solver("Nin"));
 
-        Ni.max(1e4);
+        this->limitField(Ni, 1e4);
     }
 
     yi = Ni*W(i)/thermo_.rho()/plasmaConstants::A;

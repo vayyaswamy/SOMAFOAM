@@ -457,7 +457,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         );
                         NEqn->relax();
                         NEqn->solve(mesh_.solutionDict().solver("Ni"));
-                        N_[i].max(1e6);
+                        this->limitField(N_[i], 1e6);
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
@@ -485,7 +485,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         NEqn->solve(mesh_.solutionDict().solver("Ni"));
 
-                        N_[i].max(1e6);
+                        this->limitField(N_[i], 1e6);
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
@@ -505,7 +505,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
 
-                        N_[i].max(1e10);
+                        this->limitField(N_[i], 1e10);
                     }
                 }
                 else
@@ -523,7 +523,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
 
-                        N_[i].max(1e10);
+                        this->limitField(N_[i], 1e10);
                     }
                     else
                     {
@@ -537,7 +537,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         NnEqn->relax();
                         NnEqn->solve(mesh_.solutionDict().solver("Nin"));
-                        N_[i].max(1e6);
+                        this->limitField(N_[i], 1e6);
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
                     }
@@ -623,7 +623,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         relaxFinal(N_[i]);
 
-                        N_[i].max(densityFloor_);
+                        this->limitField(N_[i], densityFloor_);
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
@@ -653,7 +653,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         NEqn->solve(mesh_.solutionDict().solver("Ni"));
 
-                        N_[i].max(1e6);
+                        this->limitField(N_[i], 1e6);
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
@@ -672,7 +672,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         N_[i] == thermo_.rho()*(thermo_.composition().Y(i)*plasmaConstants::A)/W(i);
 
-                        N_[i].max(1e6);
+                        this->limitField(N_[i], 1e6);
                     }
                 }
                 else
@@ -722,7 +722,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                             initialResidual = solverPerf.initialResidual();
 
 
-                            N_[i].max(densityFloor_);
+                            this->limitField(N_[i], densityFloor_);
 
 
                             yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
@@ -743,7 +743,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         relaxFinal(N_[i]);
 
 
-                        N_[i].max(densityFloor_);
+                        this->limitField(N_[i], densityFloor_);
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
