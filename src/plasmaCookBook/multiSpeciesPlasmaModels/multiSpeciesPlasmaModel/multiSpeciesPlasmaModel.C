@@ -110,7 +110,8 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     nCorrTe_(6),
     innerTolerance_(1e-5),
     reportUnconverged_(true),
-    scharfetterGummel_(false),
+    scharfetterGummel_(species().size(), false),
+    faceFlux_(species().size()),
 
     densityFloor_(1e4),
     TeMin_(300),

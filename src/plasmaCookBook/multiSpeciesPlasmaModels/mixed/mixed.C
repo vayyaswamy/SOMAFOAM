@@ -450,7 +450,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         tmp<fvScalarMatrix> NEqn
                         (
                             fvm::ddt(Ni)
-                            + this->driftDiffusionTerms(F_[i], D_[i], Ni)
+                            + this->driftDiffusionTerms(i, F_[i], D_[i], Ni)
                             - fvc::laplacian((mu_[i]*plasmaConstants::KBE*Ni), Ti, "laplacian(D,T)")
                             + fvm::SuSp((-Sy_[i]*plasmaConstants::A/W(i)/Ni), Ni)
                         );
@@ -594,7 +594,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                             tmp<fvScalarMatrix> NEqn
                             (
                                 fvm::ddt(Ni)
-                                + this->driftDiffusionTerms(F_[i], D_[i], Ni)
+                                + this->driftDiffusionTerms(i, F_[i], D_[i], Ni)
                                 - chemistry.RR(i)*plasmaConstants::A/W(i)
                                 + chemistry.dRRDi(i)*Ni
                                 - fvm::Sp(chemistry.dRRDi(i),Ni)

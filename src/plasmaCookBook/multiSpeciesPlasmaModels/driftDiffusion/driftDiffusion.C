@@ -204,7 +204,7 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
 
         if (charged)
         {
-            NEqn += this->driftDiffusionTerms(F_[i], D_[i], Ni);
+            NEqn += this->driftDiffusionTerms(i, F_[i], D_[i], Ni);
         }
         else
         {
