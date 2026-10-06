@@ -1,0 +1,501 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\newcommand{\kw}[1]{\texttt{#1}}
+\newcommand{\bG}{\boldsymbol{\Gamma}}
+\newcommand{\bE}{\mathbf{E}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\bn}{\mathbf{n}}
+\newcommand{\kB}{k_\mathrm{B}}
+\newcommand{\Te}{T_\mathrm{e}}
+\newcommand{\nel}{n_\mathrm{e}}
+\newcommand{\vth}{\bar v_\mathrm{e}}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\title{SOMAFOAM\\[4pt]\large Model equations, numerical schemes\\ and boundary conditions}
+\author{}
+\date{October 2026}
+
+\emergencystretch=3em
+\begin{document}
+\maketitle
+
+\noindent
+This document describes what the solver \kw{somaFoam} solves and how, as
+implemented in \kw{src/plasmaCookBook} and \kw{applications/somaFoam}.
+
+\tableofcontents
+
+%------------------------------------------------------------------------------
+\section{Overview}
+
+SOMAFOAM is a finite-volume fluid model of low-temperature plasmas built on
+foam-extend~4.0. For each time step it solves, in this order,
+\begin{enumerate}
+\item the Poisson equation for the potential $\Phi$ (with the dielectric
+      regions, if any),
+\item a continuity equation for every transported species, with a
+      drift--diffusion flux or with a momentum equation,
+\item the ion and gas temperatures, according to the selected models,
+\item the electron energy equation for the electron temperature $\Te$.
+\end{enumerate}
+Temperatures are in kelvin throughout, densities in m$^{-3}$, and all other
+quantities in SI units.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$n_k$, $\bG_k$ & number density and particle flux of species $k$ \\
+$z_k$ & charge number ($-1$ for electrons) \\
+$\mu_k$, $D_k$ & mobility (positive) and diffusion coefficient \\
+$T_k$ & temperature of species $k$ ($\Te$ for electrons, $T_\mathrm{i}$ for ions, $T$ for the gas) \\
+$m_k$, $M$ & particle mass of species $k$ and of the background gas \\
+$\nu_k$ & momentum-transfer collision frequency \\
+$S_k$ & net production rate by the reactions \\
+$\Phi$, $\bE=-\nabla\Phi$ & potential and electric field \\
+$\varepsilon$ & permittivity \\
+$\sigma$ & surface charge density on a dielectric surface \\
+$\bn$ & unit normal on a boundary, pointing out of the plasma \\
+$\delta$ & distance from the centre of the cell next to a boundary to the boundary face \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%------------------------------------------------------------------------------
+\section{Governing equations}
+
+\subsection{Species: drift--diffusion}
+
+For species with \kw{transportModel driftDiffusion} (models \kw{driftDiffusion}
+and \kw{mixed}),
+\begin{equation}
+\pd{n_k}{t} + \nabla\cdot\bG_k = S_k ,
+\qquad
+\bG_k = \mu_k\Big(z_k\bE - \frac{\kB}{e}\nabla T_k\Big)\,n_k - D_k\nabla n_k .
+\label{eq:dd}
+\end{equation}
+The first term of the flux is the drift in the field together with the
+thermal-diffusion drift; the code calls the bracket times $\mu_k$ the drift
+velocity $\mathbf{F}_k$. Neutral species have $\bG_k=-D_k\nabla n_k$.
+
+The mobility and the diffusion coefficient of each species are set by
+\kw{mobilityModel} and \kw{diffusionModel} in \kw{constant/plasmaProperties}:
+\begin{center}
+\begin{tabular}{@{}lL{10.5cm}@{}}
+\toprule
+Entry & Meaning \\
+\midrule
+\kw{constant} & constant value given in the species dictionary \\
+\kw{eTemp} & table of $\mu N$ or $DN$ against $\Te$ (\kw{constant/mu\_<species>}, \kw{D\_<species>}), divided by the gas number density $N$ \\
+\kw{EON} & the same, tabulated against the reduced field $E/N$ \\
+\kw{einsteinRelation} & (diffusion only) $D_k=\mu_k \kB T_k/e$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Species: momentum equation}
+
+For species with \kw{transportModel momentum} (models \kw{momentum} and
+\kw{mixed}) the velocity $\bu_k$ is solved for:
+\begin{align}
+\pd{n_k}{t} + \nabla\cdot(n_k\bu_k) &= S_k , \\
+\pd{(n_k\bu_k)}{t} + \nabla\cdot(n_k\bu_k\bu_k) + \nu_k n_k\bu_k
+  &= \frac{1}{m_k}\Big[-\nabla(n_k\kB T_k) + z_k e\,n_k\bE\Big] .
+\end{align}
+The collision frequency is $\nu_k=e/(\mu_k m_k)$ with
+\kw{collisionFrequency muBased}, or is taken from the reaction rates with
+\kw{rrBased}.
+
+\subsection{Reactions}
+
+The reactions are listed in \kw{constant/reactions}. Rate coefficients are of
+Arrhenius form or tabulated against $\Te$ (files \kw{constant/reaction\_*});
+electron-impact reactions carry the energy lost by the electron per event.
+The net rate $S_k$ of each species is linearised in its own density,
+\begin{equation}
+S_k \simeq S_k^{*} + \Big(\pd{S_k}{n_k}\Big)^{*}\,(n_k-n_k^{*}) ,
+\end{equation}
+where $^{*}$ denotes the previous inner iteration, and the derivative is
+treated implicitly.
+
+\subsection{Poisson equation}
+
+Selected by \kw{poissonEquationSolver} in \kw{constant/electroMagnetics}.
+
+\paragraph{\kw{explicit}}
+\begin{equation}
+\nabla\cdot(\varepsilon\nabla\Phi) = -e\sum_k z_k n_k .
+\end{equation}
+
+\paragraph{\kw{semiImplicit}} The space charge at the new time level is
+predicted from the species equations, and the part of the prediction that
+depends on the new field is moved to the left-hand side:
+\begin{equation}
+\nabla\cdot\Big[\Big(\varepsilon + \Delta t\,e\sum_k |z_k|\mu_k n_k\Big)\nabla\Phi\Big]
+ = -e\sum_k z_k\Big[n_k^{o} + \Delta t\Big(S_k + \nabla\cdot(D_k\nabla n_k)
+   + \nabla\cdot\big(\mu_k\tfrac{\kB}{e}n_k\nabla T_k\big)\Big)\Big] ,
+\label{eq:semi}
+\end{equation}
+with $n_k^{o}$ the density at the old time level. This removes the
+dielectric-relaxation limit on the time step. A third entry,
+\kw{linearized}, solves the explicit equation and reconstructs the field from
+the face fluxes of the potential.
+
+\subsection{Electron energy}
+
+Model \kw{efullImplicit} (entry \kw{energyModel \{ electron \dots; \}}):
+\begin{equation}
+\pd{}{t}\Big(\tfrac32 \kB \nel \Te\Big)
+ + \nabla\cdot\Big(\tfrac52 \kB \Te\,\bG_\mathrm{e}\Big)
+ - \nabla\cdot(\kappa_\mathrm{e}\nabla\Te)
+ = -e\,\bG_\mathrm{e}\cdot\bE - Q_\mathrm{inel} - Q_\mathrm{el} .
+\label{eq:Te}
+\end{equation}
+\begin{itemize}
+\item Conductivity: $\kappa_\mathrm{e} = \tfrac52\,\kB^2 \nel \Te/(m_\mathrm{e}\nu_\mathrm{e})$,
+      which with \kw{muBased} is $\tfrac52 \kB^2\nel\Te\,\mu_\mathrm{e}/e$.
+\item $Q_\mathrm{inel}$: energy lost in the electron-impact reactions, from
+      the reaction list.
+\item $Q_\mathrm{el} = 3\kB\,\dfrac{m_\mathrm{e}}{M}\,\nu_\mathrm{e}\,\nel(\Te-T)$:
+      elastic losses to the gas (with \kw{muBased}).
+\item The losses are linearised in $\Te$ in the same way as the reaction
+      sources.
+\end{itemize}
+
+\paragraph{Consistent fluxes.} The electron flux in \eqref{eq:Te} is the flux
+of the electron continuity equation \emph{through the cell faces}, exactly as
+that equation discretises it. With $\Gamma_f$ the electron flux through face
+$f$ (positive out of the cell) and $\Phi_f$ the potential interpolated to the
+face, the convective term uses $\tfrac52\kB\Gamma_f$ and the heating in a cell
+of volume $V$ is
+\begin{equation}
+-\,e\,(\bG_\mathrm{e}\cdot\bE)_P
+ = e\,(\bG_\mathrm{e}\cdot\nabla\Phi)_P
+ = \frac{e}{V}\sum_f \Gamma_f\,(\Phi_f-\Phi_P) ,
+\end{equation}
+which is the discrete form of $\nabla\cdot(\bG\Phi)-\Phi\nabla\cdot\bG$. The
+energy the field delivers and the energy the electrons receive then match
+cell by cell. The fluxes of the species in the cells (used for the currents)
+are reconstructed from the face fluxes. For electrons with the momentum model
+the flux $\nel\bu_\mathrm{e}$ at the cell centres is used instead.
+
+\subsection{Ion and gas temperature}
+
+\begin{center}
+\begin{tabular}{@{}llL{9cm}@{}}
+\toprule
+Entry & Model & Equation \\
+\midrule
+\kw{ion} & \kw{gasTemp} & $T_\mathrm{i}=T$ \\
+ & \kw{gasCorrectedTemp} & $T_\mathrm{i}=T+\dfrac{M_\mathrm{i}+M}{5M_\mathrm{i}+3M}\,\dfrac{M(\mu_\mathrm{i}|\bE|)^2}{\kB}$ (Wannier) \\[6pt]
+\kw{gas} & \kw{none} & $T$ constant \\
+ & \kw{gfullImplicit} & steady conduction, $-\nabla\cdot(\kappa\nabla T)=\sum_\mathrm{ions} e\,\bG_k\cdot\bE + {}$ion--gas exchange \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Dielectric regions}
+
+With \kw{solutionDomain plasmaDielectric} each dielectric region solves
+$\nabla\cdot(\varepsilon_\mathrm{d}\nabla\Phi)=0$. Charge accumulates on the
+interface,
+\begin{equation}
+\pd{\sigma}{t} = \mathbf{J}\cdot\bn ,\qquad \mathbf{J}=e\sum_k z_k\bG_k ,
+\label{eq:sigma}
+\end{equation}
+and the potential satisfies
+$\varepsilon_\mathrm{d}\,\partial_n\Phi_\mathrm{d}-\varepsilon\,\partial_n\Phi=\sigma$
+there (see Section~\ref{sec:bcphi}).
+
+%------------------------------------------------------------------------------
+\section{Discretisation and available schemes}
+
+\subsection{Flux schemes for drift--diffusion}
+
+\kw{fluxScheme} in \kw{constant/plasmaProperties} selects how the
+drift--diffusion flux \eqref{eq:dd} and the convection--conduction flux of
+\eqref{eq:Te} are discretised. It can also be given inside the dictionary of
+a species, for that species alone.
+
+\paragraph{\kw{fvSchemes} (default).} Drift and diffusion are separate terms,
+discretised with the convection and Laplacian schemes named in
+\kw{system/fvSchemes} (Table~\ref{tab:schemes}).
+
+\paragraph{\kw{scharfetterGummel}.} Drift and diffusion are one flux. Between
+the centres $P$ and $N$ of two neighbouring cells, a distance $d$ apart, with
+$u$ the drift velocity normal to the face and $A$ the face area,
+\begin{equation}
+\Gamma_f = \frac{D A}{d}\Big[B(-\mathrm{Pe})\,n_P - B(\mathrm{Pe})\,n_N\Big],
+\qquad \mathrm{Pe}=\frac{u\,d}{D},\qquad B(x)=\frac{x}{e^{x}-1} .
+\end{equation}
+This is the exact solution of the steady one-dimensional problem between the
+two centres. It reduces to central differencing for $|\mathrm{Pe}|\ll1$ and
+to upwind differencing for $|\mathrm{Pe}|\gg1$, and gives non-negative
+densities without a limiter. The same form is used for the energy equation
+with $u\to\tfrac52\kB\Gamma_f$ and $D\to\kappa_\mathrm{e}$. Boundary faces
+other than processor and cyclic faces are treated as with \kw{fvSchemes}.
+There is no non-orthogonal correction.
+
+Written as separate terms, the scheme is central differencing for diffusion
+with the convective face value $n_f=w\,n_P+(1-w)\,n_N$,
+$w=1/(1-e^{-\mathrm{Pe}})-1/\mathrm{Pe}$.
+
+\subsection{Terms and scheme entries}
+
+\begin{longtable}{@{}L{3.5cm}L{6.3cm}L{5.4cm}@{}}
+\caption{Terms, their entries in \kw{system/fvSchemes}, and the schemes that
+can be used.\label{tab:schemes}}\\
+\toprule
+Term & Entry & Schemes \\
+\midrule
+\endfirsthead
+\toprule
+Term & Entry & Schemes \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Time derivatives & \kw{ddtSchemes default} & \kw{Euler} (first order, implicit; used in all examples) \\[3pt]
+Drift of charged species, $\nabla\cdot(\mathbf{F}n)$ & \kw{div(F,Ni)} & \kw{Gauss} + \kw{upwind}, \kw{linear}, \kw{limitedLinear 1}, \kw{vanLeer}, \kw{MUSCL}, \kw{Minmod}, \kw{SuperBee}, \kw{vanAlbada}, \kw{OSPRE}, \kw{UMIST}, \kw{QUICK}, \kw{Gamma}, \kw{limitedCubic}; or \kw{fluxScheme scharfetterGummel} \\[3pt]
+Diffusion of charged species & \kw{laplacian(D,Ni)} & \kw{Gauss linear} + \kw{orthogonal}, \kw{corrected}, \kw{limited} $\psi$, \kw{uncorrected}; not used with \kw{scharfetterGummel} \\[3pt]
+Diffusion of neutral species & \kw{laplacian(D,Nin)} & as above \\[3pt]
+Convection of electron energy & \kw{div((interpolate(eeFlux)\&S),Te)} & as \kw{div(F,Ni)}; not used with \kw{scharfetterGummel} for the electrons \\[3pt]
+Electron heat conduction & \kw{laplacian(eC,Te)} & as \kw{laplacian(D,Ni)} \\[3pt]
+Poisson equation & \kw{laplacian(eps,Phi)} & \kw{Gauss linear} + \kw{orthogonal} or \kw{corrected} \\[3pt]
+Thermal-diffusion term in \eqref{eq:semi} & \kw{laplacian(D,T)} & as above \\[3pt]
+Momentum model: convection of density and velocity & \kw{div(U,Ni)}, \kw{div(flux,Ui\_h)} & convection schemes as \kw{div(F,Ni)} \\[3pt]
+Gas temperature & \kw{laplacian(alpha,T)} & Laplacian schemes \\[3pt]
+Gradients ($\bE=-\nabla\Phi$, $\nabla T$) & \kw{gradSchemes default} & \kw{Gauss linear} \\
+\end{longtable}
+
+\noindent Notes.
+\begin{itemize}
+\item \kw{limitedLinear 1} is the scheme of the examples. With consistent
+      energy fluxes it and \kw{vanLeer} give results within a few per cent of
+      Scharfetter--Gummel on the meshes tested (1~Torr argon, 200 cells).
+\item On meshes that are not orthogonal, including the fine/coarse interfaces
+      of adaptively refined 2D and 3D meshes, use \kw{corrected} Laplacian
+      and \kw{snGrad} schemes.
+\item On processor boundaries the face values are interpolated between the
+      two cells as on internal faces, so parallel and serial results agree.
+\end{itemize}
+
+\subsection{Time stepping and inner iterations}
+
+One PIMPLE iteration per time step is the normal setting. Within a time step
+each species equation and the energy equation are solved repeatedly to
+resolve the linearised sources, as set in \kw{constant/plasmaProperties}:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\kw{innerIterations} entry & Default & Meaning \\
+\midrule
+\kw{chargedSpecies} & 4 & passes per charged species \\
+\kw{neutralSpecies} & 2 & passes per neutral species \\
+\kw{electronTemperature} & 6 & passes of the energy equation \\
+\kw{tolerance} & $10^{-5}$ & initial residual that ends the passes \\
+\kw{reportUnconverged} & yes & report loops that end above the tolerance \\
+\bottomrule
+\end{tabular}
+\end{center}
+The time step is fixed when \kw{deltaTMin} and \kw{deltaTMax} in
+\kw{system/controlDict} are equal; otherwise it follows
+$\Delta t=\kw{MaxCo}/\max(\tfrac12|\nabla\cdot\mathbf{F}_\mathrm{e}|,\dots)$
+between those bounds. Field relaxation factors \kw{<field>Final} in
+\kw{system/fvSolution} apply on the last PIMPLE iteration.
+
+\subsection{Limits}
+
+Floors and ceilings are applied after each solve (\kw{limits} in
+\kw{constant/plasmaProperties}; they are read again when the file changes
+during a run):
+\kw{densityFloor} ($10^{4}$~m$^{-3}$), \kw{TeMin} (300~K), \kw{TeMax}
+(none), and per field \kw{N\_<species> \{ min; max; \}}, \kw{Te}, \kw{Tion},
+\kw{T}.
+
+\subsection{Acceleration of slow neutral species}
+
+With \kw{slowSpeciesAcceleration}, after every \kw{fullCycles} periods of the
+applied voltage the listed neutral species are advanced alone over a long
+time $\Delta t_\mathrm{a}$ per step:
+\begin{equation}
+\frac{n_k^{\mathrm{new}}-n_k}{\Delta t_\mathrm{a}}
+ - \nabla\cdot(D_k\nabla n_k^{\mathrm{new}})
+ = \langle S_k\rangle - \Big\langle\pd{S_k}{n_k}\Big\rangle n_k
+   + \Big\langle\pd{S_k}{n_k}\Big\rangle n_k^{\mathrm{new}} ,
+\end{equation}
+where $\langle\cdot\rangle$ is the average over the last \kw{averageCycles}
+periods. With \kw{steadyState yes} the time derivative is dropped. The change
+per advance is limited by \kw{maxChangeFactor} and \kw{relaxation}.
+
+\subsection{Adaptive mesh refinement}
+
+Cells are refined where an indicator exceeds \kw{lowerRefineLevel} and merged
+where it is below \kw{unrefineLevel}. The indicator is the maximum over the
+listed entries, each evaluated between neighbouring cells 1 and 2:
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\kw{type} & Value \\
+\midrule
+\kw{relativeGradient} & $|f_1-f_2|\,/\,\big(\tfrac12(|f_1|+|f_2|)+\kw{floor}\big)$ \\
+\kw{gradient} & $|f_1-f_2|/\kw{scale}$ \\
+\kw{magnitude} & $|f|/\kw{scale}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+1D meshes use \kw{dynamicRefine1DFvMesh}; 2D and 3D meshes use
+\kw{dynamicPolyRefinementFvMesh} with the \kw{plasmaIndicatorRefinement}
+selection. Merged cells take the volume average of the fields.
+
+%------------------------------------------------------------------------------
+\section{Boundary conditions}
+
+On a boundary face, $n_b$ and $T_b$ are the face values and $n_P$, $T_P$ the
+values in the adjacent cell. Several conditions are of mixed type,
+\begin{equation}
+\phi_b = f\,\phi_\mathrm{ref} + (1-f)\Big(\phi_P + \delta\,g_\mathrm{ref}\Big),
+\end{equation}
+with weight $f$, reference value $\phi_\mathrm{ref}$ and reference gradient
+$g_\mathrm{ref}$. $E_n=\bE\cdot\bn$ is positive when the field points into
+the wall, that is, when electrons are repelled from it.
+
+\subsection{Potential}\label{sec:bcphi}
+
+\begin{longtable}{@{}L{4.9cm}L{10.3cm}@{}}
+\toprule
+Type & Condition \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\kw{fixedValue} & $\Phi=\text{value}$ (grounded electrode) \\[3pt]
+\kw{plasmaPotential} & driven electrode, by \kw{model}:\newline
+  \kw{directCurrent}: $\Phi=A$;\newline
+  \kw{cosFrequencyModulated}: $\Phi=A\cos(2\pi f t)+V_\mathrm{bias}$;\newline
+  \kw{sinFrequencyModulated}: $\Phi=A\sin(2\pi f t)+V_\mathrm{bias}$\newline
+  (entries \kw{amplitude}, \kw{frequency}, \kw{bias}) \\[3pt]
+\kw{externalCircuitPotential} & electrode behind a series resistance $R$ and capacitance $C$:
+  $\Phi=A\sin(2\pi f t)+V_\mathrm{bias}+I R+Q_C/C$, with $I$ the total
+  current through the patch and $Q_C=\int I\,dt$ (entries \kw{R}, \kw{C}).
+  With \kw{directCurrent} the source is $A\,(1-e^{-t/\tau})$, with
+  $\tau$ = \kw{rampTime} (no ramp if absent) \\[3pt]
+\kw{dielectricSideWall} & charging wall without a meshed dielectric:
+  $\partial_n\Phi=\sigma/\varepsilon_0$ (no field inside the wall), with
+  $\sigma$ from \eqref{eq:sigma} \\[3pt]
+\kw{coupledPotential} & plasma--dielectric interface, \kw{somaFoam}: the two
+  regions are solved in one matrix; the interface potential is
+  $\Phi_w=\dfrac{\varepsilon_1\Phi_1/\delta_1+\varepsilon_2\Phi_2/\delta_2+\sigma}
+  {\varepsilon_1/\delta_1+\varepsilon_2/\delta_2}$ \\[3pt]
+\kw{iterativeCoupledPotential} & plasma--dielectric interface,
+  \kw{plasmaMultiRegionFoam}: the plasma side fixes $\Phi_w$, the dielectric
+  side imposes
+  $\partial_n\Phi_\mathrm{d}=(\sigma-\varepsilon\,\partial_n\Phi)/\varepsilon_\mathrm{d}$
+  (normals out of each region), and $\Phi_w$ is relaxed (Aitken) until both
+  agree \\
+\end{longtable}
+
+\subsection{Electron density: \kw{driftDiffusionElectronDensity}}
+
+The condition imposes the net electron flux to the wall: the thermal flux,
+always, plus the drift where it is directed to the wall, minus the emitted
+electrons,
+\begin{equation}
+\bG_\mathrm{e}\cdot\bn = \tfrac14\vth\,n_b + \max(\mathbf{F}_\mathrm{e}\cdot\bn,\,0)\,n_b
+ - \Gamma_\mathrm{se} - \Gamma_\mathrm{FE},
+\qquad \vth=\sqrt{\frac{8\kB\Te}{\pi m_\mathrm{e}}} ,
+\label{eq:bce}
+\end{equation}
+where $\mathbf{F}_\mathrm{e}\cdot\bn=-\mu_\mathrm{e}\big(E_n+\tfrac{\kB}{e}\partial_n\Te\big)$
+is the drift velocity towards the wall. It is implemented as a mixed
+condition with
+\begin{equation}
+f = \frac{C_1}{C_1+D_\mathrm{e}/\delta},\qquad
+C_1=\tfrac14\vth+\max(-\mathbf{F}_\mathrm{e}\cdot\bn,\,0),
+\qquad n_\mathrm{ref}=0,\qquad
+g_\mathrm{ref}=\frac{\Gamma_\mathrm{se}+\Gamma_\mathrm{FE}}{D_\mathrm{e}} .
+\end{equation}
+$C_1$ is never negative, so $0\le f<1$ for any wall cell. With
+\kw{Edepend false} the flux is the thermal flux alone, or the drift to the
+wall where that is larger: $C_1=\max(\tfrac14\vth-\mathbf{F}_\mathrm{e}\cdot\bn,\,0)$.
+\begin{itemize}
+\item Secondary emission: $\Gamma_\mathrm{se}=\gamma\,\max(\bG_\mathrm{i}\cdot\bn,0)$,
+      with $\gamma$ = \kw{seec} and $\bG_\mathrm{i}$ the total ion flux.
+\item Field emission (\kw{field\_emission true}): the Fowler--Nordheim
+      current density for the field $\beta E_n$ (\kw{field\_enhancement\_factor}
+      $\beta$, \kw{work\_function} in eV), where $E_n>0$.
+\end{itemize}
+
+\subsection{Ion density}
+
+\begin{center}
+\begin{tabular}{@{}L{6.3cm}L{8.9cm}@{}}
+\toprule
+Type & Condition \\
+\midrule
+\kw{zeroGradient} & ions leave with their drift flux, $\bG_\mathrm{i}\cdot\bn=\mu_\mathrm{i}E_n n_b$ (used in the examples) \\[3pt]
+\kw{driftDiffusionPositiveIonDensity} & as above where $E_n\ge0$; zero net flux where the field points away from the wall: mixed with $f=C_1/(C_1+D_\mathrm{i}/\delta)$, $C_1=-\mu_\mathrm{i}E_n$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Neutral species use \kw{zeroGradient} (no wall loss) or \kw{fixedValue}.
+
+\subsection{Electron temperature: \kw{electronTemperature}}
+
+$\Te$ has zero gradient at the wall, and the energy equation takes the total
+electron energy flux through the wall face from the condition. Each plasma
+electron that leaves by thermal motion removes $2\kB\Te$, each electron of
+the flux beyond the thermal flux, which drifts to the wall, removes
+$\tfrac52\kB\Te$, and each emitted electron brings in $2\kB T$ at its own
+temperature:
+\begin{equation}
+q_w = \kB\,T_P\Big[2\min(\Gamma_\mathrm{out},\Gamma_\mathrm{th})
+      + \tfrac52\max(\Gamma_\mathrm{out}-\Gamma_\mathrm{th},0)\Big]
+      - 2\kB\big(\Gamma_\mathrm{se}T_\mathrm{se}+\Gamma_\mathrm{FE}T_\mathrm{FN}\big),
+\end{equation}
+\begin{equation}
+\Gamma_\mathrm{out}=\max\!\big(\bG_\mathrm{e}\cdot\bn+\Gamma_\mathrm{se}+\Gamma_\mathrm{FE},\,0\big),
+\qquad \Gamma_\mathrm{th}=\tfrac14\vth\,n_b ,
+\end{equation}
+with $\bG_\mathrm{e}\cdot\bn$ the net electron flux of the electron equation
+at that face. The first term is implicit in the temperature $T_P$ of the
+wall cell with a coefficient that is never negative, so the condition is
+stable for any size of that cell; the second is a source in the wall cell.
+Entries: \kw{seec}, \kw{Tse}, \kw{TFN}, \kw{field\_emission},
+\kw{field\_enhancement\_factor}, \kw{work\_function}.
+
+\subsection{Auxiliary fields}
+
+The files \kw{0/eeFlux} and \kw{0/F\_electron} hold boundary values of the
+thermal energy flux and thermal velocity (\kw{eEnergyThermalFlux},
+\kw{electronThermalFlux}); they are needed for the fields to be created, and
+are used by the energy equation only for electrons with the momentum model.
+
+%------------------------------------------------------------------------------
+\section{Diagnostics}
+
+The \kw{electrodeVoltageCurrent} function object writes, per patch,
+\begin{equation}
+I_\mathrm{cond}=\int \mathbf{J}\cdot d\mathbf{S},\qquad
+I_\mathrm{disp}=\int \varepsilon\,\pd{\bE}{t}\cdot d\mathbf{S},\qquad
+I_\mathrm{tot}=I_\mathrm{cond}+I_\mathrm{disp},
+\end{equation}
+with the sign reversed so that a current is positive from the electrode into
+the plasma. The \kw{fieldAverage} function object with
+\kw{resetOnOutput true} and a write interval of whole periods gives
+period-averaged fields.
+
+\end{document}

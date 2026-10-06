@@ -120,7 +120,8 @@ void Foam::dielectricSideWall::updateCoeffs()
 
     this->valueFraction() = 0.0;
 
-    this->refGrad() = 0.5*surfC/8.854e-12;
+    // No field inside the wall: eps0 dPhi/dn = sigma
+    this->refGrad() = surfC/8.854e-12;
 
     mixedFvPatchField<scalar>::updateCoeffs();
 

@@ -29,6 +29,7 @@ externalCircuitPotential
     bias_(0.0),
     R_(0.0),
     C_(1e20),
+    rampTime_(0),
     Phi_(p.size(), 0),
     I_(0)
 {
@@ -50,6 +51,7 @@ externalCircuitPotential
     bias_(dict.lookupOrDefault<scalar>("bias", 0.0)),
     R_(dict.lookupOrDefault<scalar>("R", 0.0)),
     C_(dict.lookupOrDefault<scalar>("C", 1e20)),
+    rampTime_(dict.lookupOrDefault<scalar>("rampTime", 0)),
     Phi_("Phi", dict, p.size()),
     I_(dict.lookupOrDefault<scalar>("I", 0))
 {
@@ -82,6 +84,7 @@ externalCircuitPotential
     bias_(ptf.bias_),
     R_(ptf.R_),
     C_(ptf.C_),
+    rampTime_(ptf.rampTime_),
     Phi_(ptf.Phi_),
     I_(ptf.I_)
 {}
@@ -100,6 +103,7 @@ externalCircuitPotential
     bias_(tppsf.bias_),
     R_(tppsf.R_),
     C_(tppsf.C_),
+    rampTime_(tppsf.rampTime_),
     Phi_(tppsf.Phi_),
     I_(tppsf.I_)
 {}
@@ -119,6 +123,7 @@ externalCircuitPotential
     bias_(tppsf.bias_),
     R_(tppsf.R_),
     C_(tppsf.C_),
+    rampTime_(tppsf.rampTime_),
     Phi_(tppsf.Phi_),
     I_(tppsf.I_)
 {}
@@ -153,8 +158,17 @@ void Foam::externalCircuitPotential::updateCoeffs()
 
     if (modelName_ == "directCurrent")
     {
-        Info << "V = " << amplitude_*(1-Foam::exp(-this->db().time().value()/C_)) + neg(patchCurrent)*patchCurrent*R_;
-        operator==(amplitude_*(1-Foam::exp(-this->db().time().value()/C_)) + neg(patchCurrent)*patchCurrent*R_) ;
+        // Source voltage, optionally ramped up, behind the series
+        // resistance and capacitance (as in sinFrequencyModulated)
+        scalar ramp = 1;
+
+        if (rampTime_ > 0)
+        {
+            ramp = 1 - Foam::exp(-this->db().time().value()/rampTime_);
+        }
+
+        Phi_ = amplitude_*ramp + bias_ + patchCurrent*R_ + QClocal/C_;
+        operator==(Phi_);
     }
     else if (modelName_ == "cosFrequencyModulated")
     {
@@ -195,6 +209,8 @@ write(Ostream& os) const
         << R_  << token::END_STATEMENT << nl;
     os.writeKeyword("C")
         << C_ << token::END_STATEMENT << nl;
+    os.writeKeyword("rampTime")
+        << rampTime_ << token::END_STATEMENT << nl;
     Phi_.writeEntry("Phi", os);
     os.writeKeyword("I")
         << I_ << token::END_STATEMENT << nl;

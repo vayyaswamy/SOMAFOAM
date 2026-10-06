@@ -33,7 +33,7 @@ boundaryField
         amplitude       uniform 400;
         frequency       40E6;
         R		200000.0;
-        C               1e-7;
+        rampTime        1e-7;
         bias            0.0;
         Phi             uniform 0.0;
     }

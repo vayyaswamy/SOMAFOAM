@@ -1,25 +1,9 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | foam-extend: Open Source CFD
-   \\    /   O peration     | Version:     4.0
-    \\  /    A nd           | Web:         http://www.foam-extend.org
-     \\/     M anipulation  | For copyright notice see file Copyright
--------------------------------------------------------------------------------
+Copyright (C) 2018 by the LUEUR authors
+
 License
-    This file is part of foam-extend.
-
-    foam-extend is free software: you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation, either version 3 of the License, or (at your
-    option) any later version.
-
-    foam-extend is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+This project is licensed under The 3-Clause BSD License. For further information
+look for license file include with distribution.
 
 \*---------------------------------------------------------------------------*/
 
@@ -27,11 +11,7 @@ License
 #include "addToRunTimeSelectionTable.H"
 #include "fvPatchFieldMapper.H"
 #include "volFields.H"
-#include "fvPatch.H"
-#include "surfaceFields.H"
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
+#include "plasmaConstants.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -41,7 +21,7 @@ Foam::electronTemperature::electronTemperature
     const DimensionedField<scalar, volMesh>& iF
 )
 :
-    mixedFvPatchField<scalar>(p, iF),
+    zeroGradientFvPatchScalarField(p, iF),
     seec_(0),
     Tse_(0),
     Edepend_(false),
@@ -49,12 +29,7 @@ Foam::electronTemperature::electronTemperature
     FE_(false),
     beta_(1.0),
     wf_(1.0)
-{
-    this->refValue() = 0;
-    this->refGrad() = 0;
-    this->valueFraction() = 0;
-
-}
+{}
 
 
 Foam::electronTemperature::electronTemperature
@@ -65,11 +40,11 @@ Foam::electronTemperature::electronTemperature
     const fvPatchFieldMapper& mapper
 )
 :
-    mixedFvPatchField<scalar>(ptf, p, iF, mapper),
+    zeroGradientFvPatchScalarField(ptf, p, iF, mapper),
     seec_(ptf.seec_),
     Tse_(ptf.Tse_),
     Edepend_(ptf.Edepend_),
-    TFN_(ptf.Tse_),
+    TFN_(ptf.TFN_),
     FE_(ptf.FE_),
     beta_(ptf.beta_),
     wf_(ptf.wf_)
@@ -83,20 +58,15 @@ Foam::electronTemperature::electronTemperature
     const dictionary& dict
 )
 :
-    mixedFvPatchField<scalar>(p, iF),
+    zeroGradientFvPatchScalarField(p, iF),
     seec_(readScalar(dict.lookup("seec"))),
     Tse_(readScalar(dict.lookup("Tse"))),
-    Edepend_(readBool(dict.lookup("Edepend"))),
+    Edepend_(dict.lookupOrDefault<bool>("Edepend", true)),
     TFN_(readScalar(dict.lookup("TFN"))),
     FE_(readBool(dict.lookup("field_emission"))),
     beta_(readScalar(dict.lookup("field_enhancement_factor"))),
     wf_(readScalar(dict.lookup("work_function")))
 {
-    this->refValue() = 0;
-
-    this->refGrad() = 0;
-    this->valueFraction() = 0;
-
     fvPatchField<scalar>::operator=(this->patchInternalField());
 }
 
@@ -106,7 +76,7 @@ Foam::electronTemperature::electronTemperature
     const electronTemperature& ptf
 )
 :
-    mixedFvPatchField<scalar>(ptf),
+    zeroGradientFvPatchScalarField(ptf),
     seec_(ptf.seec_),
     Tse_(ptf.Tse_),
     Edepend_(ptf.Edepend_),
@@ -123,7 +93,7 @@ Foam::electronTemperature::electronTemperature
     const DimensionedField<scalar, volMesh>& iF
 )
 :
-    mixedFvPatchField<scalar>(ptf, iF),
+    zeroGradientFvPatchScalarField(ptf, iF),
     seec_(ptf.seec_),
     Tse_(ptf.Tse_),
     Edepend_(ptf.Edepend_),
@@ -134,126 +104,128 @@ Foam::electronTemperature::electronTemperature
 {}
 
 
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-
-void Foam::electronTemperature::updateCoeffs()
+void Foam::electronTemperature::emittedFluxes
+(
+    scalarField& secondary,
+    scalarField& field
+) const
 {
-    if (this->updated())
-    {
-        return;
-    }
+    const vectorField n(patch().nf());
 
-    vectorField n = patch().nf();
-
-
-    const fvPatchField<scalar>& Nef=
-        patch().lookupPatchField<volScalarField, scalar>("N_electron");
-
-    const fvPatchField<scalar>& kappaef=
-        patch().lookupPatchField<volScalarField, scalar>("kappa_electron");
-
-    const fvPatchField<scalar>& Tef=
-        patch().lookupPatchField<volScalarField, scalar>("Te");
-
-
-    const fvPatchField<vector>& Ef=
+    const fvPatchField<vector>& Ef =
         patch().lookupPatchField<volVectorField, vector>("E");
 
-    const fvPatchField<vector>& Fif=
+    const fvPatchField<vector>& Fif =
         patch().lookupPatchField<volVectorField, vector>("ionFlux");
 
+    const scalarField Enorm(Ef & n);
+    const scalarField Fifnorm(Fif & n);
 
-    scalarField Enorm = Ef&n ;
+    // Secondary emission by the ions that reach the wall
+    secondary = seec_*pos(Fifnorm)*Fifnorm;
 
-    scalarField Fifnorm = Fif&n;
-
-    scalarField a = pos(mag(Enorm));
-
-    scalarField b = pos(Fifnorm);
-
-    if (Edepend_)
-    {
-        a = pos(Enorm);
-    }
-
-    scalarField c = pos(Enorm); // to ensure field emission happens only if E-field is pointing inward even if Edepend is set to false
-
-    const scalarField Gamma_se = seec_*(b*Fifnorm);
-
-    scalarField Gamma_FE = 0.0*c;
+    field = 0.0*Enorm;
 
     if (FE_)
     {
+        // Fowler-Nordheim emission where the field points into the wall
+        // (as in electronTemperature; 1e-2 converts V/m to V/cm)
+        const scalarField c(pos(Enorm));
 
-        scalarField vofy = 0.95 - sqr(3.79E-4)*beta_*c*mag(Enorm)*1E-2/sqr(wf_) ; // 1E-2 is for converting V/m to V/cm
+        const scalarField vofy
+        (
+            0.95 - sqr(3.79e-4)*beta_*c*mag(Enorm)*1e-2/sqr(wf_)
+        );
 
-
-        Gamma_FE = 1.54E-6/1.602e-19*sqr(beta_*c*mag(Enorm) )/1.1/wf_*exp(-6.85E9*pow(wf_,1.5)*vofy/beta_/(c*mag(Enorm) + SMALL) ) ;
-
+        field =
+            1.54e-6/1.602e-19*sqr(beta_*c*mag(Enorm))/1.1/wf_
+           *exp(-6.85e9*pow(wf_, 1.5)*vofy/beta_/(c*mag(Enorm) + SMALL));
     }
+}
 
 
-    const scalarField C1 = 0.5*1.38e-23*0.25*Nef*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0)) - 2.5*1.38e-23*(Gamma_se + Gamma_FE);
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-    const scalarField C2 = kappaef;
+Foam::tmp<Foam::scalarField>
+Foam::electronTemperature::emittedFlux() const
+{
+    scalarField secondary;
+    scalarField field;
 
-    const scalarField C3 = 1.38e-23*(Gamma_se*Tse_ + Gamma_FE*TFN_);
+    emittedFluxes(secondary, field);
 
-    this->refValue() = 0.0;
-
-
-    this->valueFraction() = a*C1/(C1-C2*this->patch().deltaCoeffs()) ;
-
-
-    this->refGrad() = C3/(C2+SMALL);
-
-
-    mixedFvPatchField<scalar>::updateCoeffs();
+    return tmp<scalarField>(new scalarField(secondary + field));
+}
 
 
+Foam::tmp<Foam::scalarField>
+Foam::electronTemperature::emittedEnergyFlux() const
+{
+    scalarField secondary;
+    scalarField field;
+
+    emittedFluxes(secondary, field);
+
+    return tmp<scalarField>
+    (
+        new scalarField
+        (
+            2.0*plasmaConstants::boltzC.value()*(secondary*Tse_ + field*TFN_)
+        )
+    );
+}
+
+
+Foam::tmp<Foam::scalarField>
+Foam::electronTemperature::energyFluxPerKelvin
+(
+    const scalarField& flux
+) const
+{
+    const fvPatchField<scalar>& Nef =
+        patch().lookupPatchField<volScalarField, scalar>("N_electron");
+
+    const scalarField& Tef = *this;
+
+    // Thermal flux of the plasma electrons to the wall, n vth/4
+    const scalarField thermalFlux
+    (
+        0.25*Nef*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0))
+    );
+
+    return tmp<scalarField>
+    (
+        new scalarField
+        (
+            plasmaConstants::boltzC.value()
+           *(
+                2.0*min(flux, thermalFlux)
+              + 2.5*max(flux - thermalFlux, scalar(0))
+            )
+        )
+    );
 }
 
 
 void Foam::electronTemperature::write(Ostream& os) const
 {
     fvPatchField<scalar>::write(os);
-    os.writeKeyword("seec")
-        << seec_ << token::END_STATEMENT << nl;
-    os.writeKeyword("Tse")
-        << Tse_ << token::END_STATEMENT << nl;
-    os.writeKeyword("Edepend")
-        << Edepend_ << token::END_STATEMENT << nl;
-    os.writeKeyword("TFN")
-        << TFN_ << token::END_STATEMENT << nl;
-    os.writeKeyword("field_emission")
-        << FE_ << token::END_STATEMENT << nl;
+    os.writeKeyword("seec") << seec_ << token::END_STATEMENT << nl;
+    os.writeKeyword("Tse") << Tse_ << token::END_STATEMENT << nl;
+    os.writeKeyword("Edepend") << Edepend_ << token::END_STATEMENT << nl;
+    os.writeKeyword("TFN") << TFN_ << token::END_STATEMENT << nl;
+    os.writeKeyword("field_emission") << FE_ << token::END_STATEMENT << nl;
     os.writeKeyword("field_enhancement_factor")
         << beta_ << token::END_STATEMENT << nl;
-    os.writeKeyword("work_function")
-        << wf_ << token::END_STATEMENT << nl;
+    os.writeKeyword("work_function") << wf_ << token::END_STATEMENT << nl;
     this->writeEntry("value", os);
 }
 
 
-// * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
-
-
-void Foam::electronTemperature::operator=
-(
-    const fvPatchField<scalar>& ptf
-)
-{
-    fvPatchField<scalar>::operator=
-    (
-        this->valueFraction()*this->refValue()
-        + (1 - this->valueFraction())*ptf
-    );
-
-}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 namespace Foam
 {
     makePatchTypeField
@@ -261,6 +233,6 @@ namespace Foam
         fvPatchScalarField,
         electronTemperature
     );
-} // End namespace Foam
+}
 
 // ************************************************************************* //
