@@ -54,6 +54,12 @@ Foam::rfPowerElectrode::rfPowerElectrode
     updateTarget_(0),
     currentTarget_(-1),
     learned_(0),
+    gain_(1),
+    exponent_(0),
+    lastAmplitude_(0),
+    lastPower_(0),
+    learningRelaxation_(0.8),
+    gainRelaxation_(0.1),
     curTimeIndex_(-1)
 {}
 
@@ -95,6 +101,12 @@ Foam::rfPowerElectrode::rfPowerElectrode
     updateTarget_(dict.lookupOrDefault<scalar>("updateTarget", 0)),
     currentTarget_(dict.lookupOrDefault<scalar>("currentTarget", -1)),
     learned_(0),
+    gain_(dict.lookupOrDefault<scalar>("gain", 1)),
+    exponent_(0),
+    lastAmplitude_(0),
+    lastPower_(0),
+    learningRelaxation_(dict.lookupOrDefault<scalar>("learningRelaxation", 0.8)),
+    gainRelaxation_(dict.lookupOrDefault<scalar>("gainRelaxation", 0.1)),
     curTimeIndex_(-1)
 {
     if (dict.found("powerTable"))
@@ -115,6 +127,13 @@ Foam::rfPowerElectrode::rfPowerElectrode
     if (dict.found("learned"))
     {
         dict.lookup("learned") >> learned_;
+    }
+
+    if (dict.found("exponent"))
+    {
+        dict.lookup("exponent") >> exponent_;
+        dict.lookup("lastAmplitude") >> lastAmplitude_;
+        dict.lookup("lastPower") >> lastPower_;
     }
 
     if
@@ -183,6 +202,32 @@ Foam::rfPowerElectrode::rfPowerElectrode
                     max(targetPower((i + 0.5)/frequency_), scalar(0))/maxPower
                 );
         }
+    }
+
+    if (tracking_ == "learning" && exponent_.size() != learned_.size())
+    {
+        exponent_.setSize(learned_.size());
+        exponent_ = 2.0;
+
+        lastAmplitude_.setSize(learned_.size());
+        lastAmplitude_ = 0.0;
+
+        lastPower_.setSize(learned_.size());
+        lastPower_ = 0.0;
+    }
+
+    if
+    (
+        learningRelaxation_ <= 0 || learningRelaxation_ > 1
+     || gainRelaxation_ < 0 || gainRelaxation_ > 1
+    )
+    {
+        FatalIOErrorIn
+        (
+            "rfPowerElectrode::rfPowerElectrode(...)",
+            dict
+        )   << "Need 0 < learningRelaxation <= 1 and"
+            << " 0 <= gainRelaxation <= 1" << exit(FatalIOError);
     }
 
     if
@@ -269,6 +314,12 @@ Foam::rfPowerElectrode::rfPowerElectrode
     updateTarget_(ptf.updateTarget_),
     currentTarget_(ptf.currentTarget_),
     learned_(ptf.learned_),
+    gain_(ptf.gain_),
+    exponent_(ptf.exponent_),
+    lastAmplitude_(ptf.lastAmplitude_),
+    lastPower_(ptf.lastPower_),
+    learningRelaxation_(ptf.learningRelaxation_),
+    gainRelaxation_(ptf.gainRelaxation_),
     curTimeIndex_(ptf.curTimeIndex_)
 {}
 
@@ -305,6 +356,12 @@ Foam::rfPowerElectrode::rfPowerElectrode(const rfPowerElectrode& ptf)
     updateTarget_(ptf.updateTarget_),
     currentTarget_(ptf.currentTarget_),
     learned_(ptf.learned_),
+    gain_(ptf.gain_),
+    exponent_(ptf.exponent_),
+    lastAmplitude_(ptf.lastAmplitude_),
+    lastPower_(ptf.lastPower_),
+    learningRelaxation_(ptf.learningRelaxation_),
+    gainRelaxation_(ptf.gainRelaxation_),
     curTimeIndex_(ptf.curTimeIndex_)
 {}
 
@@ -345,6 +402,12 @@ Foam::rfPowerElectrode::rfPowerElectrode
     updateTarget_(ptf.updateTarget_),
     currentTarget_(ptf.currentTarget_),
     learned_(ptf.learned_),
+    gain_(ptf.gain_),
+    exponent_(ptf.exponent_),
+    lastAmplitude_(ptf.lastAmplitude_),
+    lastPower_(ptf.lastPower_),
+    learningRelaxation_(ptf.learningRelaxation_),
+    gainRelaxation_(ptf.gainRelaxation_),
     curTimeIndex_(ptf.curTimeIndex_)
 {}
 
@@ -368,7 +431,8 @@ void Foam::rfPowerElectrode::advance()
 
         if (tracking_ == "learning")
         {
-            amplitude_ = learned_[cycle_ % learned_.size()];
+            amplitude_ =
+                min(gain_*learned_[cycle_ % learned_.size()], amplitudeMax_);
         }
 
         return;
@@ -429,11 +493,59 @@ void Foam::rfPowerElectrode::advance()
 
         if (targetDone > 0)
         {
-            scalar& a = learned_[cycleDone % n];
-            a = min(a*correction(targetDone, meanPower), amplitudeMax_);
+            const label b = cycleDone % n;
+
+            // The amplitude that was applied in this period
+            const scalar applied = amplitude_;
+
+            const scalar lower = 1/(1 + maxChange_);
+            const scalar upper = 1 + maxChange_;
+
+            if (meanPower > 0)
+            {
+                // Exponent of the power law of this period from its last
+                // two runs, if the amplitude changed enough to tell
+                if (lastPower_[b] > 0 && lastAmplitude_[b] > 0)
+                {
+                    const scalar dLogA = Foam::log(applied/lastAmplitude_[b]);
+
+                    if (mag(dLogA) > 2e-3)
+                    {
+                        const scalar estimate =
+                            Foam::log(meanPower/lastPower_[b])/dLogA;
+
+                        exponent_[b] =
+                            0.5*exponent_[b]
+                          + 0.5*max(min(estimate, scalar(4)), scalar(1));
+                    }
+                }
+
+                lastAmplitude_[b] = applied;
+                lastPower_[b] = meanPower;
+
+                const scalar ratio = targetDone/meanPower;
+
+                learned_[b] *=
+                    max
+                    (
+                        min
+                        (
+                            pow(ratio, learningRelaxation_/exponent_[b]),
+                            upper
+                        ),
+                        lower
+                    );
+
+                gain_ *=
+                    max(min(pow(ratio, 0.5*gainRelaxation_), upper), lower);
+            }
+            else
+            {
+                learned_[b] *= upper;
+            }
         }
 
-        amplitude_ = learned_[cycleNow % n];
+        amplitude_ = min(gain_*learned_[cycleNow % n], amplitudeMax_);
     }
     else
     {
@@ -699,7 +811,18 @@ void Foam::rfPowerElectrode::write(Ostream& os) const
 
     if (learned_.size())
     {
+        os.writeKeyword("learningRelaxation")
+            << learningRelaxation_ << token::END_STATEMENT << nl;
+        os.writeKeyword("gainRelaxation")
+            << gainRelaxation_ << token::END_STATEMENT << nl;
+        os.writeKeyword("gain") << gain_ << token::END_STATEMENT << nl;
         os.writeKeyword("learned") << learned_ << token::END_STATEMENT << nl;
+        os.writeKeyword("exponent")
+            << exponent_ << token::END_STATEMENT << nl;
+        os.writeKeyword("lastAmplitude")
+            << lastAmplitude_ << token::END_STATEMENT << nl;
+        os.writeKeyword("lastPower")
+            << lastPower_ << token::END_STATEMENT << nl;
     }
 
     writeEntry("value", os);
