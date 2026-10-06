@@ -158,22 +158,35 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
     const fvPatchField<vector>& gradTef=
         patch().lookupPatchField<volVectorField, vector>("gradTe");
 
-    const scalarField C1 = 0.25*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0)) + muef*(Ef&n) + 1.38e-23/1.602e-19*muef*(gradTef&n);
+    // Net flux to the wall, minus the emitted electrons:
+    //   Edepend true:  the thermal flux, always, plus the drift where it
+    //                  is directed to the wall;
+    //   Edepend false: the thermal flux, or the drift to the wall where
+    //                  that is larger.
+    // The drift velocity away from the wall is uAway below, and the
+    // diffusive flux that the condition sets is D dn/dn = -C1 n + emitted.
+    // C1 is never negative, so the weight stays between 0 and 1.
+    const scalarField vThermal(0.25*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0)));
+
+    const scalarField uAway
+    (
+        muef*(Ef&n) + 1.38e-23/1.602e-19*muef*(gradTef&n)
+    );
+
+    scalarField C1(vThermal + max(uAway, scalar(0)));
+
+    if (!Edepend_)
+    {
+        C1 = max(vThermal + uAway, scalar(0));
+    }
 
     const scalarField C2 = Def;
 
     scalarField Enorm = Ef&n ;
 
     scalarField Fifnorm = Fif&n;
-
     scalarField a = pos(mag(Enorm));
-
     scalarField b = pos(Fifnorm);
-
-    if (Edepend_)
-    {
-        a = pos(Enorm);
-    }
 
     const scalarField Gamma_se = seec_*(b*Fifnorm);
 

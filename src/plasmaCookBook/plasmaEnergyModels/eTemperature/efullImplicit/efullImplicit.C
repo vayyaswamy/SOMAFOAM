@@ -11,7 +11,7 @@ look for license file include with distribution.
 #include "efullImplicit.H"
 #include "addToRunTimeSelectionTable.H"
 #include "linear.H"
-#include "electronTemperatureWallFlux.H"
+#include "electronTemperature.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -108,10 +108,10 @@ Foam::scalar Foam::efullImplicit::correct
 
        forAll(TeC.boundaryField(), patchI)
        {
-           if (isA<electronTemperatureWallFlux>(TeC.boundaryField()[patchI]))
+           if (isA<electronTemperature>(TeC.boundaryField()[patchI]))
            {
-               const electronTemperatureWallFlux& wall =
-                   refCast<const electronTemperatureWallFlux>
+               const electronTemperature& wall =
+                   refCast<const electronTemperature>
                    (
                        TeC.boundaryField()[patchI]
                    );
@@ -127,9 +127,10 @@ Foam::scalar Foam::efullImplicit::correct
                );
 
                eeFluxF.boundaryField()[patchI] =
-                   wall.energyPerElectron()
-                  *max(netFlux + wall.emittedFlux(), scalar(0))
-                  *p.magSf();
+                   wall.energyFluxPerKelvin
+                   (
+                       max(netFlux + wall.emittedFlux(), scalar(0))
+                   )*p.magSf();
 
                const scalarField emittedPower
                (

@@ -49,7 +49,7 @@ void Foam::gasCorrectedTemp::correct
 
     const volScalarField& TgC = thermo().T();
 
-    TiC = TgC + (pow((mspm().mu(iIndex_)*Foam::mag(E())),2)*(plasmaConstants::rA*mspm().W(bIndex_)/plasmaConstants::boltzC)*(mspm().W(bIndex_)+mspm().W(iIndex_)/(3*mspm().W(bIndex_)+5*mspm().W(iIndex_))));
+    TiC = TgC + (pow((mspm().mu(iIndex_)*Foam::mag(E())),2)*(plasmaConstants::rA*mspm().W(bIndex_)/plasmaConstants::boltzC)*((mspm().W(bIndex_)+mspm().W(iIndex_))/(3*mspm().W(bIndex_)+5*mspm().W(iIndex_))));
 }
 
 

@@ -37,6 +37,9 @@ public fixedValueFvPatchScalarField
     scalar bias_;
     scalar R_;
     scalar C_;
+
+    //- Time constant of the ramp of the source voltage (directCurrent)
+    scalar rampTime_;
     scalarField Phi_;
     scalar I_;
 
