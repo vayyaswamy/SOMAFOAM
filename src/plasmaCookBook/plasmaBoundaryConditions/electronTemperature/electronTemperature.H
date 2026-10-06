@@ -1,29 +1,53 @@
 /*---------------------------------------------------------------------------*\
-Copyright (C) 2018 by the LUEUR authors
-
+  =========                 |
+  \\      /  F ield         | foam-extend: Open Source CFD
+   \\    /   O peration     | Version:     4.0
+    \\  /    A nd           | Web:         http://www.foam-extend.org
+     \\/     M anipulation  | For copyright notice see file Copyright
+-------------------------------------------------------------------------------
 License
-This project is licensed under The 3-Clause BSD License. For further information
-look for license file include with distribution.
+    This file is part of foam-extend.
+
+    foam-extend is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation, either version 3 of the License, or (at your
+    option) any later version.
+
+    foam-extend is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     Foam::electronTemperature
 
 Description
-    Wall condition for the electron temperature, for use with the
-    efullImplicit electron temperature model. The temperature itself has a
-    zero gradient at the wall; the energy equation takes the total electron
-    energy flux through the wall face from this condition:
+    Wall condition for the electron temperature, after Lymberopoulos and
+    Economou (J. Phys. D 28 (1995) 727, table 1): the electron energy flux
+    to the wall is the enthalpy carried by the electrons,
 
-        outgoing:  2 k Te per plasma electron that leaves by its thermal
-                   motion (flux n vth/4) and 5/2 k Te per electron of the
-                   flux beyond that, which drifts to the wall, as in
-                   driftDiffusionElectronDensity;
-        incoming:  2 k Tse per secondary electron and 2 k TFN per
-                   field-emitted electron.
+        q.n = 5/2 k Te Gamma_out - 5/2 k (Gamma_se Tse + Gamma_FE TFN),
 
-    The loss is implicit in the temperature of the cell next to the wall
-    with a coefficient that is never negative, so the condition is stable
-    for any size of that cell.
+    with Gamma_out the flux of plasma electrons to the wall, Gamma_se the
+    flux of secondary electrons (seec times the ion flux) and Gamma_FE the
+    field-emitted flux. The energy equation carries
+    5/2 k Te Gamma_net - kappa dTe/dn through the wall face, with
+    Gamma_net = Gamma_out - Gamma_se - Gamma_FE the net electron flux of
+    driftDiffusionElectronDensity, so the condition on the temperature is
+
+        kappa dTe/dn = -h (Te - Tem),   h = 5/2 k (Gamma_se + Gamma_FE),
+
+    with Tem the mean temperature of the emitted electrons. It is a mixed
+    condition with
+
+        valueFraction = h/(h + kappa/delta),  refValue = Tem,  refGrad = 0.
+
+    h is never negative, so the weight lies between 0 and 1 for any size of
+    the cell next to the wall; without emission the condition is a zero
+    gradient.
 
     \verbatim
     electrode
@@ -31,14 +55,13 @@ Description
         type            electronTemperature;
         seec            0.05;
         Tse             1000;
+        Edepend         true;       // accepted, not used
         TFN             1000;
         field_emission  false;
         field_enhancement_factor 55;
         work_function   5;
     }
     \endverbatim
-
-    Edepend is accepted and not used.
 
 SourceFiles
     electronTemperature.C
@@ -49,7 +72,7 @@ SourceFiles
 #define electronTemperature_H
 
 #include "fvPatchFields.H"
-#include "zeroGradientFvPatchFields.H"
+#include "mixedFvPatchField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -57,39 +80,30 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                 Class electronTemperature Declaration
+                     Class electronTemperature Declaration
 \*---------------------------------------------------------------------------*/
+
 
 class electronTemperature
 :
-    public zeroGradientFvPatchScalarField
+    public mixedFvPatchField<scalar>
 {
     // Private data
+    scalar seec_;
+    scalar Tse_;
 
-        //- Secondary emission coefficient and temperature of the secondary
-        //  electrons [K]
-        scalar seec_;
-        scalar Tse_;
+    bool Edepend_;
 
-        //- Not used (read for compatibility with electronTemperature)
-        bool Edepend_;
+    scalar TFN_ ;
 
-        //- Temperature of the field-emitted electrons [K]
-        scalar TFN_;
+    bool FE_;
 
-        //- Field emission, field enhancement factor and work function [eV]
-        bool FE_;
-        scalar beta_;
-        scalar wf_;
+    scalar beta_;
+
+    scalar wf_;
 
 
-    // Private member functions
-
-        //- Secondary and field emission fluxes [1/m2/s]
-        void emittedFluxes(scalarField& secondary, scalarField& field) const;
-
-
-public:
+    public:
 
     //- Runtime type information
     TypeName("electronTemperature");
@@ -112,7 +126,7 @@ public:
             const dictionary&
         );
 
-        //- Construct by mapping onto a new patch
+        //- Construct by mapping given inletOutletFvPatchField onto a new patch
         electronTemperature
         (
             const electronTemperature&,
@@ -122,7 +136,10 @@ public:
         );
 
         //- Construct as copy
-        electronTemperature(const electronTemperature&);
+        electronTemperature
+        (
+            const electronTemperature&
+        );
 
         //- Construct and return a clone
         virtual tmp<fvPatchField<scalar> > clone() const
@@ -155,25 +172,26 @@ public:
 
     // Member functions
 
-        //- Flux of electrons emitted by the wall [1/m2/s]
-        tmp<scalarField> emittedFlux() const;
 
-        //- Energy flux brought in by the emitted electrons [W/m2]
-        tmp<scalarField> emittedEnergyFlux() const;
-
-        //- Energy flux carried to the wall by a given flux of plasma
-        //  electrons [1/m2/s], divided by their temperature [W/m2/K]:
-        //  2 k for the thermal part of the flux, 5/2 k for the rest
-        tmp<scalarField> energyFluxPerKelvin(const scalarField& flux) const;
+        //- Update the coefficients associated with the patch field
+        virtual void updateCoeffs();
 
         //- Write
         virtual void write(Ostream&) const;
+
+
+    // Member operators
+
+        virtual void operator=(const fvPatchField<scalar>& pvf);
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

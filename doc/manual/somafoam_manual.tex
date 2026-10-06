@@ -461,27 +461,39 @@ Neutral species use \kw{zeroGradient} (no wall loss) or \kw{fixedValue}.
 
 \subsection{Electron temperature: \kw{electronTemperature}}
 
-$\Te$ has zero gradient at the wall, and the energy equation takes the total
-electron energy flux through the wall face from the condition. Each plasma
-electron that leaves by thermal motion removes $2\kB\Te$, each electron of
-the flux beyond the thermal flux, which drifts to the wall, removes
-$\tfrac52\kB\Te$, and each emitted electron brings in $2\kB T$ at its own
-temperature:
+The electron energy flux to the wall is the enthalpy carried by the
+electrons (Lymberopoulos and Economou, J.~Phys.~D \textbf{28} (1995) 727),
 \begin{equation}
-q_w = \kB\,T_P\Big[2\min(\Gamma_\mathrm{out},\Gamma_\mathrm{th})
-      + \tfrac52\max(\Gamma_\mathrm{out}-\Gamma_\mathrm{th},0)\Big]
-      - 2\kB\big(\Gamma_\mathrm{se}T_\mathrm{se}+\Gamma_\mathrm{FE}T_\mathrm{FN}\big),
+\mathbf{q}_\mathrm{e}\cdot\bn = \tfrac52\kB\Te\,\Gamma_\mathrm{out}
+ - \tfrac52\kB\big(\Gamma_\mathrm{se}T_\mathrm{se}+\Gamma_\mathrm{FE}T_\mathrm{FN}\big),
 \end{equation}
+with $\Gamma_\mathrm{out}$ the flux of plasma electrons to the wall. The
+energy equation carries
+$\tfrac52\kB\Te\,\bG_\mathrm{e}\cdot\bn-\kappa_\mathrm{e}\partial_n\Te$
+through the wall face, and
+$\bG_\mathrm{e}\cdot\bn=\Gamma_\mathrm{out}-\Gamma_\mathrm{se}-\Gamma_\mathrm{FE}$
+(\ref{eq:bce}), so the condition on the temperature is
 \begin{equation}
-\Gamma_\mathrm{out}=\max\!\big(\bG_\mathrm{e}\cdot\bn+\Gamma_\mathrm{se}+\Gamma_\mathrm{FE},\,0\big),
-\qquad \Gamma_\mathrm{th}=\tfrac14\vth\,n_b ,
+\kappa_\mathrm{e}\,\partial_n\Te = -h\,(T_b-T_\mathrm{em}),\qquad
+h=\tfrac52\kB(\Gamma_\mathrm{se}+\Gamma_\mathrm{FE}),\qquad
+T_\mathrm{em}=\frac{\Gamma_\mathrm{se}T_\mathrm{se}+\Gamma_\mathrm{FE}T_\mathrm{FN}}
+{\Gamma_\mathrm{se}+\Gamma_\mathrm{FE}} .
 \end{equation}
-with $\bG_\mathrm{e}\cdot\bn$ the net electron flux of the electron equation
-at that face. The first term is implicit in the temperature $T_P$ of the
-wall cell with a coefficient that is never negative, so the condition is
-stable for any size of that cell; the second is a source in the wall cell.
-Entries: \kw{seec}, \kw{Tse}, \kw{TFN}, \kw{field\_emission},
-\kw{field\_enhancement\_factor}, \kw{work\_function}.
+It is a mixed condition with
+\begin{equation}
+f=\frac{h}{h+\kappa_\mathrm{e}/\delta},\qquad T_\mathrm{ref}=T_\mathrm{em},\qquad g_\mathrm{ref}=0 .
+\end{equation}
+$h$ is never negative, so $0\le f<1$ for any size of the cell next to the
+wall; without emission the condition is a zero gradient. Entries:
+\kw{seec}, \kw{Tse}, \kw{TFN}, \kw{field\_emission},
+\kw{field\_enhancement\_factor}, \kw{work\_function} (\kw{Edepend} is
+accepted and not used).
+
+The value $\tfrac52\kB\Te$ per electron is the one consistent with the
+convective term of \eqref{eq:Te}. With the one-way kinetic value
+$2\kB\Te$ the difference would have to be returned by conduction with a
+gradient proportional to the wall temperature, which is unstable on coarse
+wall cells.
 
 \subsection{Auxiliary fields}
 
