@@ -11,6 +11,7 @@ look for license file include with distribution.
 #include "efullImplicit.H"
 #include "addToRunTimeSelectionTable.H"
 #include "linear.H"
+#include "skewCorrectionVectors.H"
 #include "electronTemperature.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -94,10 +95,23 @@ Foam::scalar Foam::efullImplicit::correct
 
            eeFluxF = 2.5*plasmaConstants::boltzC*Jf;
 
+           // Potential at the face centres. Where the line between two
+           // cell centres does not pass through the face centre (faces
+           // between fine and coarse cells of a refined mesh) the
+           // interpolated value is corrected with the gradient, -E
+           surfaceScalarField PhiF(linear<scalar>(mesh()).interpolate(Phi));
+
+           const skewCorrectionVectors& skew =
+               skewCorrectionVectors::New(mesh());
+
+           if (skew.skew())
+           {
+               PhiF -= skew() & linear<vector>(mesh()).interpolate(E);
+           }
+
            jDotE.internalField() =
                Phi.internalField()*fvc::div(Jf)().internalField()
-             - fvc::div(Jf*linear<scalar>(mesh()).interpolate(Phi))()
-              .internalField();
+             - fvc::div(Jf*PhiF)().internalField();
        }
 
        // Walls with the flux-form condition: the energy flux through the
