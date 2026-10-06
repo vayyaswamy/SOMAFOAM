@@ -36,10 +36,19 @@ Description
                   by at most the fraction maxChange; when the target
                   changes from one period to the next A is also scaled by
                   the square root of the ratio (feed-forward);
-        learning  for a repeated powerTable: an amplitude is kept for each
-                  period of the table and corrected as above every time
-                  that period has been run, so that after some repetitions
-                  the power follows the table through its fast changes.
+        learning  for a repeated powerTable: an amplitude a_b is kept for
+                  each period b of the table, and the amplitude applied in
+                  that period is A = g a_b, with g a gain common to all
+                  periods. After period b has been run,
+                      a_b <- a_b (target/measured)^(learningRelaxation/n_b),
+                      g   <- g (target/measured)^(gainRelaxation/2),
+                  each by at most the fraction maxChange. n_b is the
+                  exponent of the power law P ~ A^n_b, estimated for each
+                  period from its last two runs (secant; 2 at the start,
+                  kept between 1 and 4). The amplitudes a_b learn the
+                  shape of the pulse, through its fast changes; the gain
+                  follows the slow drift of the discharge without waiting
+                  for the next repetition.
 
     The exponent 1/2 corresponds to a power proportional to the square of
     the amplitude. A is kept below amplitudeMax.
@@ -64,6 +73,8 @@ Description
         // powerTable   ((0 0.05) (2.5e-6 0.05) (2.5e-6 0.01) (5e-6 0.01));
         // powerRepeat  yes;
         // tracking     learning;   // default feedback
+        // learningRelaxation 0.8;
+        // gainRelaxation 0.1;      // 0: no common gain
         amplitude       100;        // initial amplitude [V]
         // amplitudeMax 1000;
         // waveform     harmonics;  // default sine
@@ -181,9 +192,18 @@ class rfPowerElectrode
             //- Target power of the period in progress
             scalar currentTarget_;
 
-            //- Amplitudes of the periods of a repeated power table
-            //  (tracking learning)
+            //- Tracking learning: amplitudes of the periods of a repeated
+            //  power table, the gain common to them, and for the secant
+            //  estimate of the exponent of the power law of each period
+            //  the exponent, and the amplitude and power of its last run
             scalarField learned_;
+            scalar gain_;
+            scalarField exponent_;
+            scalarField lastAmplitude_;
+            scalarField lastPower_;
+
+            scalar learningRelaxation_;
+            scalar gainRelaxation_;
 
             //- Time index of the last update of the sums
             label curTimeIndex_;

@@ -414,8 +414,13 @@ Type & Condition \\
   \kw{relaxation}, limited to the fraction \kw{maxChange}, and
   $A\leftarrow A\sqrt{P_\mathrm{new}/P_\mathrm{old}}$ when the target
   changes. \kw{tracking learning} (repeated table): one amplitude per RF
-  period of the table, corrected in the same way each time that period has
-  been run. $A\le{}$\kw{amplitudeMax}; no RF voltage where $P=0$.\newline
+  period $b$ of the table and a common gain, $A=g\,a_b$. Each time period
+  $b$ has been run, $a_b\leftarrow a_b\,(P/\langle\Phi I\rangle)^{\lambda/n_b}$
+  and $g\leftarrow g\,(P/\langle\Phi I\rangle)^{\gamma_g/2}$, with
+  $\lambda$ = \kw{learningRelaxation}, $\gamma_g$ = \kw{gainRelaxation} and
+  $n_b=\Delta\ln\langle\Phi I\rangle/\Delta\ln A$ from the last two
+  passes of that period (2 at first).
+  $A\le{}$\kw{amplitudeMax}; no RF voltage where $P=0$.\newline
   \emph{Blocking capacitor} (\kw{blockingCapacitor}): \kw{ideal},
   $V_\mathrm{dc}\leftarrow V_\mathrm{dc}-\langle I\rangle/(fC)$ every period
   ($C$ = \kw{capacitance} acts as a gain); \kw{physical},
