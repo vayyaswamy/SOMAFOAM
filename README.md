@@ -45,7 +45,7 @@ Options are set in the case dictionaries; the examples show them in use.
 | Adaptive mesh refinement (1D, 2D, 3D): `constant/dynamicMeshDict`; `rebalancePar` for parallel runs | `examples/plasma/2DAdaptiveMeshArgon` |
 | Initial fields from formulas of x, y, z: `setExpressionFields` | `examples/plasma/2DAdaptiveMeshArgon/system/setExpressionFieldsDict` |
 | Electrode voltage and current: `electrodeVoltageCurrent` function object | `system/controlDict` of the examples |
-| RF electrode at a given mean power with a blocking capacitor: `rfPowerElectrode` condition for `Phi` | `doc/manual` |
+| RF electrode at a given mean power (constant or a profile in time) with a blocking capacitor and sine, multi-harmonic or tabulated voltage waveforms: `rfPowerElectrode` condition for `Phi` | `doc/manual` |
 | Python plotting scripts | `postprocessing/README.md` |
 
 Contributors:
