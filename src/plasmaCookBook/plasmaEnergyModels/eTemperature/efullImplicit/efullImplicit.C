@@ -12,7 +12,6 @@ look for license file include with distribution.
 #include "addToRunTimeSelectionTable.H"
 #include "linear.H"
 #include "skewCorrectionVectors.H"
-#include "electronTemperature.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -114,60 +113,11 @@ Foam::scalar Foam::efullImplicit::correct
              - fvc::div(Jf*PhiF)().internalField();
        }
 
-       // Walls with the flux-form condition: the energy flux through the
-       // wall face is the energy carried by the plasma electrons that
-       // reach the wall, implicit in the temperature of the wall cell; the
-       // emitted electrons bring their energy into that cell
-       scalarField wallSource(mesh().nCells(), 0.0);
-
-       forAll(TeC.boundaryField(), patchI)
-       {
-           if (isA<electronTemperature>(TeC.boundaryField()[patchI]))
-           {
-               const electronTemperature& wall =
-                   refCast<const electronTemperature>
-                   (
-                       TeC.boundaryField()[patchI]
-                   );
-
-               const fvPatch& p = mesh().boundary()[patchI];
-
-               // Net electron flux to the wall, as in the electron equation
-               const scalarField netFlux
-               (
-                   mspm().hasFaceFlux(eIndex_)
-                 ? mspm().faceFlux(eIndex_).boundaryField()[patchI]/p.magSf()
-                 : mspm().J(eIndex_).boundaryField()[patchI] & p.nf()
-               );
-
-               eeFluxF.boundaryField()[patchI] =
-                   wall.energyFluxPerKelvin
-                   (
-                       max(netFlux + wall.emittedFlux(), scalar(0))
-                   )*p.magSf();
-
-               const scalarField emittedPower
-               (
-                   wall.emittedEnergyFlux()*p.magSf()
-               );
-
-               const unallocLabelList& faceCells = p.faceCells();
-
-               forAll(faceCells, faceI)
-               {
-                   wallSource[faceCells[faceI]] +=
-                       emittedPower[faceI]/mesh().V()[faceCells[faceI]];
-               }
-           }
-       }
-
        volScalarField eeSource = - plasmaConstants::eCharge*jDotE - mspm().electronTempSource(chemistry);
 
         volScalarField eeSource_Su = plasmaConstants::eCharge*jDotE
                                     + mspm().electronTempSource(chemistry)
                                     - mspm().dElectronTempSourceDTe(chemistry)*TeC;
-
-        eeSource_Su.internalField() -= wallSource;
 
         volScalarField eeSource_SuSp = mspm().dElectronTempSourceDTe(chemistry);
 
