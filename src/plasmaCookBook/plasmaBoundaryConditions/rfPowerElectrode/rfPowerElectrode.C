@@ -14,6 +14,7 @@ look for license file include with distribution.
 #include "foamTime.H"
 #include "volFields.H"
 #include "surfaceFields.H"
+#include "Switch.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -26,6 +27,13 @@ Foam::rfPowerElectrode::rfPowerElectrode
     fixedValueFvPatchScalarField(p, iF),
     frequency_(0),
     power_(0),
+    powerTable_(0),
+    powerRepeat_(false),
+    tracking_("feedback"),
+    waveform_("sine"),
+    harmonics_(0),
+    waveformTable_(0),
+    amplitudeMax_(GREAT),
     updateCycles_(5),
     relaxation_(0.3),
     maxChange_(0.1),
@@ -43,6 +51,9 @@ Foam::rfPowerElectrode::rfPowerElectrode
     updatePeriods_(0),
     updateTime_(0),
     updateEnergy_(0),
+    updateTarget_(0),
+    currentTarget_(-1),
+    learned_(0),
     curTimeIndex_(-1)
 {}
 
@@ -56,7 +67,14 @@ Foam::rfPowerElectrode::rfPowerElectrode
 :
     fixedValueFvPatchScalarField(p, iF),
     frequency_(readScalar(dict.lookup("frequency"))),
-    power_(readScalar(dict.lookup("power"))),
+    power_(dict.lookupOrDefault<scalar>("power", 0)),
+    powerTable_(0),
+    powerRepeat_(dict.lookupOrDefault<Switch>("powerRepeat", false)),
+    tracking_(dict.lookupOrDefault<word>("tracking", "feedback")),
+    waveform_(dict.lookupOrDefault<word>("waveform", "sine")),
+    harmonics_(0),
+    waveformTable_(0),
+    amplitudeMax_(dict.lookupOrDefault<scalar>("amplitudeMax", GREAT)),
     updateCycles_(dict.lookupOrDefault<label>("updateCycles", 5)),
     relaxation_(dict.lookupOrDefault<scalar>("relaxation", 0.3)),
     maxChange_(dict.lookupOrDefault<scalar>("maxChange", 0.1)),
@@ -74,8 +92,99 @@ Foam::rfPowerElectrode::rfPowerElectrode
     updatePeriods_(dict.lookupOrDefault<label>("updatePeriods", 0)),
     updateTime_(dict.lookupOrDefault<scalar>("updateTime", 0)),
     updateEnergy_(dict.lookupOrDefault<scalar>("updateEnergy", 0)),
+    updateTarget_(dict.lookupOrDefault<scalar>("updateTarget", 0)),
+    currentTarget_(dict.lookupOrDefault<scalar>("currentTarget", -1)),
+    learned_(0),
     curTimeIndex_(-1)
 {
+    if (dict.found("powerTable"))
+    {
+        dict.lookup("powerTable") >> powerTable_;
+    }
+
+    if (dict.found("harmonics"))
+    {
+        dict.lookup("harmonics") >> harmonics_;
+    }
+
+    if (dict.found("waveformTable"))
+    {
+        dict.lookup("waveformTable") >> waveformTable_;
+    }
+
+    if (dict.found("learned"))
+    {
+        dict.lookup("learned") >> learned_;
+    }
+
+    if
+    (
+        (waveform_ != "sine" && waveform_ != "harmonics" && waveform_ != "table")
+     || (waveform_ == "harmonics" && harmonics_.empty())
+     || (waveform_ == "table" && waveformTable_.size() < 2)
+    )
+    {
+        FatalIOErrorIn
+        (
+            "rfPowerElectrode::rfPowerElectrode(...)",
+            dict
+        )   << "waveform must be sine, harmonics (with the entry harmonics)"
+            << " or table (with the entry waveformTable)"
+            << exit(FatalIOError);
+    }
+
+    if
+    (
+        (tracking_ != "feedback" && tracking_ != "learning")
+     || (
+            tracking_ == "learning"
+         && (
+                !powerRepeat_
+             || powerTable_.size() < 2
+             || mag(powerTable_[0].first()) > SMALL
+            )
+        )
+     || (powerTable_.empty() && power_ <= 0)
+    )
+    {
+        FatalIOErrorIn
+        (
+            "rfPowerElectrode::rfPowerElectrode(...)",
+            dict
+        )   << "Need power > 0 or a powerTable; tracking must be feedback"
+            << " or learning, and learning needs a powerTable that starts"
+            << " at time 0, with powerRepeat yes"
+            << exit(FatalIOError);
+    }
+
+    if (tracking_ == "learning" && learned_.empty())
+    {
+        // One amplitude per period of the table, started from the
+        // amplitude given for the largest power of the table
+        const scalar tablePeriod = powerTable_[powerTable_.size() - 1].first();
+
+        const label nPeriods = max(1, label(tablePeriod*frequency_ + 0.5));
+
+        scalar maxPower = SMALL;
+
+        forAll(powerTable_, i)
+        {
+            maxPower = max(maxPower, powerTable_[i].second());
+        }
+
+        learned_.setSize(nPeriods);
+
+        forAll(learned_, i)
+        {
+            learned_[i] =
+                amplitude_
+               *Foam::sqrt
+                (
+                    max(targetPower((i + 0.5)/frequency_), scalar(0))/maxPower
+                );
+        }
+    }
+
     if
     (
         blockingCapacitor_ != "ideal"
@@ -94,7 +203,7 @@ Foam::rfPowerElectrode::rfPowerElectrode
 
     if
     (
-        frequency_ <= 0 || power_ <= 0 || updateCycles_ < 1
+        frequency_ <= 0 || updateCycles_ < 1
      || relaxation_ <= 0 || relaxation_ > 1 || maxChange_ <= 0
      || capacitance_ <= 0
     )
@@ -103,7 +212,7 @@ Foam::rfPowerElectrode::rfPowerElectrode
         (
             "rfPowerElectrode::rfPowerElectrode(...)",
             dict
-        )   << "Need frequency > 0, power > 0, updateCycles >= 1,"
+        )   << "Need frequency > 0, updateCycles >= 1,"
             << " 0 < relaxation <= 1, maxChange > 0 and capacitance > 0"
             << exit(FatalIOError);
     }
@@ -133,6 +242,13 @@ Foam::rfPowerElectrode::rfPowerElectrode
     fixedValueFvPatchScalarField(ptf, p, iF, mapper),
     frequency_(ptf.frequency_),
     power_(ptf.power_),
+    powerTable_(ptf.powerTable_),
+    powerRepeat_(ptf.powerRepeat_),
+    tracking_(ptf.tracking_),
+    waveform_(ptf.waveform_),
+    harmonics_(ptf.harmonics_),
+    waveformTable_(ptf.waveformTable_),
+    amplitudeMax_(ptf.amplitudeMax_),
     updateCycles_(ptf.updateCycles_),
     relaxation_(ptf.relaxation_),
     maxChange_(ptf.maxChange_),
@@ -150,6 +266,9 @@ Foam::rfPowerElectrode::rfPowerElectrode
     updatePeriods_(ptf.updatePeriods_),
     updateTime_(ptf.updateTime_),
     updateEnergy_(ptf.updateEnergy_),
+    updateTarget_(ptf.updateTarget_),
+    currentTarget_(ptf.currentTarget_),
+    learned_(ptf.learned_),
     curTimeIndex_(ptf.curTimeIndex_)
 {}
 
@@ -159,6 +278,13 @@ Foam::rfPowerElectrode::rfPowerElectrode(const rfPowerElectrode& ptf)
     fixedValueFvPatchScalarField(ptf),
     frequency_(ptf.frequency_),
     power_(ptf.power_),
+    powerTable_(ptf.powerTable_),
+    powerRepeat_(ptf.powerRepeat_),
+    tracking_(ptf.tracking_),
+    waveform_(ptf.waveform_),
+    harmonics_(ptf.harmonics_),
+    waveformTable_(ptf.waveformTable_),
+    amplitudeMax_(ptf.amplitudeMax_),
     updateCycles_(ptf.updateCycles_),
     relaxation_(ptf.relaxation_),
     maxChange_(ptf.maxChange_),
@@ -176,6 +302,9 @@ Foam::rfPowerElectrode::rfPowerElectrode(const rfPowerElectrode& ptf)
     updatePeriods_(ptf.updatePeriods_),
     updateTime_(ptf.updateTime_),
     updateEnergy_(ptf.updateEnergy_),
+    updateTarget_(ptf.updateTarget_),
+    currentTarget_(ptf.currentTarget_),
+    learned_(ptf.learned_),
     curTimeIndex_(ptf.curTimeIndex_)
 {}
 
@@ -189,6 +318,13 @@ Foam::rfPowerElectrode::rfPowerElectrode
     fixedValueFvPatchScalarField(ptf, iF),
     frequency_(ptf.frequency_),
     power_(ptf.power_),
+    powerTable_(ptf.powerTable_),
+    powerRepeat_(ptf.powerRepeat_),
+    tracking_(ptf.tracking_),
+    waveform_(ptf.waveform_),
+    harmonics_(ptf.harmonics_),
+    waveformTable_(ptf.waveformTable_),
+    amplitudeMax_(ptf.amplitudeMax_),
     updateCycles_(ptf.updateCycles_),
     relaxation_(ptf.relaxation_),
     maxChange_(ptf.maxChange_),
@@ -206,6 +342,9 @@ Foam::rfPowerElectrode::rfPowerElectrode
     updatePeriods_(ptf.updatePeriods_),
     updateTime_(ptf.updateTime_),
     updateEnergy_(ptf.updateEnergy_),
+    updateTarget_(ptf.updateTarget_),
+    currentTarget_(ptf.currentTarget_),
+    learned_(ptf.learned_),
     curTimeIndex_(ptf.curTimeIndex_)
 {}
 
@@ -225,6 +364,13 @@ void Foam::rfPowerElectrode::advance()
     {
         // First call: nothing to add yet
         cycle_ = label(floor(tLast*frequency_ + 1e-9));
+        currentTarget_ = targetPower((cycle_ + 0.5)/frequency_);
+
+        if (tracking_ == "learning")
+        {
+            amplitude_ = learned_[cycle_ % learned_.size()];
+        }
+
         return;
     }
 
@@ -261,14 +407,15 @@ void Foam::rfPowerElectrode::advance()
         return;
     }
 
+    // Target of the period that has ended and of the one that starts
+    const scalar targetDone = targetPower((cycle_ + 0.5)/frequency_);
+    const scalar targetNext = targetPower((cycleNow + 0.5)/frequency_);
+
+    const label cycleDone = cycle_;
     cycle_ = cycleNow;
 
     const scalar meanCurrent = cycleCharge_/cycleTime_;
     const scalar meanPower = cycleEnergy_/cycleTime_;
-
-    updatePeriods_++;
-    updateTime_ += cycleTime_;
-    updateEnergy_ += cycleEnergy_;
 
     if (blockingCapacitor_ == "ideal")
     {
@@ -276,36 +423,166 @@ void Foam::rfPowerElectrode::advance()
         bias_ -= meanCurrent/frequency_/capacitance_;
     }
 
-    if (updatePeriods_ >= updateCycles_)
+    if (tracking_ == "learning")
     {
-        const scalar measured = updateEnergy_/updateTime_;
+        const label n = learned_.size();
 
-        scalar factor = 1 + maxChange_;
-
-        if (measured > 0)
+        if (targetDone > 0)
         {
-            factor = pow(power_/measured, 0.5*relaxation_);
-            factor = max(min(factor, 1 + maxChange_), 1/(1 + maxChange_));
+            scalar& a = learned_[cycleDone % n];
+            a = min(a*correction(targetDone, meanPower), amplitudeMax_);
         }
 
-        amplitude_ *= factor;
-
-        updatePeriods_ = 0;
-        updateTime_ = 0;
-        updateEnergy_ = 0;
+        amplitude_ = learned_[cycleNow % n];
     }
+    else
+    {
+        if (targetDone > 0)
+        {
+            updatePeriods_++;
+            updateTime_ += cycleTime_;
+            updateEnergy_ += cycleEnergy_;
+            updateTarget_ += targetDone*cycleTime_;
+        }
+
+        if (updatePeriods_ >= updateCycles_)
+        {
+            amplitude_ *=
+                correction
+                (
+                    updateTarget_/updateTime_,
+                    updateEnergy_/updateTime_
+                );
+
+            updatePeriods_ = 0;
+            updateTime_ = 0;
+            updateEnergy_ = 0;
+            updateTarget_ = 0;
+        }
+
+        // Feed-forward for a change of the target
+        if (targetDone > 0 && targetNext > 0)
+        {
+            amplitude_ *= Foam::sqrt(targetNext/targetDone);
+        }
+
+        amplitude_ = min(amplitude_, amplitudeMax_);
+    }
+
+    currentTarget_ = targetNext;
 
     Info<< "rfPowerElectrode " << patch().name()
         << ": t " << tLast
-        << " A " << amplitude_
+        << " A " << (targetNext > 0 ? amplitude_ : 0)
         << " Vdc "
         << (blockingCapacitor_ == "physical" ? bias_ - charge_/capacitance_ : bias_)
         << " P " << meanPower
-        << " I " << meanCurrent << endl;
+        << " I " << meanCurrent
+        << " target " << targetDone << endl;
 
     cycleTime_ = 0;
     cycleCharge_ = 0;
     cycleEnergy_ = 0;
+}
+
+
+Foam::scalar Foam::rfPowerElectrode::correction
+(
+    const scalar target,
+    const scalar measured
+) const
+{
+    scalar factor = 1 + maxChange_;
+
+    if (measured > 0)
+    {
+        factor = pow(target/measured, 0.5*relaxation_);
+        factor = max(min(factor, 1 + maxChange_), 1/(1 + maxChange_));
+    }
+
+    return factor;
+}
+
+
+Foam::scalar Foam::rfPowerElectrode::interpolate
+(
+    const List<Tuple2<scalar, scalar> >& table,
+    const scalar x
+)
+{
+    const label n = table.size();
+
+    if (x <= table[0].first())
+    {
+        return table[0].second();
+    }
+
+    for (label i = 1; i < n; i++)
+    {
+        if (x <= table[i].first())
+        {
+            const scalar dx = table[i].first() - table[i - 1].first();
+
+            if (dx <= VSMALL)
+            {
+                return table[i].second();
+            }
+
+            const scalar w = (x - table[i - 1].first())/dx;
+
+            return (1 - w)*table[i - 1].second() + w*table[i].second();
+        }
+    }
+
+    return table[n - 1].second();
+}
+
+
+Foam::scalar Foam::rfPowerElectrode::targetPower(const scalar t) const
+{
+    if (powerTable_.empty())
+    {
+        return power_;
+    }
+
+    scalar tt = t;
+
+    if (powerRepeat_)
+    {
+        const scalar tablePeriod = powerTable_[powerTable_.size() - 1].first();
+
+        tt = t - tablePeriod*floor(t/tablePeriod);
+    }
+
+    return interpolate(powerTable_, tt);
+}
+
+
+Foam::scalar Foam::rfPowerElectrode::shape(const scalar t) const
+{
+    const scalar twoPi = 2*mathematicalConstant::pi;
+
+    if (waveform_ == "sine")
+    {
+        return Foam::sin(twoPi*frequency_*t);
+    }
+    else if (waveform_ == "harmonics")
+    {
+        scalar g = 0;
+
+        forAll(harmonics_, i)
+        {
+            const vector& h = harmonics_[i];
+
+            g += h.y()*Foam::sin(twoPi*h.x()*frequency_*t + h.z()*twoPi/360.0);
+        }
+
+        return g;
+    }
+
+    const scalar x = frequency_*t;
+
+    return interpolate(waveformTable_, x - floor(x));
 }
 
 
@@ -333,10 +610,15 @@ void Foam::rfPowerElectrode::updateCoeffs()
         Vdc -= charge_/capacitance_;
     }
 
+    if (currentTarget_ < 0)
+    {
+        // Restart from a field written without it
+        currentTarget_ = targetPower(runTime.value());
+    }
+
+    // No voltage in periods with zero target power
     lastVoltage_ =
-        amplitude_
-       *Foam::sin(2*mathematicalConstant::pi*frequency_*runTime.value())
-      + Vdc;
+        (currentTarget_ > 0 ? amplitude_*shape(runTime.value()) : 0) + Vdc;
 
     operator==(lastVoltage_);
 
@@ -348,7 +630,37 @@ void Foam::rfPowerElectrode::write(Ostream& os) const
 {
     fvPatchField<scalar>::write(os);
     os.writeKeyword("frequency") << frequency_ << token::END_STATEMENT << nl;
-    os.writeKeyword("power") << power_ << token::END_STATEMENT << nl;
+    if (powerTable_.empty())
+    {
+        os.writeKeyword("power") << power_ << token::END_STATEMENT << nl;
+    }
+    else
+    {
+        os.writeKeyword("powerTable")
+            << powerTable_ << token::END_STATEMENT << nl;
+        os.writeKeyword("powerRepeat")
+            << Switch(powerRepeat_) << token::END_STATEMENT << nl;
+    }
+
+    os.writeKeyword("tracking") << tracking_ << token::END_STATEMENT << nl;
+    os.writeKeyword("waveform") << waveform_ << token::END_STATEMENT << nl;
+
+    if (waveform_ == "harmonics")
+    {
+        os.writeKeyword("harmonics")
+            << harmonics_ << token::END_STATEMENT << nl;
+    }
+    else if (waveform_ == "table")
+    {
+        os.writeKeyword("waveformTable")
+            << waveformTable_ << token::END_STATEMENT << nl;
+    }
+
+    if (amplitudeMax_ < GREAT)
+    {
+        os.writeKeyword("amplitudeMax")
+            << amplitudeMax_ << token::END_STATEMENT << nl;
+    }
     os.writeKeyword("updateCycles")
         << updateCycles_ << token::END_STATEMENT << nl;
     os.writeKeyword("relaxation") << relaxation_ << token::END_STATEMENT << nl;
@@ -380,6 +692,15 @@ void Foam::rfPowerElectrode::write(Ostream& os) const
     os.writeKeyword("updateTime") << updateTime_ << token::END_STATEMENT << nl;
     os.writeKeyword("updateEnergy")
         << updateEnergy_ << token::END_STATEMENT << nl;
+    os.writeKeyword("updateTarget")
+        << updateTarget_ << token::END_STATEMENT << nl;
+    os.writeKeyword("currentTarget")
+        << currentTarget_ << token::END_STATEMENT << nl;
+
+    if (learned_.size())
+    {
+        os.writeKeyword("learned") << learned_ << token::END_STATEMENT << nl;
+    }
 
     writeEntry("value", os);
 }

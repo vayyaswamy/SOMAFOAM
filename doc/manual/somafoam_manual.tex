@@ -400,13 +400,23 @@ Type & Condition \\
   With \kw{directCurrent} the source is $A\,(1-e^{-t/\tau})$, with
   $\tau$ = \kw{rampTime} (no ramp if absent) \\[3pt]
 \kw{rfPowerElectrode} & RF electrode at a given mean power behind a
-  blocking capacitor: $\Phi=A\sin(2\pi f t)+V_\mathrm{dc}$. Every period the
-  mean current $\langle I\rangle$ and mean power
-  $\langle \Phi I\rangle$ through the patch are evaluated ($I$ is the total
-  current into the plasma). Every \kw{updateCycles} periods
-  $A\leftarrow A\,(P/\langle\Phi I\rangle)^{\gamma/2}$, with $P$ = \kw{power},
-  $\gamma$ = \kw{relaxation}, limited to the fraction \kw{maxChange}.
-  \kw{blockingCapacitor}: \kw{ideal},
+  blocking capacitor: $\Phi=A\,g(t)+V_\mathrm{dc}$.\newline
+  \emph{Waveform} $g$ (\kw{waveform}): \kw{sine}, $\sin(2\pi f t)$;
+  \kw{harmonics}, $\sum a\sin(2\pi n f t+\varphi)$ over the entries
+  $(n\;a\;\varphi)$ of \kw{harmonics}, $\varphi$ in degrees; \kw{table},
+  linear interpolation in \kw{waveformTable} over the phase $ft \bmod 1$.\newline
+  \emph{Power.} Every period the mean current $\langle I\rangle$ and mean
+  power $\langle \Phi I\rangle$ through the patch are evaluated ($I$ is the
+  total current into the plasma). The target $P$ is \kw{power}, or
+  \kw{powerTable} $((t\;P)\dots)$ interpolated in time, repeated with
+  \kw{powerRepeat}. \kw{tracking feedback}: every \kw{updateCycles} periods
+  $A\leftarrow A\,(P/\langle\Phi I\rangle)^{\gamma/2}$, with $\gamma$ =
+  \kw{relaxation}, limited to the fraction \kw{maxChange}, and
+  $A\leftarrow A\sqrt{P_\mathrm{new}/P_\mathrm{old}}$ when the target
+  changes. \kw{tracking learning} (repeated table): one amplitude per RF
+  period of the table, corrected in the same way each time that period has
+  been run. $A\le{}$\kw{amplitudeMax}; no RF voltage where $P=0$.\newline
+  \emph{Blocking capacitor} (\kw{blockingCapacitor}): \kw{ideal},
   $V_\mathrm{dc}\leftarrow V_\mathrm{dc}-\langle I\rangle/(fC)$ every period
   ($C$ = \kw{capacitance} acts as a gain); \kw{physical},
   $V_\mathrm{dc}=V_\mathrm{bias}-Q/C$ with $Q=\int I\,dt$; \kw{none},
