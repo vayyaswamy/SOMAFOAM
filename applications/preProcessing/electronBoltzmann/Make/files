@@ -1,0 +1,3 @@
+electronBoltzmann.C
+
+EXE = $(FOAM_APPBIN)/electronBoltzmann

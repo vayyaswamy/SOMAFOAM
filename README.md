@@ -46,6 +46,8 @@ Options are set in the case dictionaries; the examples show them in use.
 | Initial fields from formulas of x, y, z: `setExpressionFields` | `examples/plasma/2DAdaptiveMeshArgon/system/setExpressionFieldsDict` |
 | Electrode voltage and current: `electrodeVoltageCurrent` function object | `system/controlDict` of the examples |
 | RF electrode at a given mean power (constant or a profile in time) with a blocking capacitor and sine, multi-harmonic or tabulated voltage waveforms: `rfPowerElectrode` condition for `Phi` | `doc/manual` |
+| Electron transport and rate tables from cross sections (LXCat format), two-term or Monte Carlo: `electronBoltzmann` | header of `applications/preProcessing/electronBoltzmann/electronBoltzmann.C` |
+| Ion energy and angular distributions at the walls from the fields of a run (Monte Carlo ion tracking): `ionTracker` | header of `applications/postProcessing/ionTracker/ionTracker.C` |
 | Python plotting scripts | `postprocessing/README.md` |
 
 Contributors:
