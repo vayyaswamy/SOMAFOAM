@@ -143,10 +143,11 @@ Foam::lduSolverPerformance Foam::bicgStabSolver::solve
             // Update search directions
             rho = gSumProd(rw, r);
 
-            beta = rho/rhoOld*(alpha/omega);
-
-            // Restart if breakdown occurs
-            if (rho == 0)
+            // Restart if breakdown occurs. omega is zero after a restart,
+            // or when the first half of the previous iteration already
+            // reduced the residual to zero (see below); alpha/omega must
+            // not be formed then
+            if (rho == 0 || omega == 0)
             {
                 rw = r;
                 rho = gSumProd(rw, r);
@@ -154,6 +155,10 @@ Foam::lduSolverPerformance Foam::bicgStabSolver::solve
                 alpha = 0;
                 omega = 0;
                 beta = 0;
+            }
+            else
+            {
+                beta = rho/rhoOld*(alpha/omega);
             }
 
             // The residual is exactly zero: the solution cannot be improved
@@ -170,7 +175,36 @@ Foam::lduSolverPerformance Foam::bicgStabSolver::solve
             // Execute preconditioning
             preconPtr_->precondition(ph, p, cmpt);
             matrix_.Amul(v, ph, coupleBouCoeffs_, interfaces_, cmpt);
-            alpha = rho/gSumProd(rw, v);
+            const scalar rwv = gSumProd(rw, v);
+
+            // Breakdown: restart with the current residual as the shadow
+            // residual, once per iteration
+            if (rwv == 0)
+            {
+                rw = r;
+                rho = gSumProd(rw, r);
+
+                forAll (p, i)
+                {
+                    p[i] = r[i];
+                }
+
+                preconPtr_->precondition(ph, p, cmpt);
+                matrix_.Amul(v, ph, coupleBouCoeffs_, interfaces_, cmpt);
+
+                const scalar rwvRestart = gSumProd(rw, v);
+
+                if (rwvRestart == 0)
+                {
+                    break;
+                }
+
+                alpha = rho/rwvRestart;
+            }
+            else
+            {
+                alpha = rho/rwv;
+            }
 
             forAll (s, i)
             {
