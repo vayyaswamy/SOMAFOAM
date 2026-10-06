@@ -9,12 +9,36 @@ look for license file include with distribution.
 
 #include "refinementIndicators.H"
 #include "volFields.H"
+#include "fvcGrad.H"
 #include "PtrList.H"
 
 // * * * * * * * * * * * * * * * Local Functions * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+
+//- Size of the cells in the directions that the mesh resolves: the volume
+//  divided by the extent in the empty directions, to the power one over the
+//  number of resolved directions
+tmp<scalarField> cellSize(const fvMesh& mesh)
+{
+    const Vector<label>& directions = mesh.geometricD();
+
+    const vector span(mesh.bounds().span());
+
+    scalar thickness = 1;
+
+    for (direction cmpt = 0; cmpt < vector::nComponents; cmpt++)
+    {
+        if (directions[cmpt] == -1)
+        {
+            thickness *= span[cmpt];
+        }
+    }
+
+    return pow(mesh.V().field()/thickness, 1.0/mesh.nGeometricD());
+}
+
 
 //- Add the contribution of one field to the indicator (maximum is kept)
 template<class Type>
@@ -39,7 +63,24 @@ void addIndicator
                 max(indicator[cellI], weight*mag(f[cellI])/scale);
         }
     }
-    else if (type == "relativeGradient" || type == "gradient")
+    else if (type == "relativeGradient")
+    {
+        // Cell size times the gradient relative to the value: the cell
+        // size over the local scale length of the field
+        const scalarField magGrad(mag(fvc::grad(fld))().internalField());
+
+        const scalarField h(cellSize(mesh));
+
+        forAll(f, cellI)
+        {
+            indicator[cellI] = max
+            (
+                indicator[cellI],
+                weight*h[cellI]*magGrad[cellI]/(mag(f[cellI]) + floor + VSMALL)
+            );
+        }
+    }
+    else if (type == "gradient")
     {
         const unallocLabelList& own = mesh.owner();
         const unallocLabelList& nei = mesh.neighbour();
@@ -49,18 +90,7 @@ void addIndicator
             const label a = own[faceI];
             const label b = nei[faceI];
 
-            scalar value = mag(f[a] - f[b]);
-
-            if (type == "relativeGradient")
-            {
-                value /= 0.5*(mag(f[a]) + mag(f[b])) + floor + VSMALL;
-            }
-            else
-            {
-                value /= scale;
-            }
-
-            value *= weight;
+            const scalar value = weight*mag(f[a] - f[b])/scale;
 
             indicator[a] = max(indicator[a], value);
             indicator[b] = max(indicator[b], value);

@@ -344,19 +344,25 @@ per advance is limited by \kw{maxChangeFactor} and \kw{relaxation}.
 \subsection{Adaptive mesh refinement}
 
 Cells are refined where an indicator exceeds \kw{lowerRefineLevel} and merged
-where it is below \kw{unrefineLevel}. The indicator is the maximum over the
-listed entries, each evaluated between neighbouring cells 1 and 2:
+where it is below \kw{unrefineLevel}. The indicator of a cell is the maximum
+over the listed entries:
 \begin{center}
 \begin{tabular}{@{}ll@{}}
 \toprule
 \kw{type} & Value \\
 \midrule
-\kw{relativeGradient} & $|f_1-f_2|\,/\,\big(\tfrac12(|f_1|+|f_2|)+\kw{floor}\big)$ \\
-\kw{gradient} & $|f_1-f_2|/\kw{scale}$ \\
+\kw{relativeGradient} & $h\,|\nabla f|\,/\,\big(|f|+\kw{floor}\big)$ \\
+\kw{gradient} & $|f_1-f_2|/\kw{scale}$ between neighbouring cells 1 and 2 \\
 \kw{magnitude} & $|f|/\kw{scale}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+Here $h$ is the size of the cell. With $L=|f|/|\nabla f|$ the local scale
+length of the field, \kw{relativeGradient} is $h/L$: a cell is refined when
+it is larger than \kw{lowerRefineLevel} times the scale length, and each
+level halves $h$. The \kw{floor} keeps regions where $f$ is negligible from
+being refined.
+
 1D meshes use \kw{dynamicRefine1DFvMesh}; 2D and 3D meshes use
 \kw{dynamicPolyRefinementFvMesh} with the \kw{plasmaIndicatorRefinement}
 selection. Merged cells take the volume average of the fields.

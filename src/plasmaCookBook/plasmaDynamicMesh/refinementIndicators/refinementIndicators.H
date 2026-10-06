@@ -13,10 +13,10 @@ Description
     mesh classes. The indicator of a cell is the maximum over the entries of
     weight*value, with value depending on the entry type:
 
-        relativeGradient  jump between neighbouring cells relative to their
-                          mean, |f1 - f2|/(0.5(|f1| + |f2|) + floor);
-                          the relative gradient times the cell size
-        gradient          |f1 - f2|/scale
+        relativeGradient  h |grad f|/(|f| + floor): the gradient relative to
+                          the value, times the size h of the cell, i.e. the
+                          cell size over the local scale length of f
+        gradient          jump between neighbouring cells, |f1 - f2|/scale
         magnitude         |f|/scale
 
     for any volScalarField or volVectorField f of the mesh:
