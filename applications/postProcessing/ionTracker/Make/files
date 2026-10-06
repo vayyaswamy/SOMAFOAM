@@ -1,0 +1,3 @@
+ionTracker.C
+
+EXE = $(FOAM_APPBIN)/ionTracker
