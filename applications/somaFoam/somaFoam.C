@@ -163,8 +163,12 @@ int main(int argc, char *argv[])
             // Adaptive mesh refinement: the fields are mapped onto the new
             // mesh, and the Poisson equation below is solved on it before
             // the plasma equations use the electric field
+            #include "prolongStore.H"
+
             if (mesh.update())
             {
+                #include "prolongApply.H"
+
                 Info<< "Mesh changed: "
                     << returnReduce(mesh.nCells(), sumOp<label>())
                     << " cells" << endl;
