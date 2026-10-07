@@ -1,5 +1,7 @@
 EXE_INC = \
+    -fopenmp \
     -I$(LIB_SRC)/finiteVolume/lnInclude
 
 EXE_LIBS = \
+    -fopenmp \
     -lfiniteVolume
