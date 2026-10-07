@@ -5,6 +5,7 @@
 \usepackage{amsmath,booktabs,array,longtable,enumitem,xcolor}
 \usepackage[hidelinks]{hyperref}
 \usepackage{listings}
+\usepackage{graphicx}
 \lstset{basicstyle=\ttfamily\small,columns=fullflexible,frame=single,
   showstringspaces=false,keepspaces=true,framesep=4pt,xleftmargin=6pt,xrightmargin=6pt,breaklines=true}
 \newcommand{\kw}[1]{\texttt{#1}}
@@ -45,8 +46,12 @@ The worked case is \kw{examples/plasma/HeliumIonDistribution}: a
 one-dimensional helium discharge, 6.7\,cm gap, $3.21\times10^{22}$\,m$^{-3}$
 (133\,Pa) at 300\,K, 120\,V at 13.56\,MHz, absorbing electrodes without
 secondary emission. These are the conditions of case 4 of Turner
-\emph{et al.}, Phys.\ Plasmas \textbf{20}, 013507 (2013). \kw{./Allrun} runs
-all the steps. The sections below follow that script and say what to change.
+\emph{et al.}, Phys.\ Plasmas \textbf{20}, 013507 (2013), a benchmark
+for particle-in-cell codes. After \kw{source <SOMAFOAM>/etc/bashrc},
+\kw{./Allrun} runs all the steps (about seven hours on one core, nearly all
+in step 2) and \kw{./caseClean} removes the results. Sections 3 to 5 follow
+that script, section 6 says what to change for other conditions, and
+section 8 gives the results of the example.
 
 \section{Files of the case}
 
@@ -75,6 +80,17 @@ File & Contents \\
 \kw{system/setExpressionFieldsDict} & initial density profile \\
 \kw{system/controlDict} & time step, run length, output \\
 \kw{system/ionTrackerDict} & step 3 \\
+\kw{Allrun}, \kw{caseClean} & run all the steps; remove the results \\
+\kw{warpx/inputs} & input of the particle-in-cell code WarpX for the same
+  case (section 8) \\
+\midrule
+\multicolumn{2}{@{}l}{Written by step 1:} \\
+\kw{constant/mu\_electron}, \kw{D\_electron} & electron mobility and
+  diffusion coefficient times the gas density, against $T_e$ [K] \\
+\kw{constant/reaction\_elastic}, \kw{\_exc1}, \kw{\_exc2}, \kw{\_ion} &
+  rate coefficients against $T_e$ [K] \\
+\kw{constant/boltzmann/} & all the results against $E/N$, and the energy
+  distributions \\
 \bottomrule
 \end{longtable}
 
@@ -125,11 +141,12 @@ somaFoam
 
 \textbf{Run length.} The densities settle on the ambipolar diffusion time,
 which is thousands of RF periods at this pressure. The example starts from a
-cosine profile near the expected density and runs 6000 periods. Check that
-the run has settled before step 3:
+cosine profile near the expected density (\kw{setExpressionFieldsDict}) and
+runs 6000 periods of 250 time steps; the mid-plane density is steady to
+0.1\,\% after about 4000. Check that the run has settled before step 3:
 
 \begin{lstlisting}
-postprocessing/plot_1d.py . --fields N_Hep1Mean TeMean --history
+<SOMAFOAM>/postprocessing/plot_1d.py . --fields N_Hep1Mean TeMean --history
 \end{lstlisting}
 
 \textbf{Phase-resolved output.} \kw{ionTracker} needs the fields \kw{E},
@@ -153,10 +170,14 @@ The number of time steps per period must be a multiple of \kw{nPhases}.
 \begin{lstlisting}
 ion             Hep1;
 ionMass         4.002602;           // amu
-startTime       4.4247788e-04;      // first of the nPhases outputs
-period          7.3746312684e-08;
+charge          1;
+electricField   E;
+gasDensity      He;
+gasTemperature  T;
+startTime       4.4247788e-04;      // first of the nPhases outputs (set by Allrun)
+period          7.3746312684e-08;   // 1/13.56 MHz
 nPhases         50;
-source          fluxDivergence;
+source          fluxDivergence;     // needs J_Hep1 in the outputs
 launch          sheath;             // track the sheaths only
 nParticles      100000;
 nThreads        4;
@@ -164,7 +185,7 @@ patches         (electrode ground);
 crossSections   LXCat;
 file            "constant/He+_He.txt";
 energyFrame     centreOfMass;       // frame of the energies of the file
-maxCollisionEnergy 300;
+maxCollisionEnergy 300;             // eV
 writeParticles  yes;
 \end{lstlisting}
 
@@ -259,7 +280,9 @@ mobility 10.2\,cm$^2$/Vs at 10\,Td).
 \item \textbf{Steady state}: the period averages no longer change between
   outputs.
 \item \textbf{Time step}: the example uses 250 steps per period. Repeat the
-  last periods with a smaller step and compare the density.
+  last periods with a smaller step and compare the density (this has not
+  been done for the example; in the 1\,Torr argon example at 40\,MHz a five
+  times larger step changed the peak density by 8\,\%).
 \item \textbf{Mesh}: several cells across the sheath; with
   \kw{fluxScheme scharfetterGummel} the 1\,Torr argon example is converged
   to about 1\,\% with 200 cells.
@@ -272,6 +295,89 @@ mobility 10.2\,cm$^2$/Vs at 10\,Td).
 \item \textbf{Threads}: the scored ions are the same for any \kw{nThreads}.
 \end{itemize}
 
+\section{Results of the example and comparison with a particle-in-cell
+simulation}
+
+\textbf{Fluid solution.} The published benchmark values are from five
+particle-in-cell codes that agree with each other to 0.5\,\%.
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & fluid (\kw{somaFoam}) & benchmark & difference \\
+\midrule
+Ion density at the mid-plane [$10^{15}$\,m$^{-3}$] & 1.70 & 2.57 & $-34$\,\% \\
+Electron temperature at the mid-plane [eV] & 4.34 & 3.65 & $+19$\,\% \\
+Ion current at each electrode [A/m$^2$] & 0.268 & 0.186 & $+44$\,\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The fluid model, with rate and transport coefficients against the local
+electron temperature, is far from the kinetic solution of the bulk plasma at
+this pressure.
+
+\textbf{Particle-in-cell run.} \kw{warpx/inputs} runs the same case with
+WarpX (version 26.10), with the same cross sections: 512 cells and 3200 steps
+per period as in the benchmark, but 20 particles per cell of variable weight,
+a cosine initial density and 2500 periods, three runs with different seeds.
+The ion current at the electrodes, 0.185\,A/m$^2$, agrees with the benchmark
+and is steady from period 250. The mid-plane density (3.2 and still rising at
+the end) and electron temperature (2.7\,eV) do not: this run is not a
+reference for the bulk plasma, probably for lack of particles. Its ions at
+the electrodes (65\,000, both electrodes, after period 1400) are compared
+below with \kw{ionTracker} run on the field of the particle-in-cell run
+(8 phases of the period, average of the last 32 periods) and on the field
+of the fluid solution.
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+At the electrodes & PIC-MCC & \kw{ionTracker}, & \kw{ionTracker}, \\
+ & (WarpX) & PIC field & fluid field \\
+\midrule
+Mean energy [eV] & 3.07 & 2.98 & 3.20 \\
+Median energy [eV] & 1.92 & 1.87 & 2.05 \\
+90\,\% / 99\,\% of the ions below [eV] & 7.5 / 15.2 & 7.2 / 14.7 & 7.7 / 15.9 \\
+Mean angle to the normal [deg] & 11.7 & 11.7 & 11.5 \\
+Median angle [deg] & 7.7 & 7.8 & 7.6 \\
+Within 10$^\circ$ of the normal & 60.4\,\% & 59.7\,\% & 61.1\,\% \\
+Beyond 30$^\circ$ & 8.1\,\% & 8.1\,\% & 7.8\,\% \\
+Difference of the histograms from PIC-MCC, & & & \\
+\quad energy / angle & -- & 1.1\,\% / 1.0\,\% & 2.4\,\% / 1.3\,\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.86\textwidth]{fig_helium_comparison.pdf}
+\caption{Example case. (a) Period-averaged ion density. (b) Energy and (c)
+angular distributions of the He$^+$ ions at the electrodes. (d) Mean angle
+against energy.}
+\end{figure}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt]
+\item On the same field, \kw{ionTracker} and the particle-in-cell code agree
+  within the statistical error of the histograms (about 1.4\,\%).
+\item On the fluid field the energies are about 4\,\% higher (the
+  period-averaged field at the wall is 22.0\,kV/m against 20.1\,kV/m), and
+  the angles agree, although the density and the ion current of the fluid
+  solution are far off: in this collisional sheath the distributions are set
+  by the sheath field and the mean free path.
+\item The ion flux, and with it the absolute scale of the distributions, is
+  that of the fluid solution: 44\,\% too high here.
+\item Both codes use the same model of ion--neutral scattering: the
+  comparison does not test it.
+\item For the run on the particle-in-cell field the profile of the ion source
+  was estimated from the electrons at two phases of the period.
+\end{itemize}
+
+\textbf{Cost.} Step 1: 8\,s (3 threads). Step 2: about 6.5\,h on one core
+(1.5 million time steps of 15\,ms, 256 cells). Step 3: 100\,000 ions in
+6\,min on one thread; the tracked layer was 7\,mm thick. The
+particle-in-cell runs took 16\,h each.
+
 \section{What has been verified, and limits}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=1pt]
@@ -282,10 +388,14 @@ mobility 10.2\,cm$^2$/Vs at 10\,Td).
   integration; energy and angle with isotropic scattering in a uniform field
   against an independent Monte Carlo calculation; the Davis--Vanderslice
   distribution of a collisional sheath; ion mobilities in argon and helium.
-\item A comparison of the whole chain with a particle-in-cell simulation of
-  the example case is not yet available.
+\item \kw{ionTracker} against a particle-in-cell simulation of the example
+  case, for the energy and angular distributions in a collisional RF sheath
+  (section 8). The particle-in-cell run did not reproduce the bulk plasma of
+  the benchmark; a comparison of the whole chain with a converged run is not
+  available.
 \item The ions follow the field of the fluid solution: an error of the fluid
-  model in the sheath voltage or thickness goes into the distributions.
+  model in the sheath voltage or thickness goes into the distributions, and
+  the ion flux is that of the fluid solution.
   Rates and transport against the local electron temperature are an
   approximation at low pressure, where the electrons are not in equilibrium
   with the local field.
