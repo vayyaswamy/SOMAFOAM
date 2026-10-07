@@ -1,0 +1,32 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      ionTrackerDict;
+}
+
+ion             Hep1;
+ionMass         4.002602;           // [amu]
+charge          1;
+electricField   E;
+gasDensity      He;
+gasTemperature  T;
+
+startTime       4.4247788e-04;      // first of the nPhases outputs (set by Allrun)
+period          7.3746312684e-08;   // 1/13.56 MHz
+nPhases         50;
+
+source          fluxDivergence;     // needs J_Hep1 in the outputs
+launch          sheath;             // track the sheaths only
+nParticles      100000;
+nThreads        4;
+patches         (electrode ground);
+
+crossSections   LXCat;
+file            "constant/He+_He.txt";
+energyFrame     centreOfMass;       // of the energies of the file
+maxCollisionEnergy 300;             // [eV] above the largest ion energy
+
+writeParticles  yes;

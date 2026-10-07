@@ -1,0 +1,45 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      reactions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+species
+(
+	electron
+	Hep1
+	He
+);
+
+reactions
+(
+        electronImpactElasticTabularReaction
+        electron + He = electron + He
+        ("$FOAM_CASE/constant/reaction_elastic")
+
+        electronImpactInelasticTabularReaction
+        electron + He = electron + He
+        ("$FOAM_CASE/constant/reaction_exc1")
+        (3.175514e-18)
+
+        electronImpactInelasticTabularReaction
+        electron + He = electron + He
+        ("$FOAM_CASE/constant/reaction_exc2")
+        (3.302086e-18)
+
+        electronImpactInelasticTabularReaction
+        electron + He = electron + electron + Hep1
+        ("$FOAM_CASE/constant/reaction_ion")
+        (3.939272e-18)
+);

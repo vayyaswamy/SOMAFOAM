@@ -1,0 +1,27 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      boltzmannDict;
+}
+
+file            "constant/He_electron.txt";
+gases           ((He 1.0));
+gasTemperature  300;
+reducedField    { min 0.001; max 300; n 111; }
+nEnergyCells    600;
+nThreads        3;
+
+tables
+{
+    mobility    "constant/mu_electron";
+    diffusion   "constant/D_electron";
+    rates
+    (
+        ("constant/reaction_elastic" 0)
+        ("constant/reaction_exc1" 1)
+        ("constant/reaction_exc2" 2)
+        ("constant/reaction_ion" 3)
+    );
+}
