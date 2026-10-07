@@ -1,0 +1,64 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default 		Euler;
+}
+
+gradSchemes
+{
+    default         Gauss linear;
+}
+
+divSchemes
+{
+    default         Gauss linear;
+//    div(F,Yi)       Gauss limitedLinear01 1;
+    div(F,Ni)       Gauss limitedLinear 1;
+
+    div((interpolate(eeFlux)&S),Te)  Gauss limitedLinear 1;
+    div(F_electron)   Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         none;
+	laplacian(eps,Phi)	Gauss linear orthogonal;
+	laplacian(eps0,Phi)	Gauss linear orthogonal;
+	laplacian(D,Yi)	Gauss linear orthogonal;
+	laplacian(eC,Te)	Gauss linear orthogonal;
+	laplacian(D,T)	Gauss linear orthogonal;
+	laplacian(D,Ni)	Gauss linear orthogonal;
+	laplacian(D,Nin)	Gauss linear orthogonal;
+}
+
+interpolationSchemes
+{
+    default                linear;
+}
+
+snGradSchemes
+{
+    default         orthogonal;
+}
+
+fluxRequired
+{
+    default         no;
+}
+
+// ************************************************************************* //

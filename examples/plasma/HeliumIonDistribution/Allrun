@@ -1,0 +1,24 @@
+#!/bin/sh
+# Electron tables -> fluid solution -> ion distributions at the electrodes.
+# See doc/manual/ion_distribution_workflow.pdf
+cd ${0%/*} || exit 1
+
+blockMesh > log.blockMesh 2>&1 || exit 1
+setExpressionFields > log.setExpressionFields 2>&1 || exit 1
+
+# 1 and 2: somaFoam runs electronBoltzmann first ("electronBoltzmann yes;"
+# in constant/plasmaProperties), then the discharge to the periodic state
+somaFoam > log.somaFoam 2>&1 || exit 1
+
+# 3: one more period with the fields written at 50 phases
+cp system/controlDict system/controlDict.run
+start=$(ls -d [0-9]* | sort -g | tail -1)
+sed -i -e "s/^startFrom .*/startFrom       latestTime;/" \
+       -e "s/^endTime .*/endTime         $(echo "$start" | awk '{printf "%.10e", $1 + 7.3746312684e-08}');/" \
+       -e "s/^writeInterval .*/writeInterval   5;/" system/controlDict
+somaFoam > log.somaFoam.period 2>&1 || exit 1
+cp system/controlDict.run system/controlDict
+
+# 4: ion energy and angular distributions
+sed -i "s/^startTime .*/startTime       $start;/" system/ionTrackerDict
+ionTracker > log.ionTracker 2>&1 || exit 1

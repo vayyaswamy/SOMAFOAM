@@ -1,0 +1,24 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setExpressionFieldsDict;
+}
+
+// Initial densities close to the steady state, to shorten the run
+
+variables
+{
+    L           0.067;      // gap [m]
+    nWall       3.84e14;    // [1/m3]
+    nCentre     2.2e15;
+    profile     "nWall + nCentre*cos(3.14159265*(x - 0.5*L)/L)";
+}
+
+fields
+{
+    electron    "profile";
+    Hep1        "profile";
+}
