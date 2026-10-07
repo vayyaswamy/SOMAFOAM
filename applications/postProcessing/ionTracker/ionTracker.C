@@ -69,6 +69,16 @@ Description
     nEnergyBins     200;
     nAngleBins      90;
     // maxEnergy    50;         // [eV]; default: the largest energy scored
+    launch          volume;     // ions start where they are produced; or
+    // launch       sheath;     // only the layer next to the patches is
+    //                          // tracked: ions enter it with the flux and
+    //                          // drift velocity of the fluid solution and
+    //                          // are sent back if they leave it
+    //     launchDistance 2e-3; // thickness of the layer [m]; by default
+    //                          // the sheath (charge separation above
+    //                          // sheathThreshold 0.1 at some phase) and
+    //                          // launchMargin 5 mean free paths
+    // nThreads        1;
     writeParticles  no;         // list of all scored ions
     seed            1234;
     \endverbatim
@@ -87,7 +97,7 @@ Description
 
 #include "fvCFD.H"
 #include "ionParticle.H"
-#include "Random.H"
+#include <omp.h>
 #include "OFstream.H"
 #include "IFstream.H"
 #include "IStringStream.H"
@@ -457,8 +467,59 @@ public:
 };
 
 
+//- Random numbers of one ion (xorshift64*): each ion has its own sequence,
+//  so that the results do not depend on the number of threads
+class trackerRandom
+{
+    unsigned long long state_;
+
+public:
+
+    trackerRandom(const label seed, const label index)
+    :
+        state_
+        (
+            0x9E3779B97F4A7C15ULL
+           *(2*static_cast<unsigned long long>(seed) + 1)
+          + 0xD1B54A32D192ED03ULL
+           *(static_cast<unsigned long long>(index) + 1)
+        )
+    {
+        if (state_ == 0)
+        {
+            state_ = 0x9E3779B97F4A7C15ULL;
+        }
+
+        for (label i = 0; i < 20; i++)
+        {
+            scalar01();
+        }
+    }
+
+    //- Uniform in (0, 1)
+    scalar scalar01()
+    {
+        state_ ^= state_ >> 12;
+        state_ ^= state_ << 25;
+        state_ ^= state_ >> 27;
+
+        return
+            ((state_*0x2545F4914F6CDD1DULL >> 11) + 0.5)
+           /9007199254740992.0;
+    }
+
+    //- Normal distribution of unit variance
+    scalar GaussNormal()
+    {
+        return
+            Foam::sqrt(-2*Foam::log(scalar01()))
+           *Foam::cos(2*mathematicalConstant::pi*scalar01());
+    }
+};
+
+
 //- Random unit vector
-vector randomDirection(Random& rndGen)
+vector randomDirection(trackerRandom& rndGen)
 {
     const scalar cosTheta = 2*rndGen.scalar01() - 1;
     const scalar sinTheta = Foam::sqrt(max(1 - sqr(cosTheta), 0.0));
@@ -539,7 +600,36 @@ int main(int argc, char *argv[])
         dict.lookupOrDefault<Switch>("writeParticles", false)
     );
 
-    Random rndGen(dict.lookupOrDefault<label>("seed", 1234));
+    const label seed = dict.lookupOrDefault<label>("seed", 1234);
+    const label nThreads = max(dict.lookupOrDefault<label>("nThreads", 1), 1);
+
+    // Where the ions start: volume (where they are produced), or sheath
+    // (only the layer within launchDistance of the patches is tracked)
+    const word launch(dict.lookupOrDefault<word>("launch", "volume"));
+
+    if (launch != "volume" && launch != "sheath")
+    {
+        FatalIOErrorIn(args.executable().c_str(), dict)
+            << "launch must be volume or sheath" << exit(FatalIOError);
+    }
+
+    const bool sheathLaunch = (launch == "sheath");
+
+    if (sheathLaunch && sourceType != "fluxDivergence")
+    {
+        FatalIOErrorIn(args.executable().c_str(), dict)
+            << "launch sheath needs source fluxDivergence"
+            << exit(FatalIOError);
+    }
+
+    scalar launchDistance = dict.lookupOrDefault<scalar>("launchDistance", -1);
+    const scalar sheathThreshold =
+        dict.lookupOrDefault<scalar>("sheathThreshold", 0.1);
+    const scalar launchMargin = dict.lookupOrDefault<scalar>("launchMargin", 5);
+    const word electronName
+    (
+        dict.lookupOrDefault<word>("electronDensity", "electron")
+    );
 
 
     // Fields of one period
@@ -550,6 +640,14 @@ int main(int argc, char *argv[])
     PtrList<volTensorField> gradEFields(nPhases);
 
     scalarField source(mesh.nCells(), 0.0);
+
+    // For launch sheath: period means of the ion flux through the faces,
+    // of the ion flux density and of the ion density, and the largest
+    // relative charge separation of the period
+    scalarField meanFaceFlux(mesh.nInternalFaces(), 0.0);
+    vectorField meanJ(mesh.nCells(), vector::zero);
+    scalarField meanDensity(mesh.nCells(), 0.0);
+    scalarField separation(mesh.nCells(), 0.0);
 
     Info<< "Reading " << EName << " at " << nPhases << " phases of the period"
         << " from " << startTime << " s" << endl;
@@ -638,6 +736,55 @@ int main(int argc, char *argv[])
             );
 
             source += fvc::div(J)().internalField()/nPhases;
+
+            if (sheathLaunch)
+            {
+                meanFaceFlux +=
+                    (fvc::interpolate(J) & mesh.Sf())().internalField()
+                   /nPhases;
+
+                meanJ += J.internalField()/nPhases;
+
+                const volScalarField ni
+                (
+                    IOobject
+                    (
+                        ionName,
+                        runTime.timeName(),
+                        mesh,
+                        IOobject::MUST_READ,
+                        IOobject::NO_WRITE,
+                        false
+                    ),
+                    mesh
+                );
+
+                meanDensity += ni.internalField()/nPhases;
+
+                if (launchDistance < 0)
+                {
+                    const volScalarField ne
+                    (
+                        IOobject
+                        (
+                            electronName,
+                            runTime.timeName(),
+                            mesh,
+                            IOobject::MUST_READ,
+                            IOobject::NO_WRITE,
+                            false
+                        ),
+                        mesh
+                    );
+
+                    separation = max
+                    (
+                        separation,
+                        (ni.internalField() - ne.internalField())
+                       /max(ni.internalField(), SMALL)
+                    );
+                }
+            }
         }
         else
         {
@@ -709,34 +856,6 @@ int main(int argc, char *argv[])
     );
 
 
-    // Source: ions per second in each cell, and its cumulative distribution
-
-    const scalarField& V = mesh.V();
-
-    source = max(source, scalar(0));
-
-    scalarField cumulative(mesh.nCells());
-    scalar ionsPerSecond = 0;
-
-    forAll(source, cellI)
-    {
-        ionsPerSecond += source[cellI]*V[cellI];
-        cumulative[cellI] = ionsPerSecond;
-    }
-
-    if (ionsPerSecond <= 0)
-    {
-        FatalErrorIn(args.executable())
-            << "The source " << sourceType << " is nowhere positive"
-            << exit(FatalError);
-    }
-
-    cumulative /= ionsPerSecond;
-
-    // What one tracked ion stands for [1/s] (for source fluxDivergence)
-    const scalar weight = ionsPerSecond/nParticles;
-
-
     // Geometry
 
     const Vector<label>& directions = mesh.geometricD();
@@ -764,7 +883,7 @@ int main(int argc, char *argv[])
                 );
             }
 
-            cellSize[cellI] = V[cellI]/maxArea;
+            cellSize[cellI] = mesh.V()[cellI]/maxArea;
         }
     }
 
@@ -781,6 +900,177 @@ int main(int argc, char *argv[])
                 << mesh.boundaryMesh().names() << exit(FatalError);
         }
     }
+
+
+    // Launch: ions per second of each launch site (a cell, or a face of
+    // the surface of the tracked layer), and the cumulative distribution
+
+    const scalarField& V = mesh.V();
+
+    source = max(source, scalar(0));
+
+    // Distance of the cells from the patches
+    scalarField patchDistance(mesh.nCells(), GREAT);
+
+    forAll(patchIDs, i)
+    {
+        const polyPatch& pp = mesh.boundaryMesh()[patchIDs[i]];
+
+        forAll(pp, faceI)
+        {
+            const label face = pp.start() + faceI;
+
+            vector n = mesh.faceAreas()[face];
+            n /= mag(n);
+
+            const vector& Cf = mesh.faceCentres()[face];
+            const scalar size = Foam::sqrt(mag(mesh.faceAreas()[face]));
+
+            forAll(patchDistance, cellI)
+            {
+                const vector d = mesh.cellCentres()[cellI] - Cf;
+
+                // Distance from the plane of the face, for the cells in
+                // front of it; from its centre otherwise
+                vector tangential = d - (d & n)*n;
+
+                for (direction cmpt = 0; cmpt < vector::nComponents; cmpt++)
+                {
+                    if (directions[cmpt] != 1)
+                    {
+                        tangential[cmpt] = 0;
+                    }
+                }
+
+                patchDistance[cellI] = min
+                (
+                    patchDistance[cellI],
+                    mag(tangential) < size ? mag(d & n) : mag(d)
+                );
+            }
+        }
+    }
+
+    // Mean free path of a slow ion
+    const scalar freePath =
+        1
+       /(
+            gMax(gasDensity.internalField())
+           *(sigma.isotropic(0.1) + sigma.chargeExchange(0.1))
+        );
+
+    // Cells that are tracked
+    boolList tracked(mesh.nCells(), true);
+
+    if (sheathLaunch)
+    {
+        if (launchDistance < 0)
+        {
+            // The sheath: where the charge separation of some phase is
+            // above the threshold, in the half of the domain nearest to
+            // the patches
+            const scalar farthest = max(patchDistance);
+
+            scalar sheath = 0;
+
+            forAll(separation, cellI)
+            {
+                if
+                (
+                    separation[cellI] > sheathThreshold
+                 && patchDistance[cellI] < 0.5*farthest
+                )
+                {
+                    sheath = max(sheath, patchDistance[cellI]);
+                }
+            }
+
+            launchDistance =
+                min(sheath + launchMargin*freePath, 0.9*farthest);
+
+            Info<< "Sheath (charge separation above " << sheathThreshold
+                << "): up to " << sheath << " m from the patches; mean free"
+                << " path " << freePath << " m" << endl;
+        }
+
+        forAll(tracked, cellI)
+        {
+            tracked[cellI] = (patchDistance[cellI] <= launchDistance);
+        }
+
+        Info<< "Ions are tracked within " << launchDistance
+            << " m of the patches" << endl;
+    }
+
+    DynamicList<label> siteCell;
+    DynamicList<label> siteFace;
+    DynamicList<scalar> siteRate;
+
+    scalar volumeRate = 0;
+    scalar surfaceRate = 0;
+
+    forAll(source, cellI)
+    {
+        if (tracked[cellI] && source[cellI] > 0)
+        {
+            siteCell.append(cellI);
+            siteFace.append(-1);
+            siteRate.append(source[cellI]*V[cellI]);
+
+            volumeRate += source[cellI]*V[cellI];
+        }
+    }
+
+    if (sheathLaunch)
+    {
+        const unallocLabelList& owner = mesh.owner();
+        const unallocLabelList& neighbour = mesh.neighbour();
+
+        forAll(meanFaceFlux, faceI)
+        {
+            const label own = owner[faceI];
+            const label nei = neighbour[faceI];
+
+            if (tracked[own] != tracked[nei])
+            {
+                // Flux into the tracked layer
+                const scalar inflow =
+                    (tracked[nei] ? 1 : -1)*meanFaceFlux[faceI];
+
+                if (inflow > 0)
+                {
+                    siteCell.append(tracked[nei] ? nei : own);
+                    siteFace.append(faceI);
+                    siteRate.append(inflow);
+
+                    surfaceRate += inflow;
+                }
+            }
+        }
+    }
+
+    const scalar ionsPerSecond = volumeRate + surfaceRate;
+
+    if (ionsPerSecond <= 0)
+    {
+        FatalErrorIn(args.executable())
+            << "The source " << sourceType << " is nowhere positive"
+            << exit(FatalError);
+    }
+
+    scalarField cumulative(siteRate.size());
+    {
+        scalar sum = 0;
+
+        forAll(siteRate, i)
+        {
+            sum += siteRate[i];
+            cumulative[i] = sum/ionsPerSecond;
+        }
+    }
+
+    // What one tracked ion stands for [1/s] (for source fluxDivergence)
+    const scalar weight = ionsPerSecond/nParticles;
 
 
     // Null-collision frequency
@@ -803,16 +1093,19 @@ int main(int argc, char *argv[])
 
     const scalar nuMax = maxGasDensity*maxSigmaG;
 
-    Info<< "Ions produced: " << ionsPerSecond << " 1/s; one tracked ion"
-        << " stands for " << weight << " 1/s" << nl
+    Info<< "Ions launched: " << ionsPerSecond << " 1/s (" << volumeRate
+        << " produced in the tracked cells, " << surfaceRate
+        << " through the surface of the layer); one tracked ion stands for "
+        << weight << " 1/s" << nl
         << "Null-collision frequency " << nuMax << " 1/s" << nl << endl;
 
 
-    // Scoring
+    // Scoring: for each ion, the patch that it reached (-1: none)
 
-    List<DynamicList<scalar> > scoredEnergy(patchIDs.size());
-    List<DynamicList<scalar> > scoredAngle(patchIDs.size());
-    List<DynamicList<scalar> > scoredPhase(patchIDs.size());
+    labelList ionPatch(nParticles, -1);
+    scalarField ionEnergy(nParticles, 0.0);
+    scalarField ionAngle(nParticles, 0.0);
+    scalarField ionPhase(nParticles, 0.0);
 
     scalarField cellTime(mesh.nCells(), 0.0);
     scalarField cellEnergy(mesh.nCells(), 0.0);
@@ -823,20 +1116,72 @@ int main(int argc, char *argv[])
     label nCollisions = 0;
     label nNull = 0;
     label nAboveMax = 0;
+    label nReflected = 0;
 
-    Cloud<ionParticle> cloud(mesh, "ionTrackerCloud", IDLList<ionParticle>());
+    // One cloud for each thread (the tracking uses work space of the cloud)
+    PtrList<Cloud<ionParticle> > clouds(nThreads);
+
+    forAll(clouds, threadI)
+    {
+        clouds.set
+        (
+            threadI,
+            new Cloud<ionParticle>
+            (
+                mesh,
+                "ionTrackerCloud" + name(threadI),
+                IDLList<ionParticle>()
+            )
+        );
+    }
+
+    // Mesh data that is made on demand, before the threads start
+    mesh.cellCentres();
+    mesh.faceCentres();
+    mesh.faceAreas();
+    mesh.cells();
+    mesh.cellCells();
+    mesh.pointInCell(mesh.cellCentres()[0], 0);
+
+    forAll(mesh.boundaryMesh(), patchI)
+    {
+        mesh.boundaryMesh()[patchI].faceAreas();
+        mesh.boundaryMesh()[patchI].faceCells();
+    }
+
+    mesh.boundaryMesh().whichPatch(mesh.nFaces() - 1);
 
     const scalar qm = charge/ionMass;
     const scalar dtMax = period/stepsPerPeriod;
 
+    Info<< "Tracking " << nParticles << " ions with " << nThreads
+        << " thread" << (nThreads > 1 ? "s" : "") << nl << endl;
 
+    #pragma omp parallel num_threads(nThreads)
+    {
+    Cloud<ionParticle>& cloud = clouds[omp_get_thread_num()];
+
+    scalarField myCellTime(mesh.nCells(), 0.0);
+    scalarField myCellEnergy(mesh.nCells(), 0.0);
+    vectorField myCellVelocity(mesh.nCells(), vector::zero);
+
+    label myOtherPatch = 0;
+    label myTimedOut = 0;
+    label myCollisions = 0;
+    label myNull = 0;
+    label myAboveMax = 0;
+    label myReflected = 0;
+
+    #pragma omp for schedule(dynamic, 8)
     for (label particleI = 0; particleI < nParticles; particleI++)
     {
-        // Launch cell, from the cumulative source
+        trackerRandom rndGen(seed, particleI);
+
+        // Launch site, from the cumulative distribution
         const scalar r = rndGen.scalar01();
 
         label low = 0;
-        label high = mesh.nCells() - 1;
+        label high = cumulative.size() - 1;
 
         while (low < high)
         {
@@ -852,11 +1197,25 @@ int main(int argc, char *argv[])
             }
         }
 
-        const label cell0 = low;
+        const label cell0 = siteCell[low];
+        const label face0 = siteFace[low];
 
-        // Random point in the cell
+        // The velocity of a gas atom
+        const scalar vThermal =
+            Foam::sqrt(kB*gasTemperature[cell0]/gasMass);
+
+        vector U0
+        (
+            vThermal*rndGen.GaussNormal(),
+            vThermal*rndGen.GaussNormal(),
+            vThermal*rndGen.GaussNormal()
+        );
+
         vector x0 = mesh.cellCentres()[cell0];
+
+        if (face0 < 0)
         {
+            // Random point in the cell
             const boundBox bb
             (
                 mesh.cells()[cell0].points(mesh.faces(), mesh.points()),
@@ -885,17 +1244,75 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        else
+        {
+            // Random point of the face, just inside the cell
+            const face& f = mesh.faces()[face0];
+            const pointField& points = mesh.points();
+            const vector& Cf = mesh.faceCentres()[face0];
 
-        // The velocity of a gas atom
-        const scalar vThermal =
-            Foam::sqrt(kB*gasTemperature[cell0]/gasMass);
+            // A triangle of the face about its centre, by area
+            scalarField areas(f.size());
+            scalar total = 0;
 
-        vector U0
-        (
-            vThermal*rndGen.GaussNormal(),
-            vThermal*rndGen.GaussNormal(),
-            vThermal*rndGen.GaussNormal()
-        );
+            forAll(f, i)
+            {
+                total +=
+                    0.5*mag((points[f[i]] - Cf) ^ (points[f.nextLabel(i)] - Cf));
+
+                areas[i] = total;
+            }
+
+            const scalar ra = rndGen.scalar01()*total;
+            label tri = 0;
+
+            while (tri < f.size() - 1 && areas[tri] < ra)
+            {
+                tri++;
+            }
+
+            scalar u = rndGen.scalar01();
+            scalar v = rndGen.scalar01();
+
+            if (u + v > 1)
+            {
+                u = 1 - u;
+                v = 1 - v;
+            }
+
+            vector x =
+                Cf
+              + u*(points[f[tri]] - Cf)
+              + v*(points[f.nextLabel(tri)] - Cf);
+
+            x += 1e-3*(mesh.cellCentres()[cell0] - x);
+
+            for (direction cmpt = 0; cmpt < vector::nComponents; cmpt++)
+            {
+                if (directions[cmpt] != 1)
+                {
+                    x[cmpt] = mesh.cellCentres()[cell0][cmpt];
+                }
+            }
+
+            x0 = (mesh.pointInCell(x, cell0) ? x : mesh.cellCentres()[cell0]);
+
+            // The drift velocity of the fluid solution, towards the layer
+            U0 += meanJ[cell0]/max(meanDensity[cell0], SMALL);
+
+            vector nIn = mesh.faceAreas()[face0];
+            nIn /= mag(nIn);
+
+            if (mesh.owner()[face0] == cell0)
+            {
+                nIn = -nIn;
+            }
+
+            if ((U0 & nIn) < 0)
+            {
+                U0 -= 2*(U0 & nIn)*nIn;
+            }
+        }
 
         ionParticle p(cloud, x0, cell0, U0);
         ionParticle::trackData td(cloud);
@@ -907,12 +1324,11 @@ int main(int argc, char *argv[])
         scalar tFlight = -Foam::log(max(rndGen.scalar01(), VSMALL))/nuMax;
 
         label stuck = 0;
-
         while (td.keepParticle)
         {
             if (t - tLaunch > maxTime || stuck > 1000)
             {
-                nTimedOut++;
+                myTimedOut++;
                 break;
             }
 
@@ -1001,9 +1417,33 @@ int main(int argc, char *argv[])
 
             U += 0.5*(a0 + a1)*dtDone;
 
-            cellTime[cellI] += dtDone;
-            cellEnergy[cellI] += 0.5*ionMass*magSqr(U)/eCharge*dtDone;
-            cellVelocity[cellI] += U*dtDone;
+            myCellTime[cellI] += dtDone;
+            myCellEnergy[cellI] += 0.5*ionMass*magSqr(U)/eCharge*dtDone;
+            myCellVelocity[cellI] += U*dtDone;
+
+            // An ion that leaves the tracked layer is sent back: the flux
+            // through the surface of the layer is that of the fluid
+            if (sheathLaunch && !tracked[cellN] && p.face() >= 0)
+            {
+                const label faceN = p.face();
+
+                if (mesh.isInternalFace(faceN))
+                {
+                    vector nIn = mesh.faceAreas()[faceN];
+                    nIn /= mag(nIn);
+
+                    if (mesh.neighbour()[faceN] == cellN)
+                    {
+                        nIn = -nIn;
+                    }
+
+                    if ((U & nIn) < 0)
+                    {
+                        U -= 2*(U & nIn)*nIn;
+                        myReflected++;
+                    }
+                }
+            }
 
             if (tFlight <= 0)
             {
@@ -1029,12 +1469,12 @@ int main(int argc, char *argv[])
 
                 if (probability > 1)
                 {
-                    nAboveMax++;
+                    myAboveMax++;
                 }
 
                 if (rndGen.scalar01() < probability)
                 {
-                    nCollisions++;
+                    myCollisions++;
 
                     if (rndGen.scalar01()*(sIso + sCx) < sCx)
                     {
@@ -1055,7 +1495,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    nNull++;
+                    myNull++;
                 }
 
                 tFlight =
@@ -1073,20 +1513,19 @@ int main(int argc, char *argv[])
                 {
                     const polyPatch& pp = mesh.boundaryMesh()[td.hitPatch];
 
-                    vector n = pp.faceAreas()[td.hitFace];
+                    vector n = mesh.faceAreas()[pp.start() + td.hitFace];
                     n /= mag(n);
 
                     const vector& U = p.U();
 
-                    scoredEnergy[i].append(0.5*ionMass*magSqr(U)/eCharge);
+                    ionPatch[particleI] = i;
+                    ionEnergy[particleI] = 0.5*ionMass*magSqr(U)/eCharge;
 
-                    scoredAngle[i].append
-                    (
+                    ionAngle[particleI] =
                         Foam::acos(min(mag(U & n)/(mag(U) + VSMALL), 1.0))
-                       *180/mathematicalConstant::pi
-                    );
+                       *180/mathematicalConstant::pi;
 
-                    scoredPhase[i].append(t/period - ::floor(t/period));
+                    ionPhase[particleI] = t/period - ::floor(t/period);
 
                     scored = true;
                 }
@@ -1094,14 +1533,47 @@ int main(int argc, char *argv[])
 
             if (!scored)
             {
-                nOtherPatch++;
+                myOtherPatch++;
             }
         }
+    }
 
-        if ((particleI + 1) % max(nParticles/10, 1) == 0)
+    #pragma omp critical
+    {
+        cellTime += myCellTime;
+        cellEnergy += myCellEnergy;
+        cellVelocity += myCellVelocity;
+
+        nOtherPatch += myOtherPatch;
+        nTimedOut += myTimedOut;
+        nCollisions += myCollisions;
+        nNull += myNull;
+        nAboveMax += myAboveMax;
+        nReflected += myReflected;
+    }
+    }
+
+    // Lists of the ions at each patch, in the order of the ions
+    List<DynamicList<scalar> > scoredEnergy(patchIDs.size());
+    List<DynamicList<scalar> > scoredAngle(patchIDs.size());
+    List<DynamicList<scalar> > scoredPhase(patchIDs.size());
+
+    forAll(ionPatch, particleI)
+    {
+        const label i = ionPatch[particleI];
+
+        if (i >= 0)
         {
-            Info<< "    " << particleI + 1 << " ions tracked" << endl;
+            scoredEnergy[i].append(ionEnergy[particleI]);
+            scoredAngle[i].append(ionAngle[particleI]);
+            scoredPhase[i].append(ionPhase[particleI]);
         }
+    }
+
+    if (sheathLaunch)
+    {
+        Info<< "Ions sent back at the surface of the tracked layer: "
+            << nReflected << " times" << endl;
     }
 
 
