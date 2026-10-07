@@ -2,4 +2,4 @@
 cd ${0%/*} || exit 1    # run from this directory
 
 # Remove the results; keep the mesh
-rm -rf [1-9]* *e-[0-9]* electrodes processor* log.*
+rm -rf [1-9]* *e-[0-9]* electrodes processor* log.* ionTracker constant/boltzmann
