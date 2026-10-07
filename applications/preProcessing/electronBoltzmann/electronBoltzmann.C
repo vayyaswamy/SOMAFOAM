@@ -72,15 +72,21 @@ Description
     //                          // ionisation in the energy that is left
     // seed            1234;
 
-    // Tables of the fluid solver to complete (optional): the points that
-    // are there are kept, and computed points are added below the first
-    // and above the last electron temperature of each table
-    // extend
+    // nThreads        1;       // threads; one reduced field each
+
+    // Tables of the fluid solver to write (optional); process is the
+    // number of the process in the list that is printed
+    // tables
     // {
     //     mobility    "constant/mu_electron";
     //     diffusion   "constant/D_electron";
     //     rates       (("constant/reaction_2" 3));   // (file process)
     // }
+
+    // or to complete, with the same entries: the points that are there are
+    // kept, and computed points are added below the first and above the
+    // last electron temperature of each table
+    // extend { ... }
     \endverbatim
 
     Output in outputDir: transport.dat with, for each E/N, the mean energy,
@@ -90,6 +96,9 @@ Description
     solver: mu_electron and D_electron (Te [K], mu N or D N) and rate_<n>
     (Te [K], ln of the rate coefficient in m3/kmol/s) for process n in the
     order of the file. distribution_<E/N>.dat holds the distributions.
+
+    somaFoam runs this utility before it reads the tables if
+    constant/plasmaProperties has "electronBoltzmann yes;".
 
 \*---------------------------------------------------------------------------*/
 
@@ -105,8 +114,8 @@ Description
 #include "scalarField.H"
 #include "scalarSquareMatrix.H"
 #include "OSspecific.H"
-#include "Random.H"
 #include "mathematicalConstants.H"
+#include "vector.H"
 
 using namespace Foam;
 
@@ -599,7 +608,54 @@ struct swarmElectron
 };
 
 
-vector isotropicDirection(Random& rndGen)
+//- Random numbers of one simulation (xorshift64*), so that the reduced
+//  fields can be run in different threads and give the same results for
+//  any number of threads
+class swarmRandom
+{
+    unsigned long long state_;
+
+public:
+
+    swarmRandom(const label seed)
+    :
+        state_(0x9E3779B97F4A7C15ULL*(2*static_cast<unsigned long long>(seed) + 1))
+    {
+        for (label i = 0; i < 20; i++)
+        {
+            scalar01();
+        }
+    }
+
+    //- Uniform in (0, 1)
+    scalar scalar01()
+    {
+        state_ ^= state_ >> 12;
+        state_ ^= state_ << 25;
+        state_ ^= state_ >> 27;
+
+        return
+            ((state_*0x2545F4914F6CDD1DULL >> 11) + 0.5)
+           /9007199254740992.0;
+    }
+
+    //- Integer in [lower, upper]
+    label integer(const label lower, const label upper)
+    {
+        return min(lower + label(scalar01()*(upper - lower + 1)), upper);
+    }
+
+    //- Normal distribution of unit variance
+    scalar GaussNormal()
+    {
+        return
+            Foam::sqrt(-2*Foam::log(scalar01()))
+           *Foam::cos(2*mathematicalConstant::pi*scalar01());
+    }
+};
+
+
+vector isotropicDirection(swarmRandom& rndGen)
 {
     const scalar cosTheta = 2*rndGen.scalar01() - 1;
     const scalar sinTheta = Foam::sqrt(max(1 - sqr(cosTheta), 0.0));
@@ -636,11 +692,12 @@ void monteCarlo
     const scalarField& F,
     const scalar dEpsF,
     const monteCarloSettings& mc,
-    Random& rndGen,
+    swarmRandom& rndGen,
     swarm& r,
     swarm& err,
     scalarField& distribution,
-    scalar& speedCell
+    scalar& speedCell,
+    string& message
 )
 {
     const scalar eCharge = 1.602176634e-19;
@@ -786,6 +843,27 @@ void monteCarlo
     const label nEquilibration =
         max(label(mc.equilibrationTimes*tau/tBlock + 0.999), 1);
 
+    // The number of electrons is brought back into its range several
+    // times in a block if it changes quickly: the intervals are shorter
+    // than the time in which ionisation or attachment changes it by a
+    // factor of about 1.3 (from the two-term rate coefficients)
+    scalar nuChange = 0;
+
+    forAll(processes, i)
+    {
+        if (processes[i].type == "IONIZATION")
+        {
+            nuChange += N*processes[i].fraction*r.rates[i];
+        }
+        else if (processes[i].type == "ATTACHMENT")
+        {
+            nuChange -= N*processes[i].fraction*r.rates[i];
+        }
+    }
+
+    const label nIntervals =
+        min(max(label(4*mag(nuChange)*tBlock + 0.999), 1), 100000);
+
     // Electrons from the two-term distribution
     DynamicList<swarmElectron> electrons(2*mc.nElectrons);
 
@@ -863,6 +941,15 @@ void monteCarlo
         scalar energyTime = 0;
         scalar dz = 0;
 
+        for (label interval = 0; interval < nIntervals; interval++)
+        {
+        const scalar tEnd =
+        (
+            interval == nIntervals - 1
+          ? tBlock
+          : (interval + 1)*tBlock/nIntervals
+        );
+
         // The list grows when electrons are released
         for (label n = 0; n < electrons.size(); n++)
         {
@@ -893,7 +980,7 @@ void monteCarlo
                 const scalar tFree =
                     -Foam::log(max(rndGen.scalar01(), 1e-300))/nuMax;
 
-                const scalar tLeft = tBlock - t;
+                const scalar tLeft = tEnd - t;
 
                 const scalar dt = min(tFree, min(tLimit, tLeft));
 
@@ -1071,24 +1158,7 @@ void monteCarlo
 
         if (electrons.empty())
         {
-            FatalErrorIn("monteCarlo")
-                << "All the electrons are attached at E/N " << EN/1e-21
-                << " Td" << exit(FatalError);
-        }
-
-        if (sampling)
-        {
-            scalar spread = 0;
-
-            forAll(electrons, n)
-            {
-                spread += sqr(electrons[n].x) + sqr(electrons[n].y);
-            }
-
-            blockTime[block] = time;
-            blockEnergy[block] = energyTime;
-            blockDz[block] = dz;
-            blockD[block] = spread/electrons.size()/(4*tBlock);
+            break;
         }
 
         // Keep the number of electrons between half and twice the nominal
@@ -1117,6 +1187,37 @@ void monteCarlo
                 electrons.append(electrons[n]);
             }
         }
+        }
+
+        if (electrons.empty())
+        {
+            break;
+        }
+
+        if (sampling)
+        {
+            scalar spread = 0;
+
+            forAll(electrons, n)
+            {
+                spread += sqr(electrons[n].x) + sqr(electrons[n].y);
+            }
+
+            blockTime[block] = time;
+            blockEnergy[block] = energyTime;
+            blockDz[block] = dz;
+            blockD[block] = spread/electrons.size()/(4*tBlock);
+        }
+
+    }
+
+    if (electrons.empty())
+    {
+        message = "    Monte Carlo: all the electrons were attached; the two-term results are kept";
+        err = r;
+        distribution.setSize(nGrid);
+        distribution = 0.0;
+        return;
     }
 
     // Means and standard errors over the blocks
@@ -1190,7 +1291,9 @@ void monteCarlo
         distribution[j] /= Foam::sqrt(eps)*dEps;
     }
 
-    Info<< "    Monte Carlo: mean energy " << r.meanEnergy << " +- "
+    OStringStream os;
+
+    os  << "    Monte Carlo: mean energy " << r.meanEnergy << " +- "
         << err.meanEnergy << " eV, mu N " << r.muN << " +- " << err.muN
         << ", D N " << r.DN << " +- " << err.DN << "; " << nCollisions
         << " collisions, " << nTests - nCollisions << " null, "
@@ -1198,10 +1301,10 @@ void monteCarlo
 
     if (nBeyond > 0)
     {
-        Info<< "; " << nBeyond << " tests beyond the speed grid";
+        os  << "; " << nBeyond << " tests beyond the speed grid";
     }
 
-    Info<< endl;
+    message = os.str();
 }
 
 
@@ -1324,52 +1427,75 @@ int main(int argc, char *argv[])
     mc.nBlocks = dict.lookupOrDefault<label>("nBlocks", 10);
     mc.nSpeedCells = dict.lookupOrDefault<label>("nSpeedCells", 4000);
 
-    Random rndGen(dict.lookupOrDefault<label>("seed", 1234));
+    const label seed = dict.lookupOrDefault<label>("seed", 1234);
+    const label nThreads = max(dict.lookupOrDefault<label>("nThreads", 1), 1);
+
+    List<scalarField> distributions(fields.size());
+    List<scalarField> mcDistributions(fields.size());
+    scalarField mcSpeedCells(fields.size(), 0.0);
+    List<string> messages(fields.size());
 
     List<swarm> twoTermResults(fields.size());
     List<swarm> errors(fields.size());
 
     mkDir(outputDir);
 
-    scalar epsMax = 1.0;
+    Info<< "Method " << method << ", " << nThreads << " thread"
+        << (nThreads > 1 ? "s" : "") << nl << endl;
 
-    forAll(fields, fieldI)
+    // The reduced fields are independent: one thread takes one at a time
+    #pragma omp parallel for schedule(dynamic, 1) num_threads(nThreads)
+    for (label fieldI = 0; fieldI < fields.size(); fieldI++)
     {
         const scalar EN = fields[fieldI]*Td;
+
+        scalar epsMax = 1.0;
 
         scalarField F(nCells, 0.0);
 
         // Adapt the upper end of the grid: the distribution should fall by
-        // about ten decades over it
-        for (label iter = 0; iter < 40; iter++)
+        // about ten decades over it. A coarse grid finds it first.
+        for (label pass = 0; pass < 2; pass++)
         {
-            solveDistribution(processes, gases, EN, kTe, epsMax, F);
+            const label n = (pass == 0 ? max(nCells/4, 50) : nCells);
 
-            const scalar Fmax = max(mag(F));
-            const scalar Fend = mag(F[nCells - 1]);
+            scalarField Fp(n, 0.0);
 
-            if (Fend > 1e-9*Fmax)
+            for (label iter = 0; iter < 40; iter++)
             {
-                epsMax *= 1.5;
-            }
-            else
-            {
-                // Energy at which the distribution has fallen ten decades
-                label last = nCells - 1;
+                solveDistribution(processes, gases, EN, kTe, epsMax, Fp);
 
-                while (last > 0 && mag(F[last]) < 1e-10*Fmax)
-                {
-                    last--;
-                }
+                const scalar Fmax = max(mag(Fp));
+                const scalar Fend = mag(Fp[n - 1]);
 
-                if (last < 0.6*nCells)
+                if (Fend > 1e-9*Fmax)
                 {
-                    epsMax *= max((last + 1.0)/(0.8*nCells), 0.3);
+                    epsMax *= 1.5;
                 }
                 else
                 {
-                    break;
+                    // Energy at which it has fallen ten decades
+                    label last = n - 1;
+
+                    while (last > 0 && mag(Fp[last]) < 1e-10*Fmax)
+                    {
+                        last--;
+                    }
+
+                    if (last < 0.6*n)
+                    {
+                        epsMax *= max((last + 1.0)/(0.8*n), 0.3);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
+            }
+
+            if (pass == 1)
+            {
+                F = Fp;
             }
         }
 
@@ -1418,10 +1544,41 @@ int main(int argc, char *argv[])
         r.DEpsN /= max(r.meanEnergy, 1e-30);
         r.muEpsN /= max(r.meanEnergy, 1e-30);
 
+        distributions[fieldI] = F;
+        twoTermResults[fieldI] = r;
+
+        if (useMonteCarlo)
+        {
+            swarmRandom rndGen(seed + fieldI);
+
+            monteCarlo
+            (
+                processes,
+                gases,
+                gasTemperature,
+                F,
+                dEps,
+                mc,
+                rndGen,
+                r,
+                errors[fieldI],
+                mcDistributions[fieldI],
+                mcSpeedCells[fieldI],
+                messages[fieldI]
+            );
+        }
+    }
+
+    forAll(fields, fieldI)
+    {
+        const swarm& r = twoTermResults[fieldI];
+        const scalarField& F = distributions[fieldI];
+        const scalar dEps = r.epsMax/nCells;
+
         Info<< "E/N " << fields[fieldI] << " Td: mean energy "
             << r.meanEnergy << " eV, mu N " << r.muN << " 1/(V m s), D N "
-            << r.DN << " 1/(m s), drift velocity " << r.muN*EN
-            << " m/s, grid to " << epsMax << " eV" << endl;
+            << r.DN << " 1/(m s), drift velocity " << r.muN*r.EN
+            << " m/s, grid to " << r.epsMax << " eV" << endl;
 
         OStringStream name;
         name<< "distribution_" << fields[fieldI] << ".dat";
@@ -1436,27 +1593,9 @@ int main(int argc, char *argv[])
             os  << (j + 0.5)*dEps << tab << F[j] << nl;
         }
 
-        twoTermResults[fieldI] = r;
-
         if (useMonteCarlo)
         {
-            scalarField distribution;
-            scalar dV;
-
-            monteCarlo
-            (
-                processes,
-                gases,
-                gasTemperature,
-                F,
-                dEps,
-                mc,
-                rndGen,
-                r,
-                errors[fieldI],
-                distribution,
-                dV
-            );
+            Info<< messages[fieldI].c_str() << endl;
 
             OStringStream mcName;
             mcName<< "distributionMonteCarlo_" << fields[fieldI] << ".dat";
@@ -1466,10 +1605,12 @@ int main(int argc, char *argv[])
             mcOs<< "# E/N " << fields[fieldI] << " Td: energy [eV]" << tab
                 << "F0 [eV^-3/2]" << nl;
 
-            forAll(distribution, j)
+            const scalar dV = mcSpeedCells[fieldI];
+
+            forAll(mcDistributions[fieldI], j)
             {
-                mcOs<< sqr((j + 0.5)*dV/gamma) << tab << distribution[j]
-                    << nl;
+                mcOs<< sqr((j + 0.5)*dV/gamma) << tab
+                    << mcDistributions[fieldI][j] << nl;
             }
         }
     }
@@ -1578,11 +1719,14 @@ int main(int argc, char *argv[])
     }
 
 
-    // Complete existing tables of the fluid solver
+    // Write (tables) or complete (extend) tables of the fluid solver
 
-    if (dict.found("extend"))
+    const bool replaceTables = dict.found("tables");
+
+    if (replaceTables || dict.found("extend"))
     {
-        const dictionary& ext = dict.subDict("extend");
+        const dictionary& ext =
+            dict.subDict(replaceTables ? "tables" : "extend");
 
         // (file, quantity): -1 mobility, -2 diffusion, >= 0 rate of process
         DynamicList<Tuple2<fileName, label> > jobs;
@@ -1657,9 +1801,17 @@ int main(int argc, char *argv[])
                 }
             }
 
-            const label nOld = numbers.size()/2;
+            label nOld = numbers.size()/2;
 
-            if (nOld < 1)
+            if (replaceTables)
+            {
+                // All the points are computed
+                nOld = 0;
+                numbers.clear();
+                numbers.append(GREAT);
+                numbers.append(0);
+            }
+            else if (nOld < 1)
             {
                 WarningIn(args.executable())
                     << "No points in " << table << "; not completed" << endl;
@@ -1667,11 +1819,15 @@ int main(int argc, char *argv[])
             }
 
             const scalar TeFirst = numbers[0];
-            const scalar TeLast = numbers[2*(nOld - 1)];
+            const scalar TeLast = (nOld > 0 ? numbers[2*(nOld - 1)] : GREAT);
 
             const bool rateFormat = (quantity >= 0);
 
-            mv(table, table + ".orig");
+            // The first version of the file is kept
+            if (isFile(table) && !isFile(table + ".orig"))
+            {
+                mv(table, table + ".orig");
+            }
 
             OFstream os(table);
 
@@ -1736,10 +1892,18 @@ int main(int argc, char *argv[])
 
             os  << ")" << nl;
 
-            Info<< "Completed " << table << ": " << nOld
-                << " points kept (" << TeFirst << " to " << TeLast
-                << " K), " << nBelow << " added below and " << nAbove
-                << " above; original saved as .orig" << endl;
+            if (replaceTables)
+            {
+                Info<< "Wrote " << table << ": " << nBelow << " points"
+                    << endl;
+            }
+            else
+            {
+                Info<< "Completed " << table << ": " << nOld
+                    << " points kept (" << TeFirst << " to " << TeLast
+                    << " K), " << nBelow << " added below and " << nAbove
+                    << " above" << endl;
+            }
         }
     }
 
