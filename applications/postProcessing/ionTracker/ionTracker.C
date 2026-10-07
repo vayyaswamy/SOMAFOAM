@@ -78,6 +78,9 @@ Description
     //                          // the sheath (charge separation above
     //                          // sheathThreshold 0.1 at some phase) and
     //                          // launchMargin 5 mean free paths
+    // uniformLaunchTime no;    // yes: launch times uniform over the period;
+    //                          // by default at the phases at which the
+    //                          // ions are produced or enter the layer
     // nThreads        1;
     writeParticles  no;         // list of all scored ions
     seed            1234;
@@ -649,6 +652,18 @@ int main(int argc, char *argv[])
     scalarField meanDensity(mesh.nCells(), 0.0);
     scalarField separation(mesh.nCells(), 0.0);
 
+    // Source, ion density and ion flux through the faces at each phase:
+    // the ions are launched at the phases at which they are produced or
+    // cross the surface of the tracked layer
+    const Switch uniformLaunchTime
+    (
+        dict.lookupOrDefault<Switch>("uniformLaunchTime", false)
+    );
+
+    PtrList<scalarField> phaseSource(nPhases);
+    PtrList<scalarField> phaseDensity(nPhases);
+    PtrList<scalarField> phaseFaceFlux(nPhases);
+
     Info<< "Reading " << EName << " at " << nPhases << " phases of the period"
         << " from " << startTime << " s" << endl;
 
@@ -735,29 +750,44 @@ int main(int argc, char *argv[])
                 mesh
             );
 
-            source += fvc::div(J)().internalField()/nPhases;
+            phaseSource.set
+            (
+                phaseI,
+                new scalarField(fvc::div(J)().internalField())
+            );
+
+            source += phaseSource[phaseI]/nPhases;
+
+            const volScalarField ni
+            (
+                IOobject
+                (
+                    ionName,
+                    runTime.timeName(),
+                    mesh,
+                    IOobject::MUST_READ,
+                    IOobject::NO_WRITE,
+                    false
+                ),
+                mesh
+            );
+
+            phaseDensity.set(phaseI, new scalarField(ni.internalField()));
 
             if (sheathLaunch)
             {
-                meanFaceFlux +=
-                    (fvc::interpolate(J) & mesh.Sf())().internalField()
-                   /nPhases;
+                phaseFaceFlux.set
+                (
+                    phaseI,
+                    new scalarField
+                    (
+                        (fvc::interpolate(J) & mesh.Sf())().internalField()
+                    )
+                );
+
+                meanFaceFlux += phaseFaceFlux[phaseI]/nPhases;
 
                 meanJ += J.internalField()/nPhases;
-
-                const volScalarField ni
-                (
-                    IOobject
-                    (
-                        ionName,
-                        runTime.timeName(),
-                        mesh,
-                        IOobject::MUST_READ,
-                        IOobject::NO_WRITE,
-                        false
-                    ),
-                    mesh
-                );
 
                 meanDensity += ni.internalField()/nPhases;
 
@@ -802,9 +832,28 @@ int main(int argc, char *argv[])
                 mesh
             );
 
+            phaseSource.set(phaseI, new scalarField(s.internalField()));
+
             source += s.internalField()/nPhases;
         }
     }
+
+    // Ions produced at each phase: the divergence of the flux and the rate
+    // of change of the density
+    if (sourceType == "fluxDivergence" && nPhases > 2)
+    {
+        forAll(phaseSource, phaseI)
+        {
+            const label next = (phaseI + 1) % nPhases;
+            const label last = (phaseI + nPhases - 1) % nPhases;
+
+            phaseSource[phaseI] +=
+                (phaseDensity[next] - phaseDensity[last])
+               /(2*period/nPhases);
+        }
+    }
+
+    phaseDensity.clear();
 
     // Back to the first phase for the gas fields and for the output
     {
@@ -1072,6 +1121,54 @@ int main(int argc, char *argv[])
     // What one tracked ion stands for [1/s] (for source fluxDivergence)
     const scalar weight = ionsPerSecond/nParticles;
 
+    // Distribution of the launch time of each site over the phases: in
+    // proportion to the ions produced in the cell, or to the flux into the
+    // layer through the face, at each phase. The number launched in a
+    // period is that of the period means above.
+    List<scalarField> sitePhases(siteRate.size());
+
+    if (!uniformLaunchTime)
+    {
+        forAll(sitePhases, i)
+        {
+            scalarField& c = sitePhases[i];
+            c.setSize(nPhases);
+
+            scalar sum = 0;
+
+            forAll(c, phaseI)
+            {
+                scalar rate = 0;
+
+                if (siteFace[i] < 0)
+                {
+                    rate = phaseSource[phaseI][siteCell[i]];
+                }
+                else
+                {
+                    rate =
+                        (mesh.neighbour()[siteFace[i]] == siteCell[i] ? 1 : -1)
+                       *phaseFaceFlux[phaseI][siteFace[i]];
+                }
+
+                sum += max(rate, scalar(0));
+                c[phaseI] = sum;
+            }
+
+            if (sum > 0)
+            {
+                c /= sum;
+            }
+            else
+            {
+                c.clear();
+            }
+        }
+    }
+
+    phaseSource.clear();
+    phaseFaceFlux.clear();
+
 
     // Null-collision frequency
 
@@ -1318,7 +1415,38 @@ int main(int argc, char *argv[])
         ionParticle::trackData td(cloud);
         td.keepParticle = true;
 
-        const scalar tLaunch = period*rndGen.scalar01();
+        // Launch time: a phase from the distribution of the site
+        scalar tLaunch = period*rndGen.scalar01();
+
+        if (sitePhases[low].size())
+        {
+            const scalarField& c = sitePhases[low];
+            const scalar rp = rndGen.scalar01();
+
+            label kLow = 0;
+            label kHigh = nPhases - 1;
+
+            while (kLow < kHigh)
+            {
+                const label mid = (kLow + kHigh)/2;
+
+                if (c[mid] < rp)
+                {
+                    kLow = mid + 1;
+                }
+                else
+                {
+                    kHigh = mid;
+                }
+            }
+
+            tLaunch = (kLow - 0.5 + rndGen.scalar01())*period/nPhases;
+
+            if (tLaunch < 0)
+            {
+                tLaunch += period;
+            }
+        }
         scalar t = tLaunch;
 
         scalar tFlight = -Foam::log(max(rndGen.scalar01(), VSMALL))/nuMax;
