@@ -18,16 +18,26 @@ Description
                           cell size over the local scale length of f
         gradient          jump between neighbouring cells, |f1 - f2|/scale
         magnitude         |f|/scale
+        debyeLength       h/lambda_D, the cell size over the electron Debye
+                          length lambda_D = sqrt(eps0 kB Te/(e^2 n)), with n
+                          the density field f [m^-3] and Te the field named by
+                          temperature (default Te) [K]
 
-    for any volScalarField or volVectorField f of the mesh:
+    for any volScalarField or volVectorField f of the mesh (debyeLength:
+    scalar density and temperature fields only):
 
     \verbatim
         indicators
         (
             { type relativeGradient; field N_electron; floor 1e12; }
             { type magnitude;        field E;  scale 1e6; weight 0.5; }
+            { type debyeLength;      field electron; temperature Te; }
         );
     \endverbatim
+
+    With debyeLength, refining where the indicator exceeds about 1 keeps
+    the cells smaller than the Debye length; a refined cell has half the
+    size, so unrefineLevel should be below half of lowerRefineLevel.
 
 SourceFiles
     refinementIndicators.C
