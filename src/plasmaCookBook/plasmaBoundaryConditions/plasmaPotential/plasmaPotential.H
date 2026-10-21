@@ -9,7 +9,36 @@ Class
 Foam::plasmaPotential
 
 Description
-    Abstract base class for electric potential boundary conditions.
+    Prescribed electrode potential. The model sets the waveform:
+
+        directCurrent           V = amplitude
+        sinFrequencyModulated   V = amplitude sin(2 pi f t) + bias
+        cosFrequencyModulated   V = amplitude cos(2 pi f t) + bias
+        chirp                   V = amplitude e(t) sin(phi(t)) + bias
+        table                   V = amplitude g(t) + bias
+
+    chirp: the frequency f(t) is interpolated linearly in frequencyTable
+    ((t f) ...) and held constant outside it; the phase is its exact integral,
+    phi(t) = phase + 2 pi int_0^t f dt, so the waveform stays continuous when
+    the frequency changes. The optional envelopeTable ((t e) ...) modulates
+    the amplitude (default e = 1). phase is in degrees (default 0).
+
+    table: g(t) is interpolated linearly in voltageTable ((t g) ...) or in
+    the two-column text file voltageTableFile (t g per line), and held
+    constant outside it. Use it for any waveform (triangular, pulsed,
+    multi-harmonic, ...) generated elsewhere.
+
+    Example:
+        electrode
+        {
+            type            plasmaPotential;
+            model           chirp;
+            amplitude       uniform 100;
+            frequencyTable  ((0 13.56e6) (50e-6 100e6));
+            // envelopeTable ((0 1) (50e-6 0.5));
+            bias            0;
+            value           uniform 0;
+        }
 
 SourceFiles
 plasmaPotential.C
@@ -20,6 +49,7 @@ plasmaPotential.C
 #define plasmaPotential_H
 
 #include "fixedValueFvPatchFields.H"
+#include "Tuple2.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -35,6 +65,31 @@ public fixedValueFvPatchScalarField
     word modelName_;
     scalar frequency_;
     scalar bias_;
+
+    //- chirp: frequency [Hz] against time [s], envelope, initial phase [deg]
+    List<Tuple2<scalar, scalar> > frequencyTable_;
+    List<Tuple2<scalar, scalar> > envelopeTable_;
+    scalar phase_;
+
+    //- table: waveform against time [s], given inline or read from a file
+    List<Tuple2<scalar, scalar> > voltageTable_;
+    fileName voltageTableFile_;
+
+
+    // Private member functions
+
+    //- Read the model-specific entries and check them
+    void readModel(const dictionary& dict);
+
+    //- Linear interpolation in a table sorted in time, held constant outside
+    static scalar interpolate
+    (
+        const List<Tuple2<scalar, scalar> >& table,
+        const scalar t
+    );
+
+    //- Phase of the chirp at time t [rad]
+    scalar chirpPhase(const scalar t) const;
 
   public:
 
