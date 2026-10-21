@@ -32,6 +32,8 @@ Description
                           the relative gradient times the cell size
         gradient          |f1 - f2|/scale
         magnitude         |f|/scale
+        debyeLength       cell size over the electron Debye length, with f
+                          the electron density and Te (keyword temperature)
 
     The fields may be volScalarFields or volVectorFields. The indicator is
     stored as the volScalarField refinementIndicator and written with the
