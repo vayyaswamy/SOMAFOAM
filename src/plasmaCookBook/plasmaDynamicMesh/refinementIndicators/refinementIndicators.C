@@ -101,7 +101,7 @@ void addIndicator
         FatalErrorIn("refinementIndicators::calculate(...)")
             << "Unknown indicator type " << type << " for field "
             << fld.name() << nl << "Valid types are relativeGradient,"
-            << " gradient and magnitude" << abort(FatalError);
+            << " gradient, magnitude and debyeLength" << abort(FatalError);
     }
 }
 
@@ -131,6 +131,53 @@ void Foam::refinementIndicators::calculate
         const scalar weight = entry.lookupOrDefault<scalar>("weight", 1.0);
         const scalar scale = entry.lookupOrDefault<scalar>("scale", 1.0);
         const scalar floor = entry.lookupOrDefault<scalar>("floor", 0.0);
+
+        if (type == "debyeLength")
+        {
+            // Cell size over the electron Debye length
+            const word TeName(entry.lookupOrDefault<word>("temperature", "Te"));
+
+            if
+            (
+                !mesh.foundObject<volScalarField>(fieldName)
+             || !mesh.foundObject<volScalarField>(TeName)
+            )
+            {
+                FatalErrorIn("refinementIndicators::calculate(...)")
+                    << "debyeLength needs the volScalarFields " << fieldName
+                    << " (density) and " << TeName << " (temperature);"
+                    << " available: " << mesh.names<volScalarField>()
+                    << abort(FatalError);
+            }
+
+            const scalarField& n =
+                mesh.lookupObject<volScalarField>(fieldName).internalField();
+            const scalarField& Te =
+                mesh.lookupObject<volScalarField>(TeName).internalField();
+
+            const scalarField h(cellSize(mesh));
+
+            const scalar eps0 = 8.8541878128e-12;
+            const scalar kB = 1.380649e-23;
+            const scalar qe = 1.602176634e-19;
+
+            forAll(n, cellI)
+            {
+                if (n[cellI] > 0)
+                {
+                    // Floor on Te avoids a zero Debye length in cold cells
+                    const scalar lambdaD = Foam::sqrt
+                    (
+                        eps0*kB*max(Te[cellI], 300.0)/(qe*qe*n[cellI])
+                    );
+
+                    indicator[cellI] =
+                        max(indicator[cellI], weight*h[cellI]/lambdaD);
+                }
+            }
+
+            continue;
+        }
 
         if (mesh.foundObject<volScalarField>(fieldName))
         {
