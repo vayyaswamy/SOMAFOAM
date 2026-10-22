@@ -170,7 +170,14 @@ Model \kw{efullImplicit} (entry \kw{energyModel \{ electron \dots; \}}):
 \item $Q_\mathrm{inel}$: energy lost in the electron-impact reactions, from
       the reaction list.
 \item $Q_\mathrm{el} = 3\kB\,\dfrac{m_\mathrm{e}}{M}\,\nu_\mathrm{e}\,\nel(\Te-T)$:
-      elastic losses to the gas (with \kw{muBased}).
+      elastic losses to the gas, counted once. If the reaction list has
+      electron-impact elastic reactions
+      (\kw{electronImpactElasticArrheniusReaction} or
+      \kw{electronImpactElasticTabularReaction}), $\nu_\mathrm{e}$ is their
+      rate per electron and the loss is part of the reaction source.
+      Otherwise, with \kw{muBased}, $\nu_\mathrm{e}=e/(\mu_\mathrm{e}m_\mathrm{e})$
+      is used. (Before this was made exclusive, cases with both an elastic
+      reaction and \kw{muBased} counted the elastic loss twice.)
 \item The losses are linearised in $\Te$ in the same way as the reaction
       sources.
 \end{itemize}

@@ -220,6 +220,10 @@ public:
 
             virtual tmp<volScalarField> eChemSourceExplicit() const;
 
+            //- True if any reaction is an electron-impact elastic reaction
+            //  (its energy loss is included in eChemSource)
+            virtual bool electronElasticLoss() const;
+
         // ODE functions (overriding abstract functions in ODE.H)
 
             //- Number of ODE's to solve
