@@ -28,6 +28,29 @@ Description
     constant outside it. Use it for any waveform (triangular, pulsed,
     multi-harmonic, ...) generated elsewhere.
 
+    Optional time-step control from the electrode current (off by default).
+    The patch samples its charge Q = sum(eps dPhi/dn A) once per time step;
+    on an electrode behind a dielectric dQ/dt is the total (conduction +
+    displacement) current of the discharge. The current I is taken over
+    sampling windows of at least sampleInterval [s] (default: every step),
+    which keeps the numerical noise of dQ out of I when the step is small.
+    Each new window sets the target step
+        deltaT = maxRelChange (|I| + currentFloor)/|dI/dt|,
+    i.e. the current changes by at most maxRelChange per step; the step can
+    drop to the target at once and grows by at most maxIncrease per step.
+    currentFloor [A] is the current below which changes are not resolved
+    (e.g. a fraction of the capacitive current), so the smooth displacement
+    current does not limit the step. The solver takes the minimum of this,
+    its Courant limit and deltaTMax, and then applies deltaTMin.
+        timeStepControl
+        {
+            active          yes;
+            maxRelChange    0.05;
+            currentFloor    1e-6;
+            maxIncrease     1.2;
+            sampleInterval  1e-10;
+        }
+
     Example:
         electrode
         {
@@ -50,6 +73,7 @@ plasmaPotential.C
 
 #include "fixedValueFvPatchFields.H"
 #include "Tuple2.H"
+#include "Switch.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -75,6 +99,26 @@ public fixedValueFvPatchScalarField
     List<Tuple2<scalar, scalar> > voltageTable_;
     fileName voltageTableFile_;
 
+    //- Optional time-step control from the electrode current
+    Switch dtControl_;
+    scalar maxRelChange_;
+    scalar currentFloor_;
+    scalar maxIncrease_;
+    scalar sampleInterval_;
+
+    //- Current sampling: last time index, number of window ends, times of
+    //  the last two window ends, charge at the last one, current over the
+    //  last window, and the resulting target and suggested steps
+    label lastTimeIndex_;
+    label nSamples_;
+    scalar tA_;
+    scalar tB_;
+    scalar qB_;
+    scalar iB_;
+    scalar current_;
+    scalar targetDeltaT_;
+    scalar suggestedDeltaT_;
+
 
     // Private member functions
 
@@ -90,6 +134,16 @@ public fixedValueFvPatchScalarField
 
     //- Phase of the chirp at time t [rad]
     scalar chirpPhase(const scalar t) const;
+
+    //- Read the optional timeStepControl sub-dictionary
+    void readTimeStepControl(const dictionary& dict);
+
+    //- Charge on the patch, sum(eps dPhi/dn A), from the current values
+    scalar patchCharge() const;
+
+    //- Once per time step: sample the charge and update the current and
+    //  the suggested time step
+    void sampleCurrent();
 
   public:
 
@@ -173,6 +227,24 @@ public fixedValueFvPatchScalarField
         const fvPatchScalarField&,
         const labelList&
     );
+
+    //- Is the current-based time-step control active
+    bool timeStepControl() const
+    {
+        return dtControl_;
+    }
+
+    //- Time step suggested by the current control (GREAT if inactive)
+    scalar suggestedDeltaT() const
+    {
+        return suggestedDeltaT_;
+    }
+
+    //- Electrode current over the last sampling window [A]
+    scalar current() const
+    {
+        return current_;
+    }
 
     //- Update the coefficients associated with the patch field
     virtual void updateCoeffs();
