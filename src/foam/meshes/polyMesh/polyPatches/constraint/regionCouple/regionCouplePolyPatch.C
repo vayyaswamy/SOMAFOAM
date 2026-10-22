@@ -1028,7 +1028,27 @@ Foam::regionCouplePolyPatch::reconFaceCellCentres() const
 
 void Foam::regionCouplePolyPatch::initAddressing()
 {
-    if (active())
+    // In a topology change (directTopoChange::changeMesh) the boundary is
+    // updated before the zones are renumbered. While the zone does not yet
+    // hold the faces of this patch, the addressing is left to be calculated
+    // on demand, after the zones are updated.
+    bool zoneUpToDate = active();
+
+    if (zoneUpToDate)
+    {
+        const faceZone& fz = zone();
+
+        for (label i = 0; i < size(); i++)
+        {
+            if (fz.whichFace(start() + i) < 0)
+            {
+                zoneUpToDate = false;
+                break;
+            }
+        }
+    }
+
+    if (zoneUpToDate)
     {
         // Calculate transforms for correct GGI cut
         calcTransforms();
@@ -1065,7 +1085,10 @@ void Foam::regionCouplePolyPatch::initGeometry()
 {
     // Communication is allowed either before or after processor
     // patch comms.  HJ, 11/Jul/2011
-    if (active())
+    // Detached (e.g. during a topology change of a plasma mesh) the
+    // reconstructed centres are not used; they are calculated on demand
+    // after attaching.
+    if (active() && attached_)
     {
         // Note: Only master calculates recon; slave uses master interpolation
         if (master())
@@ -1121,7 +1144,7 @@ void Foam::regionCouplePolyPatch::initMovePoints(const pointField& p)
         }
     }
 
-    if (active() && master())
+    if (active() && master() && attached_)
     {
         reconFaceCellCentres();
     }
