@@ -35,7 +35,21 @@ plasmaPotential
     envelopeTable_(0),
     phase_(0.0),
     voltageTable_(0),
-    voltageTableFile_()
+    voltageTableFile_(),
+    dtControl_(false),
+    maxRelChange_(0.05),
+    currentFloor_(0),
+    maxIncrease_(1.2),
+    sampleInterval_(0),
+    lastTimeIndex_(-1),
+    nSamples_(0),
+    tA_(0),
+    tB_(0),
+    qB_(0),
+    iB_(0),
+    current_(0),
+    targetDeltaT_(GREAT),
+    suggestedDeltaT_(GREAT)
 {}
 
 
@@ -56,9 +70,24 @@ plasmaPotential
     envelopeTable_(0),
     phase_(dict.lookupOrDefault<scalar>("phase", 0.0)),
     voltageTable_(0),
-    voltageTableFile_()
+    voltageTableFile_(),
+    dtControl_(false),
+    maxRelChange_(0.05),
+    currentFloor_(0),
+    maxIncrease_(1.2),
+    sampleInterval_(0),
+    lastTimeIndex_(-1),
+    nSamples_(0),
+    tA_(0),
+    tB_(0),
+    qB_(0),
+    iB_(0),
+    current_(0),
+    targetDeltaT_(GREAT),
+    suggestedDeltaT_(GREAT)
 {
     readModel(dict);
+    readTimeStepControl(dict);
 
     if (dict.found("value"))
     {
@@ -91,7 +120,21 @@ plasmaPotential
     envelopeTable_(ptf.envelopeTable_),
     phase_(ptf.phase_),
     voltageTable_(ptf.voltageTable_),
-    voltageTableFile_(ptf.voltageTableFile_)
+    voltageTableFile_(ptf.voltageTableFile_),
+    dtControl_(ptf.dtControl_),
+    maxRelChange_(ptf.maxRelChange_),
+    currentFloor_(ptf.currentFloor_),
+    maxIncrease_(ptf.maxIncrease_),
+    sampleInterval_(ptf.sampleInterval_),
+    lastTimeIndex_(ptf.lastTimeIndex_),
+    nSamples_(ptf.nSamples_),
+    tA_(ptf.tA_),
+    tB_(ptf.tB_),
+    qB_(ptf.qB_),
+    iB_(ptf.iB_),
+    current_(ptf.current_),
+    targetDeltaT_(ptf.targetDeltaT_),
+    suggestedDeltaT_(ptf.suggestedDeltaT_)
 {}
 
 
@@ -110,7 +153,21 @@ plasmaPotential
     envelopeTable_(tppsf.envelopeTable_),
     phase_(tppsf.phase_),
     voltageTable_(tppsf.voltageTable_),
-    voltageTableFile_(tppsf.voltageTableFile_)
+    voltageTableFile_(tppsf.voltageTableFile_),
+    dtControl_(tppsf.dtControl_),
+    maxRelChange_(tppsf.maxRelChange_),
+    currentFloor_(tppsf.currentFloor_),
+    maxIncrease_(tppsf.maxIncrease_),
+    sampleInterval_(tppsf.sampleInterval_),
+    lastTimeIndex_(tppsf.lastTimeIndex_),
+    nSamples_(tppsf.nSamples_),
+    tA_(tppsf.tA_),
+    tB_(tppsf.tB_),
+    qB_(tppsf.qB_),
+    iB_(tppsf.iB_),
+    current_(tppsf.current_),
+    targetDeltaT_(tppsf.targetDeltaT_),
+    suggestedDeltaT_(tppsf.suggestedDeltaT_)
 {}
 
 
@@ -130,7 +187,21 @@ plasmaPotential
     envelopeTable_(tppsf.envelopeTable_),
     phase_(tppsf.phase_),
     voltageTable_(tppsf.voltageTable_),
-    voltageTableFile_(tppsf.voltageTableFile_)
+    voltageTableFile_(tppsf.voltageTableFile_),
+    dtControl_(tppsf.dtControl_),
+    maxRelChange_(tppsf.maxRelChange_),
+    currentFloor_(tppsf.currentFloor_),
+    maxIncrease_(tppsf.maxIncrease_),
+    sampleInterval_(tppsf.sampleInterval_),
+    lastTimeIndex_(tppsf.lastTimeIndex_),
+    nSamples_(tppsf.nSamples_),
+    tA_(tppsf.tA_),
+    tB_(tppsf.tB_),
+    qB_(tppsf.qB_),
+    iB_(tppsf.iB_),
+    current_(tppsf.current_),
+    targetDeltaT_(tppsf.targetDeltaT_),
+    suggestedDeltaT_(tppsf.suggestedDeltaT_)
 {}
 
 
@@ -353,6 +424,108 @@ Foam::scalar Foam::plasmaPotential::chirpPhase(const scalar t) const
 }
 
 
+void Foam::plasmaPotential::readTimeStepControl(const dictionary& dict)
+{
+    if (!dict.found("timeStepControl"))
+    {
+        return;
+    }
+
+    const dictionary& d = dict.subDict("timeStepControl");
+
+    dtControl_ = d.lookupOrDefault<Switch>("active", true);
+    maxRelChange_ = d.lookupOrDefault<scalar>("maxRelChange", 0.05);
+    currentFloor_ = d.lookupOrDefault<scalar>("currentFloor", 0.0);
+    maxIncrease_ = d.lookupOrDefault<scalar>("maxIncrease", 1.2);
+    sampleInterval_ = d.lookupOrDefault<scalar>("sampleInterval", 0.0);
+
+    if
+    (
+        maxRelChange_ <= 0 || currentFloor_ < 0 || maxIncrease_ < 1
+     || sampleInterval_ < 0
+    )
+    {
+        FatalIOErrorIn("plasmaPotential::readTimeStepControl", d)
+            << "timeStepControl needs maxRelChange > 0, currentFloor >= 0,"
+            << " maxIncrease >= 1 and sampleInterval >= 0"
+            << exit(FatalIOError);
+    }
+}
+
+
+Foam::scalar Foam::plasmaPotential::patchCharge() const
+{
+    // eps on the patch: the region's epsilon field, or vacuum if absent
+    scalarField epsp(size(), 8.85418782e-12);
+
+    if (db().foundObject<volScalarField>("epsilon"))
+    {
+        epsp = patch().lookupPatchField<volScalarField, scalar>("epsilon");
+    }
+
+    const scalarField dPhidn
+    (
+        patch().deltaCoeffs()*(scalarField(*this) - patchInternalField())
+    );
+
+    return gSum(epsp*dPhidn*patch().magSf());
+}
+
+
+void Foam::plasmaPotential::sampleCurrent()
+{
+    const Time& runTime = db().time();
+
+    if (!dtControl_ || runTime.timeIndex() == lastTimeIndex_)
+    {
+        return;
+    }
+
+    lastTimeIndex_ = runTime.timeIndex();
+
+    // The first update in a time step comes before this step's solution, so
+    // the patch and cell values still belong to the end of the previous step
+    const scalar dt = runTime.deltaTValue();
+    const scalar t = runTime.value() - dt;
+
+    if (nSamples_ == 0)
+    {
+        // First sample (start or restart): hold the step until the current
+        // has been measured over two windows
+        tA_ = t;
+        tB_ = t;
+        qB_ = patchCharge();
+        targetDeltaT_ = dt;
+        nSamples_ = 1;
+    }
+    else if (t - tB_ >= max(sampleInterval_, SMALL*mag(t)))
+    {
+        // End of a sampling window: current over it, and its rate of change
+        // between the centres of this window and the previous one
+        const scalar q = patchCharge();
+        const scalar I = (q - qB_)/(t - tB_);
+
+        if (nSamples_ >= 2)
+        {
+            const scalar rate = mag(I - iB_)/(0.5*(t - tA_));
+
+            targetDeltaT_ =
+                maxRelChange_*(mag(I) + currentFloor_)/(rate + VSMALL);
+        }
+
+        tA_ = tB_;
+        tB_ = t;
+        qB_ = q;
+        iB_ = I;
+        current_ = I;
+        nSamples_++;
+    }
+
+    // Drop to the target at once; grow by at most maxIncrease per step
+    suggestedDeltaT_ = min(targetDeltaT_, maxIncrease_*dt);
+}
+
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 void Foam::plasmaPotential::autoMap
@@ -385,6 +558,8 @@ void Foam::plasmaPotential::updateCoeffs()
     {
         return;
     }
+
+    sampleCurrent();
 
     if (modelName_ == "directCurrent")
     {
@@ -464,6 +639,23 @@ write(Ostream& os) const
             os.writeKeyword("voltageTable")
                 << voltageTable_ << token::END_STATEMENT << nl;
         }
+    }
+
+    if (dtControl_)
+    {
+        os << indent << "timeStepControl" << nl
+           << indent << token::BEGIN_BLOCK << incrIndent << nl;
+        os.writeKeyword("active")
+            << dtControl_ << token::END_STATEMENT << nl;
+        os.writeKeyword("maxRelChange")
+            << maxRelChange_ << token::END_STATEMENT << nl;
+        os.writeKeyword("currentFloor")
+            << currentFloor_ << token::END_STATEMENT << nl;
+        os.writeKeyword("maxIncrease")
+            << maxIncrease_ << token::END_STATEMENT << nl;
+        os.writeKeyword("sampleInterval")
+            << sampleInterval_ << token::END_STATEMENT << nl;
+        os << decrIndent << indent << token::END_BLOCK << nl;
     }
 
     writeEntry("value", os);

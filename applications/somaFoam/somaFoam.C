@@ -25,6 +25,8 @@ Description
 #include "pimpleControl.H"
 #include "dynamicFvMesh.H"
 #include "staticFvMesh.H"
+#include "plasmaPotential.H"
+#include "currentTimeStepControl.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -93,6 +95,23 @@ int main(int argc, char *argv[])
                 scalar Cofactor2 = pem.ecorrect(chemistry, E);
 
                 scalar deltaTNew = MaxCo/(Cofactor+1e-10);
+
+                // Current-based limit from the electrodes (optional)
+                {
+                    scalar deltaTI = currentLimitedDeltaT(Phi);
+
+                    forAll(PhiD, i)
+                    {
+                        deltaTI = min(deltaTI, currentLimitedDeltaT(PhiD[i]));
+                    }
+
+                    if (deltaTI < GREAT)
+                    {
+                        Info<< "Current-limited deltaT = " << deltaTI
+                            << endl;
+                        deltaTNew = min(deltaTNew, deltaTI);
+                    }
+                }
 
                 deltaTNew = min(deltaTNew,deltaTMax);
 
@@ -206,6 +225,18 @@ int main(int argc, char *argv[])
         Info << "Mesh Size Reciprocal = " << gMax(meshSize) << endl;
 
             scalar deltaTNew = MaxCo/(Cofactor+1e-10);
+
+            // Current-based limit from the electrodes (optional)
+            {
+                const scalar deltaTI = currentLimitedDeltaT(Phi);
+
+                if (deltaTI < GREAT)
+                {
+                    Info<< "Current-limited deltaT = " << deltaTI
+                        << endl;
+                    deltaTNew = min(deltaTNew, deltaTI);
+                }
+            }
 
             deltaTNew = min(deltaTNew,deltaTMax);
 
