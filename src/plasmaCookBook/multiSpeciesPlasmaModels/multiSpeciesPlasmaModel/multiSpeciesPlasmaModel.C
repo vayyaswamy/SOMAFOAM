@@ -675,7 +675,14 @@ Foam::multiSpeciesPlasmaModel::electronTempSource
 
     pets = (chemistry.eChemSource()())*plasmaConstants::A/W(eIndex_);
 
-    if (collisionFrequency_[eIndex_] == "muBased")
+    // Elastic electron-neutral energy loss, counted once: from the electron-impact
+    // elastic reactions (in eChemSource) when the mechanism has them, otherwise
+    // estimated from the electron mobility (collision frequency e/(m_e mu_e))
+    if
+    (
+        collisionFrequency_[eIndex_] == "muBased"
+     && !chemistry.electronElasticLoss()
+    )
     {
         pets += (3*plasmaConstants::boltzC*plasmaConstants::eChargeA*(thermo_.Te()-thermo_.T())*N(eIndex_)/mu_[eIndex_]/W(bIndex_));
     }
@@ -730,7 +737,12 @@ Foam::multiSpeciesPlasmaModel::dElectronTempSourceDTe
 
     pets = (chemistry.dEChemSourceDTe()())*plasmaConstants::A/W(eIndex_);
 
-    if (collisionFrequency_[eIndex_] == "muBased")
+    // Derivative of the elastic loss, counted once as in electronTempSource
+    if
+    (
+        collisionFrequency_[eIndex_] == "muBased"
+     && !chemistry.electronElasticLoss()
+    )
     {
         pets += (3*plasmaConstants::boltzC*plasmaConstants::eChargeA*N(eIndex_)/mu_[eIndex_]/W(bIndex_));
     }

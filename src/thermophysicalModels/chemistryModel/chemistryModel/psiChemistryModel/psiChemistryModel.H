@@ -140,6 +140,11 @@ public:
         virtual tmp<volScalarField> dEChemSourceDTe() const = 0;
 
 		virtual tmp<volScalarField> eChemSourceExplicit() const = 0;
+
+        //- True if the mechanism has electron-impact elastic reactions. Their
+        //  energy loss 3 (m_e/M) k_B (Te - T) per collision is then part of
+        //  eChemSource(), and the plasma model must not add it again.
+        virtual bool electronElasticLoss() const = 0;
 };
 
 

@@ -645,6 +645,27 @@ Foam::ODEChemistryModel<CompType, ThermoType>::Sh() const
 }
 
 template<class CompType, class ThermoType>
+bool Foam::ODEChemistryModel<CompType, ThermoType>::electronElasticLoss() const
+{
+    forAll(reactions_, i)
+    {
+        const word& type = reactions_[i].type();
+
+        if
+        (
+            type == "electronImpactElasticArrheniusReaction"
+         || type == "electronImpactElasticTabularReaction"
+        )
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+template<class CompType, class ThermoType>
 Foam::tmp<Foam::volScalarField>
 Foam::ODEChemistryModel<CompType, ThermoType>::eChemSourceExplicit() const
 {
