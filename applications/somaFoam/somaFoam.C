@@ -24,6 +24,7 @@ Description
 #include "emcModels.H"
 #include "pimpleControl.H"
 #include "dynamicFvMesh.H"
+#include "magLongDelta.H"
 #include "staticFvMesh.H"
 #include "plasmaPotential.H"
 #include "currentTimeStepControl.H"
@@ -46,13 +47,17 @@ int main(int argc, char *argv[])
 
     if (solutionDomain == "plasmaDielectric")
     {
-        // The plasma-dielectric coupling assumes a fixed mesh
-        if (!isA<staticFvMesh>(mesh))
+        // The plasma-dielectric coupling needs a fixed mesh, except for 1D
+        // refinement of the plasma mesh (dynamicRefine1DFvMesh): it never
+        // splits the boundary faces, so the interface to the dielectric
+        // stays the same. The dielectric mesh is not refined.
+        if (!isA<staticFvMesh>(mesh) && mesh.type() != "dynamicRefine1DFvMesh")
         {
             FatalErrorIn(args.executable())
                 << "A dynamic mesh (" << mesh.type() << ") is selected in"
                 << " constant/dynamicMeshDict, but mesh changes are only"
-                << " supported for solutionDomain plasma." << nl
+                << " supported for solutionDomain plasma (and dynamicRefine1DFvMesh"
+                << " for plasmaDielectric)." << nl
                 << "Remove constant/dynamicMeshDict or select staticFvMesh."
                 << exit(FatalError);
         }
@@ -60,6 +65,9 @@ int main(int argc, char *argv[])
 
         #include "createDielectricMesh.H"
         #include "createDielectricFields.H"
+
+        // Set when the plasma mesh changes (1D refinement)
+        bool dielectricWeightsOutdated = false;
 
         while (runTime.run())
         {
@@ -69,10 +77,44 @@ int main(int argc, char *argv[])
             Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
                     << runTime.elapsedCpuTime() << "s" << endl;
 
+            // Adaptive 1D refinement of the plasma mesh, with the plasma side
+            // of the interface detached (as for the plasma equations)
+            #include "prolongStore.H"
+
+            if (mesh.update())
+            {
+                #include "prolongApply.H"
+
+                // The interface face is never split, but the plasma cell
+                // behind it can be: the dielectric interpolation weights and
+                // distances, which use the cell centres across the
+                // interface, are recalculated after the next attach (below)
+                dielectricWeightsOutdated = true;
+
+                Info<< "Mesh changed: "
+                    << returnReduce(mesh.nCells(), sumOp<label>())
+                    << " cells" << endl;
+            }
+
             while (pimple.loop())
             {
 
                 #include "attachPatches.H"
+
+                if (dielectricWeightsOutdated)
+                {
+                    forAll(dielectricRegions, i)
+                    {
+                        dielectricRegions[i].surfaceInterpolation::movePoints();
+
+                        // Distance between the cell centres across the
+                        // interface, used by the harmonic interpolation of
+                        // the permittivity (cached per mesh)
+                        magLongDelta::Delete(dielectricRegions[i]);
+                    }
+
+                    dielectricWeightsOutdated = false;
+                }
 
                 while (pimple.correct())
                 {
