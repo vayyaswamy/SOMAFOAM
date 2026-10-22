@@ -149,6 +149,8 @@ int main(int argc, char *argv[])
 
                 }
 
+                // Copy N(i) with its boundary conditions, so that their settings
+                // (e.g. seec) are written and restarts read them back
                 forAll(composition.Y(), i)
                 {
                     volScalarField specN
@@ -159,8 +161,7 @@ int main(int argc, char *argv[])
                             runTime.timeName(),
                             mesh
                         ),
-                        mspm().N(i),
-                        Y[i].boundaryField().types()
+                        mspm().N(i)
                     );
                     specN.write();
                 }
