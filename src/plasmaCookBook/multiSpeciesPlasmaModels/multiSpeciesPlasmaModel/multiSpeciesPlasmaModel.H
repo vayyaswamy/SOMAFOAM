@@ -149,6 +149,16 @@ protected:
         //  cells use them
         PtrList<surfaceScalarField> faceFlux_;
 
+        //- Charge [C] changed in the current step by the relaxation and the
+        //  limits applied to the charged species after their solution
+        //  (driftDiffusion), which the face fluxes do not carry
+        scalar postSolveCharge_;
+
+        //- Largest change [1/m3] of a charged species density in the
+        //  current correct(), over all cells: the change since the last
+        //  outer iteration, for the convergence of the outer loop
+        scalar chargedSpeciesChange_;
+
         // Limits, optional dictionary limits in plasmaProperties
 
             //- Lower limit of the number densities of the transported
@@ -342,6 +352,27 @@ public:
         tmp<volScalarField> potentialExpSource();
 
         tmp<volVectorField> netChargeFlux();
+
+        //- Charge through each face [C/s], along Sf: sum over the charged
+        //  species of e*z times the face flux of their equations
+        tmp<surfaceScalarField> netChargeFaceFlux() const;
+
+        //- Net charge of the transported charged species [C]
+        scalar totalCharge() const;
+
+        //- Charge [C] changed in the current step after the solution of the
+        //  charged species (relaxation, limits)
+        scalar postSolveCharge() const
+        {
+            return postSolveCharge_;
+        }
+
+        //- Change of the charged species in the last correct(): the
+        //  largest change of a charged density in any cell, divided by the
+        //  largest total charged density sum |z| N in the region. Species
+        //  near the density floor (e.g. N2+ between pulses) do not hold it
+        //  up, unlike normalised solver residuals.
+        scalar chargedSpeciesResidual() const;
 
         tmp<volVectorField> totalIonFlux();
 

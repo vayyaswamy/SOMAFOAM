@@ -188,6 +188,9 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
 
     Ni.storePrevIter();
 
+    // Density of the last outer iteration
+    const scalarField NOuterPrev(Ni.internalField());
+
     // Chemistry source linearised in Ni and updated each corrector
     scalar initialResidual = 1.0;
     label iCorr = 0;
@@ -226,9 +229,26 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
 
     reportInnerIterations(species()[i], nCorr, initialResidual);
 
+    // Density from the solution, before relaxation and limits
+    const scalarField NSolved(Ni.internalField());
+
     relaxFinal(Ni);
 
     this->limitField(Ni, densityFloor_);
+
+    if (charged)
+    {
+        this->postSolveCharge_ +=
+            z_[i]*plasmaConstants::eCharge.value()
+           *gSum((Ni.internalField() - NSolved)*mesh_.V());
+
+        this->chargedSpeciesChange_ =
+            max
+            (
+                this->chargedSpeciesChange_,
+                gMax(mag(Ni.internalField() - NOuterPrev))
+            );
+    }
 
     yi = Ni*W(i)/thermo_.rho()/plasmaConstants::A;
 
@@ -269,6 +289,9 @@ inline Foam::scalar Foam::driftDiffusion<ThermoType>::correct
 )
 {
     updateTemperature();
+
+    this->postSolveCharge_ = 0;
+    this->chargedSpeciesChange_ = 0;
 
     if (eonCalculation)
     {

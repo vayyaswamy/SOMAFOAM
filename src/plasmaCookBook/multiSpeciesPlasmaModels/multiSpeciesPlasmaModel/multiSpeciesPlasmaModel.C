@@ -112,6 +112,8 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     reportUnconverged_(true),
     scharfetterGummel_(species().size(), false),
     faceFlux_(species().size()),
+    postSolveCharge_(0),
+    chargedSpeciesChange_(0),
 
     densityFloor_(1e4),
     TeMin_(300),
@@ -976,6 +978,81 @@ Foam::multiSpeciesPlasmaModel::potentialExpSource()
     }
     return tPes;
 }
+
+Foam::tmp<Foam::surfaceScalarField>
+Foam::multiSpeciesPlasmaModel::netChargeFaceFlux() const
+{
+    tmp<surfaceScalarField> tIc
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "netChargeFaceFlux",
+                mesh_.time().timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            mesh_,
+            dimensionedScalar("zero", dimensionSet(0, 0, 0, 0, 0, 1, 0), 0.0)
+        )
+    );
+
+    surfaceScalarField& Ic = tIc();
+
+    const scalar e = plasmaConstants::eCharge.value();
+
+    forAll(species(), i)
+    {
+        if (i < activeSpecies_ && faceFlux_.set(i))
+        {
+            Ic.internalField() += e*z_[i]*faceFlux_[i].internalField();
+
+            forAll(Ic.boundaryField(), patchi)
+            {
+                Ic.boundaryField()[patchi] +=
+                    e*z_[i]*faceFlux_[i].boundaryField()[patchi];
+            }
+        }
+    }
+
+    return tIc;
+}
+
+
+Foam::scalar Foam::multiSpeciesPlasmaModel::chargedSpeciesResidual() const
+{
+    scalarField chargedDensity(mesh_.nCells(), 0.0);
+
+    forAll(species(), i)
+    {
+        if (i < activeSpecies_)
+        {
+            chargedDensity += mag(z_[i])*N(i).internalField();
+        }
+    }
+
+    return chargedSpeciesChange_/max(gMax(chargedDensity), VSMALL);
+}
+
+
+Foam::scalar Foam::multiSpeciesPlasmaModel::totalCharge() const
+{
+    scalarField rho(mesh_.nCells(), 0.0);
+
+    forAll(species(), i)
+    {
+        if (i < activeSpecies_)
+        {
+            rho += z_[i]*N(i).internalField();
+        }
+    }
+
+    return plasmaConstants::eCharge.value()*gSum(rho*mesh_.V());
+}
+
 
 Foam::tmp<Foam::volVectorField>
 Foam::multiSpeciesPlasmaModel::netChargeFlux()

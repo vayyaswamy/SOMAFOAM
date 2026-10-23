@@ -413,6 +413,10 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
     scalar initialResidual = 1.0;
 
+    // Charge balance and outer-loop convergence of the charged species
+    this->postSolveCharge_ = 0;
+    this->chargedSpeciesChange_ = 0;
+
     volScalarField yt = 0.0*thermo_.composition().Y(0);
 
     if (multiTimeStep)
@@ -580,6 +584,9 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         const volScalarField& Ti = T_[i];
                         int icorr = 0;
 
+                        // Density of the last outer iteration
+                        const scalarField NOuterPrev(N_[i].internalField());
+
                         N_[i].storePrevIter();
 
                         initialResidual = 1.0;
@@ -605,7 +612,6 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                             initialResidual = solverPerf.initialResidual();
 
-
                             yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
                             updateChemistryCollFreq(chemistry);
@@ -619,9 +625,24 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                             initialResidual
                         );
 
+                        // Density from the solution, before relaxation and
+                        // limits
+                        const scalarField NSolved(N_[i].internalField());
+
                         relaxFinal(N_[i]);
 
                         this->limitField(N_[i], densityFloor_);
+
+                        this->postSolveCharge_ +=
+                            z_[i]*plasmaConstants::eCharge.value()
+                           *gSum((N_[i].internalField() - NSolved)*mesh_.V());
+
+                        this->chargedSpeciesChange_ =
+                            max
+                            (
+                                this->chargedSpeciesChange_,
+                                gMax(mag(N_[i].internalField() - NOuterPrev))
+                            );
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
