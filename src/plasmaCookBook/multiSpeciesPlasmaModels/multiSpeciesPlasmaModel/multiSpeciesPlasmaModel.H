@@ -175,16 +175,15 @@ protected:
             //- Indices of the accelerated species
             labelList accSpecies_;
 
-            //- Period of the applied voltage [s]
-            scalar accPeriod_;
-
             //- Time after which the acceleration is active [s]
             scalar accStartTime_;
 
-            //- Periods of full simulation between two advances, and periods
-            //  at the end of them over which the sources are averaged
-            label accFullCycles_;
-            label accAverageCycles_;
+            //- Length of the full simulation between two advances, and the
+            //  window at the end of it over which the sources are averaged
+            //  [s] (from blockTime/averageTime, or fullCycles/averageCycles
+            //  times period)
+            scalar accBlockTime_;
+            scalar accAverageTime_;
 
             //- Solve for the steady state of the averaged equation instead
             //  of advancing in time
