@@ -1057,9 +1057,13 @@ Foam::multiSpeciesPlasmaModel::totalIonFlux()
 
     volVectorField pIf = 0.0*If;
 
+    // The ions that release secondary electrons where they hit a wall: the
+    // positive ions. J is a number flux, so a negative ion flowing into the
+    // anode would otherwise count as ion bombardment, and one drifting away
+    // from the cathode would cancel part of the positive ion flux there
     forAll(species(), i)
     {
-        if (i != eIndex_ && i < activeSpecies_)
+        if (i != eIndex_ && i < activeSpecies_ && z_[i] > 0)
         {
             pIf += J(i);
         }
