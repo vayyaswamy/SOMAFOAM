@@ -123,6 +123,16 @@ if (prolongCentres.valid())
 
         TeP.internalField() += dTe;
         TeP.oldTime().internalField() += dTe;
+
+        // Within the bounds of the electron energy solution (TeMin, TeMax
+        // in plasmaProperties); the 30 % limit alone can exceed them
+        const scalar TeMin = mspm().TeMin();
+        const scalar TeMax = mspm().TeMax();
+
+        TeP.internalField() = max(min(TeP.internalField(), TeMax), TeMin);
+        TeP.oldTime().internalField() =
+            max(min(TeP.oldTime().internalField(), TeMax), TeMin);
+
         TeP.correctBoundaryConditions();
     }
 }
