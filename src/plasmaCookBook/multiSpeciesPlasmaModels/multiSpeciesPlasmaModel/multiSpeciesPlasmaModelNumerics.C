@@ -173,9 +173,34 @@ void Foam::multiSpeciesPlasmaModel::correctDriftDiffusionFlux
         )
     );
 
-    // The boundary values of J, which give the currents to the walls, are
-    // kept
     J_[i].internalField() = fvc::reconstruct(faceFlux_[i])().internalField();
+
+    // On the boundary, the normal component of J is the flux through the
+    // boundary face as discretised in the equation (the tangential component
+    // keeps the cell-based value). The wall currents (Jnet), the surface
+    // charge and the ion flux used for secondary emission are then the
+    // fluxes the species equation uses. The cell-based expression differs
+    // from them across steep wall sheaths.
+    forAll(J_[i].boundaryField(), patchi)
+    {
+        fvPatchVectorField& pJ = J_[i].boundaryField()[patchi];
+
+        if (!pJ.size())
+        {
+            continue;
+        }
+
+        const vectorField n(mesh_.boundary()[patchi].nf());
+
+        const vectorField Jb
+        (
+            pJ - n*(n & pJ)
+          + n*faceFlux_[i].boundaryField()[patchi]
+           /mesh_.magSf().boundaryField()[patchi]
+        );
+
+        pJ == Jb;
+    }
 }
 
 
