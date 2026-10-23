@@ -28,6 +28,7 @@ Description
 #include "staticFvMesh.H"
 #include "plasmaPotential.H"
 #include "currentTimeStepControl.H"
+#include "OFstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -65,6 +66,7 @@ int main(int argc, char *argv[])
 
         #include "createDielectricMesh.H"
         #include "createDielectricFields.H"
+        #include "createTotalCurrentFields.H"
 
         // Set when the plasma mesh changes (1D refinement)
         bool dielectricWeightsOutdated = false;
@@ -96,37 +98,82 @@ int main(int argc, char *argv[])
                     << " cells" << endl;
             }
 
-            while (pimple.loop())
+            // Outer iterations. With chargedSpeciesTolerance in PIMPLE they
+            // continue until the charged species stop changing: the largest
+            // change of a charged density in an iteration, divided by the
+            // largest total charged density sum |z| N, below the tolerance
+            // (multiSpeciesPlasmaModel::chargedSpeciesResidual). One more,
+            // final, iteration then follows (relaxation factors
+            // "<field>Final"), as in pimpleControl. pimpleControl's own
+            // residualControl takes the last solve of each field, which for
+            // species with inner passes is always converged, and normalised
+            // residuals stay near 1 for species near the density floor, so
+            // neither can judge this. Reactions between charged species
+            // conserve charge only when all species are converged to one
+            // state.
+            const dictionary& pimpleDict = mesh.solutionDict().subDict("PIMPLE");
+
+            const scalar chargedSpeciesTolerance =
+                pimpleDict.lookupOrDefault<scalar>("chargedSpeciesTolerance", 0);
+
+            if (chargedSpeciesTolerance > 0)
             {
+                const label nOuterMax =
+                    pimpleDict.lookupOrDefault<label>("nOuterCorrectors", 1);
 
-                #include "attachPatches.H"
+                label outerI = 0;
+                bool finalOuter = false;
+                bool outerConverged = false;
 
-                if (dielectricWeightsOutdated)
+                while (true)
                 {
-                    forAll(dielectricRegions, i)
-                    {
-                        dielectricRegions[i].surfaceInterpolation::movePoints();
+                    outerI++;
 
-                        // Distance between the cell centres across the
-                        // interface, used by the harmonic interpolation of
-                        // the permittivity (cached per mesh)
-                        magLongDelta::Delete(dielectricRegions[i]);
+                    if (finalOuter || outerI >= nOuterMax)
+                    {
+                        finalOuter = true;
+                        mesh.solutionDict().add("finalIteration", true);
                     }
 
-                    dielectricWeightsOutdated = false;
+                    #include "plasmaDielectricOuterIteration.H"
+
+                    if (finalOuter)
+                    {
+                        mesh.solutionDict().remove("finalIteration");
+                        break;
+                    }
+
+                    if
+                    (
+                        outerI > 1
+                     && mspm().chargedSpeciesResidual()
+                      < chargedSpeciesTolerance
+                    )
+                    {
+                        finalOuter = true;
+                        outerConverged = true;
+                    }
                 }
 
-                while (pimple.correct())
+                if (outerConverged)
                 {
-                        #include "solvePoissonD.H"
+                    Info<< "Outer iterations: " << outerI
+                        << ", charged species converged" << endl;
                 }
-                #include "detachPatches.H"
-
-                #include "plasmaEqn.H"
-
-                #include "surfaceCharge.H"
-
-
+                else
+                {
+                    Info<< "Outer iterations: " << outerI
+                        << ", charged species NOT converged: relative change "
+                        << mspm().chargedSpeciesResidual() << " (tolerance "
+                        << chargedSpeciesTolerance << ")" << endl;
+                }
+            }
+            else
+            {
+                while (pimple.loop())
+                {
+                    #include "plasmaDielectricOuterIteration.H"
+                }
             }
 
             gradTe = mspm().gradTe();
@@ -135,6 +182,8 @@ int main(int argc, char *argv[])
                 scalar Cofactor = mspm().divFe();
 
                 scalar Cofactor2 = pem.ecorrect(chemistry, E);
+
+                #include "postStepTotalCurrent.H"
 
                 scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 
