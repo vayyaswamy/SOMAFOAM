@@ -27,6 +27,27 @@ License
 #include "chemistrySolver.H"
 #include "reactingMixture.H"
 
+
+// * * * * * * * * * * * * * * Local Functions  * * * * * * * * * * * * * * //
+
+namespace
+{
+    // pow(x, e) without the library call for the stoichiometric exponents
+    // 1 and 0, where it is exact: pow(x, 1) = x and pow(x, 0) = 1 for any x
+    inline Foam::scalar powE(const Foam::scalar x, const Foam::scalar e)
+    {
+        if (e == 1.0)
+        {
+            return x;
+        }
+        if (e == 0.0)
+        {
+            return 1.0;
+        }
+        return Foam::pow(x, e);
+    }
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class CompType, class ThermoType>
@@ -170,22 +191,92 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
     label& rRef
 ) const
 {
-    scalarField c2(nSpecie_, 0.0);
-    for (label i=0; i<nSpecie_; i++)
+    return omegaKind
+    (
+        kindOf(R.type()), R, c, T, p, Te, Tion, pf, cf, lRef, pr, cr, rRef
+    );
+}
+
+
+template<class CompType, class ThermoType>
+Foam::label Foam::ODEChemistryModel<CompType, ThermoType>::kindOf
+(
+    const word& type
+)
+{
+    if
+    (
+        type == "electronImpactInelasticArrheniusReaction"
+     || type == "electronImpactInelasticTabularReaction"
+    )
     {
-        c2[i] = max(0.0, c[i]);
+        return electronInelastic;
     }
+    if (type == "ionIrreversibleArrheniusReaction")
+    {
+        return ionIrreversible;
+    }
+    if
+    (
+        type == "electronImpactElasticArrheniusReaction"
+     || type == "electronImpactElasticTabularReaction"
+    )
+    {
+        return electronElastic;
+    }
+    if (type == "ionElasticArrheniusReaction")
+    {
+        return ionElastic;
+    }
+    return otherReaction;
+}
+
+
+template<class CompType, class ThermoType>
+const Foam::labelList&
+Foam::ODEChemistryModel<CompType, ThermoType>::reactionKinds() const
+{
+    if (reactionKind_.size() != reactions_.size())
+    {
+        reactionKind_.setSize(reactions_.size());
+        forAll(reactions_, i)
+        {
+            reactionKind_[i] = kindOf(reactions_[i].type());
+        }
+    }
+    return reactionKind_;
+}
+
+
+template<class CompType, class ThermoType>
+Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omegaKind
+(
+    const label kind,
+    const Reaction<ThermoType>& R,
+    const scalarField& c,
+    const scalar T,
+    const scalar p,
+    const scalar Te,
+    const scalar Tion,
+    scalar& pf,
+    scalar& cf,
+    label& lRef,
+    scalar& pr,
+    scalar& cr,
+    label& rRef
+) const
+{
 
     scalar kf, kr;
 
     //Info << "inside omega " << endl;
 
-    if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
+    if (kind == electronInelastic)
 	{
       kf = R.kf(Te, p, c);
       kr = R.kr(kf, Te, p, c);
     }
-    else if ((R.type() == "ionIrreversibleArrheniusReaction"))
+    else if (kind == ionIrreversible)
 	{
       kf = R.kf(Tion, p, c);
       kr = R.kr(kf, Tion, p, c);
@@ -213,14 +304,14 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
         if (c[si] < c[lRef])
         {
             scalar exp = R.lhs()[slRef].exponent;
-            pf *= pow(max(0.0, c[lRef]), exp);
+            pf *= powE(max(0.0, c[lRef]), exp);
             lRef = si;
             slRef = s;
         }
         else
         {
             scalar exp = R.lhs()[s].exponent;
-            pf *= pow(max(0.0, c[si]), exp);
+            pf *= powE(max(0.0, c[si]), exp);
         }
     }
     cf = max(0.0, c[lRef]);
@@ -232,7 +323,7 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
         {
             if (cf > ROOTVSMALL)
             {
-                pf *= pow(cf, exp - 1.0);
+                pf *= powE(cf, exp - 1.0);
             }
             else
             {
@@ -241,7 +332,7 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
         }
         else
         {
-            pf *= pow(cf, exp - 1.0);
+            pf *= powE(cf, exp - 1.0);
         }
     }
 
@@ -256,14 +347,14 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
         if (c[si] < c[rRef])
         {
             scalar exp = R.rhs()[srRef].exponent;
-            pr *= pow(max(0.0, c[rRef]), exp);
+            pr *= powE(max(0.0, c[rRef]), exp);
             rRef = si;
             srRef = s;
         }
         else
         {
             scalar exp = R.rhs()[s].exponent;
-            pr *= pow(max(0.0, c[si]), exp);
+            pr *= powE(max(0.0, c[si]), exp);
         }
     }
     cr = max(0.0, c[rRef]);
@@ -274,7 +365,7 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
         {
             if (cr>ROOTVSMALL)
             {
-                pr *= pow(cr, exp - 1.0);
+                pr *= powE(cr, exp - 1.0);
             }
             else
             {
@@ -283,7 +374,7 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omega
         }
         else
         {
-            pr *= pow(cr, exp - 1.0);
+            pr *= powE(cr, exp - 1.0);
         }
     }
 
@@ -409,7 +500,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::jacobian
                     {
                         if (c2[si]>ROOTVSMALL)
                         {
-                            kf *= el*pow(c2[si] + VSMALL, el - 1.0);
+                            kf *= el*powE(c2[si] + VSMALL, el - 1.0);
                         }
                         else
                         {
@@ -418,12 +509,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::jacobian
                     }
                     else
                     {
-                        kf *= el*pow(c2[si], el - 1.0);
+                        kf *= el*powE(c2[si], el - 1.0);
                     }
                 }
                 else
                 {
-                    kf *= pow(c2[si], el);
+                    kf *= powE(c2[si], el);
                 }
             }
 
@@ -455,7 +546,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::jacobian
                     {
                         if (c2[si]>ROOTVSMALL)
                         {
-                            kr *= er*pow(c2[si] + VSMALL, er - 1.0);
+                            kr *= er*powE(c2[si] + VSMALL, er - 1.0);
                         }
                         else
                         {
@@ -464,12 +555,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::jacobian
                     }
                     else
                     {
-                        kr *= er*pow(c2[si], er - 1.0);
+                        kr *= er*powE(c2[si], er - 1.0);
                     }
                 }
                 else
                 {
-                    kr *= pow(c2[si], er);
+                    kr *= powE(c2[si], er);
                 }
             }
 
@@ -917,7 +1008,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
                             {
                                 if (c2[si]>ROOTVSMALL)
                                 {
-                                    kf *= el*pow(c2[si] + VSMALL, el - 1.0);
+                                    kf *= el*powE(c2[si] + VSMALL, el - 1.0);
                                 }
                                 else
                                 {
@@ -926,12 +1017,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
                             }
                             else
                             {
-                                kf *= el*pow(c2[si], el - 1.0);
+                                kf *= el*powE(c2[si], el - 1.0);
                             }
                         }
                         else
                         {
-                            kf *= pow(c2[si], el);
+                            kf *= powE(c2[si], el);
                         }
                     }
 
@@ -971,7 +1062,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
                             {
                                 if (c2[si]>ROOTVSMALL)
                                 {
-                                    kr *= er*pow(c2[si] + VSMALL, er - 1.0);
+                                    kr *= er*powE(c2[si] + VSMALL, er - 1.0);
                                 }
                                 else
                                 {
@@ -980,12 +1071,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
                             }
                             else
                             {
-                                kr *= er*pow(c2[si], er - 1.0);
+                                kr *= er*powE(c2[si], er - 1.0);
                             }
                         }
                         else
                         {
-                            kr *= pow(c2[si], er);
+                            kr *= powE(c2[si], er);
                         }   
                     }
 
@@ -1085,6 +1176,13 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 
     if (this->chemistry_)
     {
+        const labelList& kinds = reactionKinds();
+
+        // Work arrays, set in every cell
+        scalarField c(nSpecie_);
+        scalarField dcdt(nEqns(), 0.0);
+        scalarField c2(nSpecie_, 0.0);
+
         forAll(rho, celli)
         {
             for (label i=0; i<nSpecie_; i++)
@@ -1104,9 +1202,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
             scalar Tei = this->thermo().Te()[celli];
             scalar Tioni = this->thermo().Tion()[celli];
 
-            scalarField c(nSpecie_);
-            scalarField dcdt(nEqns(), 0.0);
-            scalarField c2(nSpecie_, 0.0);
+            dcdt = 0.0;
 
             for (label i=0; i<nSpecie_; i++)
             {
@@ -1123,33 +1219,44 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 			forAll(reactions_, i)
 			{
 				const Reaction<ThermoType>& R = reactions_[i];
+				const label kind = kinds[i];
 
-				scalar omegai = omega
+				scalar omegai = omegaKind
 				(
-				    R, c, Ti, pi, Tei, Tioni, pf, cf, lRef, pr, cr, rRef
+				    kind, R, c, Ti, pi, Tei, Tioni, pf, cf, lRef, pr, cr, rRef
 				);
 
-                scalar omegaiplus = omega
-                (
-                    R, c, Ti, pi, Tei + 1e-08, Tioni, pf, cf, lRef, pr, cr, rRef
-                );
+                // Central difference in Te; only the electron-impact
+                // inelastic rates depend on Te (omegaKind), for the other
+                // reactions the difference is exactly zero
+                scalar dOmegaiDTe = 0.0;
 
-                scalar omegaiminus = omega
-                (
-                    R, c, Ti, pi, Tei - 1e-08, Tioni, pf, cf, lRef, pr, cr, rRef
-                );
+                if (kind == electronInelastic)
+                {
+                    scalar omegaiplus = omegaKind
+                    (
+                        kind, R, c, Ti, pi, Tei + 1e-08, Tioni,
+                        pf, cf, lRef, pr, cr, rRef
+                    );
 
-                scalar dOmegaiDTe = (omegaiplus - omegaiminus) / 2e-08; 
+                    scalar omegaiminus = omegaKind
+                    (
+                        kind, R, c, Ti, pi, Tei - 1e-08, Tioni,
+                        pf, cf, lRef, pr, cr, rRef
+                    );
+
+                    dOmegaiDTe = (omegaiplus - omegaiminus) / 2e-08;
+                }
 
                 scalar kf0, kr0;
 
 
-                if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
+                if (kind == electronInelastic)
                 {
                     kf0 = R.kf(Tei, pi, c2);
                     kr0 = R.kr(kf0, Tei, pi, c2);
                 }
-                else if ((R.type() == "ionIrreversibleArrheniusReaction"))
+                else if (kind == ionIrreversible)
                 {
                     kf0 = R.kf(Tioni, pi, c2);
                     kr0 = R.kr(kf0, Tioni, pi, c2);
@@ -1177,7 +1284,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
                             {
                                 if (c2[si]>ROOTVSMALL)
                                 {
-                                    kf *= el*pow(c2[si] + VSMALL, el - 1.0);
+                                    kf *= el*powE(c2[si] + VSMALL, el - 1.0);
                                 }
                                 else
                                 {
@@ -1186,12 +1293,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
                             }
                             else
                             {
-                                kf *= el*pow(c2[si], el - 1.0);
+                                kf *= el*powE(c2[si], el - 1.0);
                             }
                         }
                         else
                         {
-                            kf *= pow(c2[si], el);
+                            kf *= powE(c2[si], el);
                         }
                     }
 
@@ -1232,7 +1339,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
                             {
                                 if (c2[si]>ROOTVSMALL)
                                 {
-                                    kr *= er*pow(c2[si] + VSMALL, er - 1.0);
+                                    kr *= er*powE(c2[si] + VSMALL, er - 1.0);
                                 }
                                 else
                                 {
@@ -1241,12 +1348,12 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
                             }
                             else
                             {
-                                kr *= er*pow(c2[si], er - 1.0);
+                                kr *= er*powE(c2[si], er - 1.0);
                             }
                         }
                         else
                         {
-                            kr *= pow(c2[si], er);
+                            kr *= powE(c2[si], er);
                         }   
                     }
 
@@ -1271,13 +1378,13 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
                     }
                 }
 
-				if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
+				if (kind == electronInelastic)
 				{
 				    scalar sl = R.lhs()[0].stoichCoeff;
 			    	eChemSource_[celli] += sl*omegai*R.deltaE()*5.48579E-4; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s, electron weight hard coded 
 				    dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*5.48579E-4;
                 }
-				if ((R.type() == "electronImpactElasticArrheniusReaction") || (R.type() == "electronImpactElasticTabularReaction"))
+				if (kind == electronElastic)
 				{
 				  // getting index of neutral species
 					const label si = R.lhs()[1].index; 
@@ -1287,7 +1394,7 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
                     dEChemSourceDTe_[celli] += 3.0*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
 				  // need to multiply by electron mass and divide by other species mass
 				}
-				if ((R.type() == "ionElasticArrheniusReaction"))
+				if (kind == ionElastic)
 				{
 				  // getting index of neutral species
 					const label sii = R.lhs()[0].index; 
