@@ -29,6 +29,7 @@ Description
 #include "plasmaPotential.H"
 #include "currentTimeStepControl.H"
 #include "OFstream.H"
+#include "stepSnapshot.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -71,6 +72,10 @@ int main(int argc, char *argv[])
         // Set when the plasma mesh changes (1D refinement)
         bool dielectricWeightsOutdated = false;
 
+        // Upper limit of the step after a rejected step (see below); GREAT
+        // when none
+        scalar deltaTRejectionCap = GREAT;
+
         while (runTime.run())
         {
 
@@ -111,61 +116,175 @@ int main(int argc, char *argv[])
             // neither can judge this. Reactions between charged species
             // conserve charge only when all species are converged to one
             // state.
+            //
+            // Step rejection (stepRejection, default on with
+            // chargedSpeciesTolerance): a step whose outer iterations do not
+            // converge within nOuterCorrectors is undone (all registered
+            // fields back to the start of the step) and retried with half
+            // the step, down to deltaTMin. A relative change above 1 after
+            // the second iteration (larger than the total charged density)
+            // ends the iterations at once. At deltaTMin an unconverged step
+            // is accepted with a warning; a diverging one stops the run.
+            // The retry stays at the same time index, so the old-time fields
+            // keep the start of the step (Euler time stepping only).
             const dictionary& pimpleDict = mesh.solutionDict().subDict("PIMPLE");
 
             const scalar chargedSpeciesTolerance =
                 pimpleDict.lookupOrDefault<scalar>("chargedSpeciesTolerance", 0);
+
+            bool stepRejected = false;
 
             if (chargedSpeciesTolerance > 0)
             {
                 const label nOuterMax =
                     pimpleDict.lookupOrDefault<label>("nOuterCorrectors", 1);
 
+                const Switch stepRejection
+                (
+                    pimpleDict.lookupOrDefault<Switch>("stepRejection", true)
+                );
+
+                const scalar tStart = runTime.value() - runTime.deltaTValue();
+
+                PtrList<stepSnapshot> snapshots(dielectricRegions.size() + 1);
+
+                if (stepRejection)
+                {
+                    snapshots.set(0, new stepSnapshot(mesh));
+
+                    forAll(dielectricRegions, i)
+                    {
+                        snapshots.set
+                        (
+                            i + 1,
+                            new stepSnapshot(dielectricRegions[i])
+                        );
+                    }
+
+                    forAll(snapshots, i)
+                    {
+                        snapshots[i].store();
+                    }
+                }
+
                 label outerI = 0;
-                bool finalOuter = false;
-                bool outerConverged = false;
 
                 while (true)
                 {
-                    outerI++;
+                    outerI = 0;
+                    bool finalOuter = false;
+                    bool outerConverged = false;
+                    bool outerDiverged = false;
 
-                    if (finalOuter || outerI >= nOuterMax)
+                    while (true)
                     {
-                        finalOuter = true;
-                        mesh.solutionDict().add("finalIteration", true);
+                        outerI++;
+
+                        if (finalOuter || outerI >= nOuterMax)
+                        {
+                            finalOuter = true;
+                            mesh.solutionDict().add("finalIteration", true);
+                        }
+
+                        #include "plasmaDielectricOuterIteration.H"
+
+                        if (finalOuter)
+                        {
+                            mesh.solutionDict().remove("finalIteration");
+                            break;
+                        }
+
+                        const scalar change = mspm().chargedSpeciesResidual();
+
+                        if (outerI > 1 && change < chargedSpeciesTolerance)
+                        {
+                            finalOuter = true;
+                            outerConverged = true;
+                        }
+                        else if
+                        (
+                            stepRejection && outerI > 2
+                         && (change > 1 || change != change)
+                        )
+                        {
+                            outerDiverged = true;
+                            break;
+                        }
                     }
 
-                    #include "plasmaDielectricOuterIteration.H"
-
-                    if (finalOuter)
+                    if (outerConverged)
                     {
-                        mesh.solutionDict().remove("finalIteration");
+                        Info<< "Outer iterations: " << outerI
+                            << ", charged species converged" << endl;
                         break;
                     }
 
-                    if
-                    (
-                        outerI > 1
-                     && mspm().chargedSpeciesResidual()
-                      < chargedSpeciesTolerance
-                    )
-                    {
-                        finalOuter = true;
-                        outerConverged = true;
-                    }
-                }
-
-                if (outerConverged)
-                {
-                    Info<< "Outer iterations: " << outerI
-                        << ", charged species converged" << endl;
-                }
-                else
-                {
                     Info<< "Outer iterations: " << outerI
                         << ", charged species NOT converged: relative change "
                         << mspm().chargedSpeciesResidual() << " (tolerance "
                         << chargedSpeciesTolerance << ")" << endl;
+
+                    const scalar deltaT = runTime.deltaTValue();
+
+                    if (!stepRejection)
+                    {
+                        break;
+                    }
+
+                    if (deltaT <= deltaTMin*(1 + SMALL))
+                    {
+                        if (outerDiverged)
+                        {
+                            FatalErrorIn(args.executable())
+                                << "Outer iterations diverge at deltaTMin = "
+                                << deltaTMin << ", time " << runTime.value()
+                                << exit(FatalError);
+                        }
+
+                        Info<< "Step accepted unconverged at deltaTMin"
+                            << endl;
+                        break;
+                    }
+
+                    // Undo the step and retry with half of it
+                    forAll(snapshots, i)
+                    {
+                        snapshots[i].restore();
+                    }
+
+                    const scalar deltaTRetry = max(0.5*deltaT, deltaTMin);
+
+                    runTime.setDeltaT(deltaTRetry, false);
+                    runTime.setTime(tStart + deltaTRetry, runTime.timeIndex());
+
+                    stepRejected = true;
+
+                    Info<< "Step rejected: retrying with deltaT = "
+                        << deltaTRetry << ", Simulation Time = "
+                        << runTime.timeName() << "s" << endl;
+                }
+
+                // After a rejection the step is held at the accepted one and
+                // then grows by at most deltaTIncreaseAfterRejection per step
+                // (only on steps that converge within half of
+                // nOuterCorrectors), instead of returning at once to the
+                // current-limited step that failed
+                if (stepRejected)
+                {
+                    deltaTRejectionCap = runTime.deltaTValue();
+                }
+                else if (deltaTRejectionCap < GREAT && 2*outerI <= nOuterMax)
+                {
+                    deltaTRejectionCap *= pimpleDict.lookupOrDefault<scalar>
+                    (
+                        "deltaTIncreaseAfterRejection",
+                        1.2
+                    );
+
+                    if (deltaTRejectionCap >= deltaTMax)
+                    {
+                        deltaTRejectionCap = GREAT;
+                    }
                 }
             }
             else
@@ -205,6 +324,8 @@ int main(int argc, char *argv[])
                 }
 
                 deltaTNew = min(deltaTNew,deltaTMax);
+
+                deltaTNew = min(deltaTNew, deltaTRejectionCap);
 
                 deltaTNew = max(deltaTNew,deltaTMin);
 
