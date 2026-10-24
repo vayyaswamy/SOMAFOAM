@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
         #include "createDielectricMesh.H"
         #include "createDielectricFields.H"
         #include "createTotalCurrentFields.H"
+        #include "createModeDiagnostics.H"
 
         // Set when the plasma mesh changes (1D refinement)
         bool dielectricWeightsOutdated = false;
@@ -386,6 +387,8 @@ int main(int argc, char *argv[])
                 }
 
                 #include "postStepTotalCurrent.H"
+
+                #include "postStepModeDiagnostics.H"
 
                 scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 

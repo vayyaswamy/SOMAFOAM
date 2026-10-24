@@ -315,6 +315,12 @@ public:
 
         inline const volScalarField& mu(const label i) const;
 
+        //- Charge number of species i (0 for species without a charge entry)
+        scalar z(const label i) const
+        {
+            return (i < z_.size() && z_.set(i)) ? z_[i] : 0;
+        }
+
         virtual scalar W(label i) const = 0;
 
         inline void updateTemperature();
