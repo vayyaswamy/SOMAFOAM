@@ -76,6 +76,30 @@ int main(int argc, char *argv[])
         // when none
         scalar deltaTRejectionCap = GREAT;
 
+        // Optional upper limit of the step while the discharge conducts
+        // (controlDict deltaTMaxDischarge [s], dischargeCurrent [A]): when
+        // the conduction current through any gas face is above
+        // dischargeCurrent, the step is at most deltaTMaxDischarge. The
+        // electrode current alone cannot see events inside the gap: in the
+        // decaying tail of a pulse it changes slowly and lets the step grow
+        // to deltaTMax, and a change in the gap (e.g. the ion front
+        // reaching an electrode) then falls into one large step, which
+        // gives a wrong total current for that step (air DBD at 1 MHz: up
+        // to 6% of the peak at 1e-9 s steps, none at 1e-10 s).
+        const scalar deltaTMaxDischarge =
+            runTime.controlDict().lookupOrDefault<scalar>
+            (
+                "deltaTMaxDischarge",
+                GREAT
+            );
+
+        const scalar dischargeCurrent =
+            runTime.controlDict().lookupOrDefault<scalar>
+            (
+                "dischargeCurrent",
+                0
+            );
+
         while (runTime.run())
         {
 
@@ -385,6 +409,27 @@ int main(int argc, char *argv[])
                 deltaTNew = min(deltaTNew,deltaTMax);
 
                 deltaTNew = min(deltaTNew, deltaTRejectionCap);
+
+                if (deltaTMaxDischarge < GREAT)
+                {
+                    const surfaceScalarField Ic(mspm().netChargeFaceFlux());
+
+                    scalar maxIc = gMax(mag(Ic.internalField()));
+
+                    forAll(Ic.boundaryField(), patchi)
+                    {
+                        maxIc = max
+                        (
+                            maxIc,
+                            gMax(mag(Ic.boundaryField()[patchi]))
+                        );
+                    }
+
+                    if (maxIc > dischargeCurrent)
+                    {
+                        deltaTNew = min(deltaTNew, deltaTMaxDischarge);
+                    }
+                }
 
                 deltaTNew = max(deltaTNew,deltaTMin);
 
