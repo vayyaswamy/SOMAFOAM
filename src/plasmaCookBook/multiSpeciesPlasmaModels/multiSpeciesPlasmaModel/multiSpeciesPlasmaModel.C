@@ -358,7 +358,7 @@ void Foam::multiSpeciesPlasmaModel::input
             subDict.lookupOrDefault<word>("diffusionModel", "none")
         );
 
-        if ((diffusionModel_[i] != "EON") && (diffusionModel_[i] != "eTemp") && (diffusionModel_[i] != "constant") && (diffusionModel_[i] != "einsteinRelation") && (diffusionModel_[i] != "none"))
+        if ((diffusionModel_[i] != "EON") && (diffusionModel_[i] != "eTemp") && (diffusionModel_[i] != "constant") && (diffusionModel_[i] != "pressureScaled") && (diffusionModel_[i] != "einsteinRelation") && (diffusionModel_[i] != "none"))
         {
             WarningIn
             (
@@ -404,6 +404,22 @@ void Foam::multiSpeciesPlasmaModel::input
             D_[i] = d_;
 
             D_[i].correctBoundaryConditions();
+        }
+        else if (diffusionModel_[i] == "pressureScaled")
+        {
+            // D = pD/p: pD [Pa m^2/s] is given, so D follows the gas pressure
+            // (pD = kB T (D N), D N being the usual tabulated product)
+            const scalar pD(readScalar(subDict.lookup("pD")));
+
+            D_[i] =
+                dimensionedScalar("pD", dimensionSet(1, -1, -1, 0, 0, 0, 0), pD)
+               /(thermo_.p()/dimensionedScalar("p1", thermo_.p().dimensions(), 1.0));
+
+            D_[i].correctBoundaryConditions();
+
+            Info<< "Species " << currentSpecie << ": pressureScaled diffusion, pD = "
+                << pD << " Pa m^2/s, D = " << gMin(D_[i].internalField()) << " - "
+                << gMax(D_[i].internalField()) << " m^2/s" << endl;
         }
         else if (diffusionModel_[i] == "eTemp" || diffusionModel_[i] == "EON")
         {
