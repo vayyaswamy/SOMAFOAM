@@ -74,6 +74,31 @@ void storePairAverages
 }
 
 
+//- Bring the old-time values of all fields of a type up to this time step.
+//  The mesh changes after the time step has been incremented and before the
+//  equations are solved, so the old-time value of every field is its present
+//  value. Without this the old-time values are stored lazily, at the first
+//  change of a field in the time step, which during a merge is the write of
+//  the pair averages: the old-time value of a merged cell would then be the
+//  value the mapping gave it (one of the two cells) instead of the average,
+//  and the next step would create or destroy content there.
+template<class Type>
+void storeOldTimesAll(const fvMesh& mesh)
+{
+    typedef GeometricField<Type, fvPatchField, volMesh> GeoField;
+
+    const HashTable<const GeoField*> flds
+    (
+        mesh.objectRegistry::lookupClass<GeoField>()
+    );
+
+    forAllConstIter(typename HashTable<const GeoField*>, flds, iter)
+    {
+        iter()->storeOldTimes();
+    }
+}
+
+
 //- Assign the stored pair averages to the merged cells
 template<class Type>
 void restorePairAverages
@@ -962,6 +987,11 @@ bool Foam::dynamicRefine1DFvMesh::update()
      && time().timeIndex() % refineInterval == 0
     )
     {
+        // Old-time values = present values before any change (see
+        // storeOldTimesAll)
+        storeOldTimesAll<scalar>(*this);
+        storeOldTimesAll<vector>(*this);
+
         const label maxCells = readLabel(refineDict.lookup("maxCells"));
         const label maxRefinement =
             readLabel(refineDict.lookup("maxRefinement"));
