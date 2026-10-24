@@ -1,0 +1,34 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | SOMAFOAM                                        |
+|   \\  /    A nd           |                                                 |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      boltzmannDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Cross sections in the LXCat format, downloaded from www.lxcat.net (see
+// README.md in this folder). Processes of targets that are not in "gases"
+// (e.g. Ar* in a file that also has Ar) are skipped.
+file            "constant/crossSections/Ar_Phelps.txt";
+
+gases           ((Ar 1.0));                 // (target mole fraction) ...
+gasTemperature  300;                        // [K]
+
+reducedField    { min 0.1; max 1000; n 121; }   // [Td], logarithmic
+
+nEnergyCells    800;
+outputDir       "constant/boltzmann";
+
+method          twoTerm;                    // or monteCarlo
+// nThreads     4;                          // one reduced field per thread
+
+// ************************************************************************* //
