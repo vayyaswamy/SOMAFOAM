@@ -52,6 +52,15 @@ Description
         fullCycles      5;      // periods of full simulation per block
         averageCycles   1;      // periods at the end of a block over which
                                 // the sources are averaged
+        // or, for any drive (e.g. pulsed, chirped or multi-frequency),
+        // instead of period/fullCycles/averageCycles:
+        // blockTime    5e-7;   // full simulation per block [s]
+        // averageTime  1e-7;   // window at the end of a block over which
+                                // the sources are averaged [s] (default
+                                // blockTime); choose a period of the
+                                // drive's repetition, e.g. the pulse
+                                // period, or a window long compared with
+                                // the fast time scales
         deltaT          1e-6;   // time step of the advance [s]
         nSteps          100;    // steps per advance
         steadyState     no;     // yes: solve the steady state of the
@@ -307,10 +316,23 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         }
     }
 
-    accPeriod_ = readScalar(dict.lookup("period"));
     accStartTime_ = dict.lookupOrDefault<scalar>("startTime", 0);
-    accFullCycles_ = readLabel(dict.lookup("fullCycles"));
-    accAverageCycles_ = dict.lookupOrDefault<label>("averageCycles", 1);
+
+    // Block and averaging window: in seconds (any drive), or in periods of
+    // a periodic drive
+    if (dict.found("blockTime"))
+    {
+        accBlockTime_ = readScalar(dict.lookup("blockTime"));
+        accAverageTime_ =
+            dict.lookupOrDefault<scalar>("averageTime", accBlockTime_);
+    }
+    else
+    {
+        const scalar period = readScalar(dict.lookup("period"));
+        accBlockTime_ = period*readLabel(dict.lookup("fullCycles"));
+        accAverageTime_ =
+            period*dict.lookupOrDefault<label>("averageCycles", 1);
+    }
     accSteady_ = dict.lookupOrDefault<Switch>("steadyState", false);
     accRelaxation_ = dict.lookupOrDefault<scalar>("relaxation", 1);
 
@@ -330,12 +352,12 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
 
     if
     (
-        accPeriod_ <= 0
+        accBlockTime_ <= 0
      || (!accSteady_ && (accDeltaT_ <= 0 || accNSteps_ < 1))
      || accRelaxation_ <= 0
      || accRelaxation_ > 1
-     || accAverageCycles_ < 1
-     || accFullCycles_ < accAverageCycles_
+     || accAverageTime_ <= 0
+     || accAverageTime_ > accBlockTime_*(1 + SMALL)
      || accMaxChangeFactor_ <= 1
     )
     {
@@ -343,9 +365,10 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         (
             "multiSpeciesPlasmaModel::readNumericalControls()",
             dict
-        )   << "Need period > 0, deltaT > 0 and nSteps >= 1 (unless"
-            << " steadyState), 0 < relaxation <= 1,"
-            << " 1 <= averageCycles <= fullCycles and maxChangeFactor > 1"
+        )   << "Need blockTime > 0 (or period > 0 and fullCycles >= 1),"
+            << " 0 < averageTime <= blockTime (or 1 <= averageCycles <="
+            << " fullCycles), deltaT > 0 and nSteps >= 1 (unless"
+            << " steadyState), 0 < relaxation <= 1 and maxChangeFactor > 1"
             << exit(FatalIOError);
     }
 
@@ -409,8 +432,8 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         Info<< " advanced by " << accNSteps_*accDeltaT_ << " s";
     }
 
-    Info<< " after every " << accFullCycles_ << " periods of " << accPeriod_
-        << " s";
+    Info<< " after every " << accBlockTime_ << " s, with the sources"
+        << " averaged over the last " << accAverageTime_ << " s";
 
     if (accStartTime_ > 0)
     {
@@ -453,14 +476,14 @@ void Foam::multiSpeciesPlasmaModel::accelerateSlowSpecies
         accBlockStart_ = t - dt;
     }
 
-    const scalar blockLength = accFullCycles_*accPeriod_;
+    const scalar blockLength = accBlockTime_;
     const scalar timeInBlock = t - accBlockStart_;
 
-    // Accumulate the sources over the last periods of the block. The
+    // Accumulate the sources over the window at the end of the block. The
     // species equation is
     //     ddt(N) = laplacian(D, N) + Su + Sp*N
     // with Su = RR*A/W - dRRDi*N and Sp = dRRDi
-    if (timeInBlock > blockLength - accAverageCycles_*accPeriod_ + 0.5*dt)
+    if (timeInBlock > blockLength - accAverageTime_ + 0.5*dt)
     {
         forAll(accSpecies_, k)
         {

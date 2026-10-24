@@ -122,10 +122,9 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
 
     accelerate_(false),
     accSpecies_(0),
-    accPeriod_(0),
     accStartTime_(0),
-    accFullCycles_(0),
-    accAverageCycles_(1),
+    accBlockTime_(0),
+    accAverageTime_(0),
     accSteady_(false),
     accDeltaT_(0),
     accNSteps_(0),
@@ -361,7 +360,7 @@ void Foam::multiSpeciesPlasmaModel::input
             subDict.lookupOrDefault<word>("diffusionModel", "none")
         );
 
-        if ((diffusionModel_[i] != "EON") && (diffusionModel_[i] != "eTemp") && (diffusionModel_[i] != "constant") && (diffusionModel_[i] != "einsteinRelation") && (diffusionModel_[i] != "none"))
+        if ((diffusionModel_[i] != "EON") && (diffusionModel_[i] != "eTemp") && (diffusionModel_[i] != "constant") && (diffusionModel_[i] != "pressureScaled") && (diffusionModel_[i] != "einsteinRelation") && (diffusionModel_[i] != "none"))
         {
             WarningIn
             (
@@ -407,6 +406,22 @@ void Foam::multiSpeciesPlasmaModel::input
             D_[i] = d_;
 
             D_[i].correctBoundaryConditions();
+        }
+        else if (diffusionModel_[i] == "pressureScaled")
+        {
+            // D = pD/p: pD [Pa m^2/s] is given, so D follows the gas pressure
+            // (pD = kB T (D N), D N being the usual tabulated product)
+            const scalar pD(readScalar(subDict.lookup("pD")));
+
+            D_[i] =
+                dimensionedScalar("pD", dimensionSet(1, -1, -1, 0, 0, 0, 0), pD)
+               /(thermo_.p()/dimensionedScalar("p1", thermo_.p().dimensions(), 1.0));
+
+            D_[i].correctBoundaryConditions();
+
+            Info<< "Species " << currentSpecie << ": pressureScaled diffusion, pD = "
+                << pD << " Pa m^2/s, D = " << gMin(D_[i].internalField()) << " - "
+                << gMax(D_[i].internalField()) << " m^2/s" << endl;
         }
         else if (diffusionModel_[i] == "eTemp" || diffusionModel_[i] == "EON")
         {
@@ -677,7 +692,14 @@ Foam::multiSpeciesPlasmaModel::electronTempSource
 
     pets = (chemistry.eChemSource()())*plasmaConstants::A/W(eIndex_);
 
-    if (collisionFrequency_[eIndex_] == "muBased")
+    // Elastic electron-neutral energy loss, counted once: from the electron-impact
+    // elastic reactions (in eChemSource) when the mechanism has them, otherwise
+    // estimated from the electron mobility (collision frequency e/(m_e mu_e))
+    if
+    (
+        collisionFrequency_[eIndex_] == "muBased"
+     && !chemistry.electronElasticLoss()
+    )
     {
         pets += (3*plasmaConstants::boltzC*plasmaConstants::eChargeA*(thermo_.Te()-thermo_.T())*N(eIndex_)/mu_[eIndex_]/W(bIndex_));
     }
@@ -732,7 +754,12 @@ Foam::multiSpeciesPlasmaModel::dElectronTempSourceDTe
 
     pets = (chemistry.dEChemSourceDTe()())*plasmaConstants::A/W(eIndex_);
 
-    if (collisionFrequency_[eIndex_] == "muBased")
+    // Derivative of the elastic loss, counted once as in electronTempSource
+    if
+    (
+        collisionFrequency_[eIndex_] == "muBased"
+     && !chemistry.electronElasticLoss()
+    )
     {
         pets += (3*plasmaConstants::boltzC*plasmaConstants::eChargeA*N(eIndex_)/mu_[eIndex_]/W(bIndex_));
     }
