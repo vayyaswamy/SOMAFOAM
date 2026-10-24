@@ -134,6 +134,9 @@ int main(int argc, char *argv[])
 
             bool stepRejected = false;
 
+            // Set when the outer loop has solved the electron energy equation
+            bool TeSolvedInOuterLoop = false;
+
             if (chargedSpeciesTolerance > 0)
             {
                 const label nOuterMax =
@@ -143,6 +146,32 @@ int main(int argc, char *argv[])
                 (
                     pimpleDict.lookupOrDefault<Switch>("stepRejection", true)
                 );
+
+                // Optional (electronTemperatureInOuterLoop, default off):
+                // electron energy equation in every outer iteration, so that
+                // the species fluxes (mobility, rates) and the electron
+                // temperature converge together. By default it is solved
+                // once after the loop and the species use the electron
+                // temperature of the start of the step, a splitting error of
+                // first order in the step. In the 1 MHz air DBD both converge
+                // to the same pulse as the step goes to zero; in the loop the
+                // step costs 2-3 times more and is not more accurate at large
+                // steps. With it on, the loop also needs the electron energy
+                // density Ne*Te to stop changing: largest change in a cell
+                // over its largest value (cells without electrons, whose Te
+                // is not determined, do not hold it up).
+                const Switch electronTemperatureInOuterLoop
+                (
+                    pimpleDict.lookupOrDefault<Switch>
+                    (
+                        "electronTemperatureInOuterLoop",
+                        false
+                    )
+                );
+
+                const label electronI = mspm().species()["electron"];
+
+                TeSolvedInOuterLoop = electronTemperatureInOuterLoop;
 
                 const scalar tStart = runTime.value() - runTime.deltaTValue();
 
@@ -168,6 +197,7 @@ int main(int argc, char *argv[])
                 }
 
                 label outerI = 0;
+                scalar lastOuterChange = 0;
 
                 while (true)
                 {
@@ -188,13 +218,39 @@ int main(int argc, char *argv[])
 
                         #include "plasmaDielectricOuterIteration.H"
 
+                        scalar change = mspm().chargedSpeciesResidual();
+
+                        if (electronTemperatureInOuterLoop)
+                        {
+                            const scalarField NeTePrev
+                            (
+                                mspm().N(electronI).internalField()
+                               *thermo.Te().internalField()
+                            );
+
+                            pem.ecorrect(chemistry, E);
+
+                            const scalarField NeTe
+                            (
+                                mspm().N(electronI).internalField()
+                               *thermo.Te().internalField()
+                            );
+
+                            change = max
+                            (
+                                change,
+                                gMax(mag(NeTe - NeTePrev))
+                               /max(gMax(NeTe), VSMALL)
+                            );
+                        }
+
+                        lastOuterChange = change;
+
                         if (finalOuter)
                         {
                             mesh.solutionDict().remove("finalIteration");
                             break;
                         }
-
-                        const scalar change = mspm().chargedSpeciesResidual();
 
                         if (outerI > 1 && change < chargedSpeciesTolerance)
                         {
@@ -215,13 +271,13 @@ int main(int argc, char *argv[])
                     if (outerConverged)
                     {
                         Info<< "Outer iterations: " << outerI
-                            << ", charged species converged" << endl;
+                            << ", converged" << endl;
                         break;
                     }
 
                     Info<< "Outer iterations: " << outerI
-                        << ", charged species NOT converged: relative change "
-                        << mspm().chargedSpeciesResidual() << " (tolerance "
+                        << ", NOT converged: relative change "
+                        << lastOuterChange << " (tolerance "
                         << chargedSpeciesTolerance << ")" << endl;
 
                     const scalar deltaT = runTime.deltaTValue();
@@ -300,7 +356,10 @@ int main(int argc, char *argv[])
 
                 scalar Cofactor = mspm().divFe();
 
-                scalar Cofactor2 = pem.ecorrect(chemistry, E);
+                if (!TeSolvedInOuterLoop)
+                {
+                    pem.ecorrect(chemistry, E);
+                }
 
                 #include "postStepTotalCurrent.H"
 
