@@ -56,6 +56,24 @@ class TabularReactionRate
 
 	interpolationTable<scalar> lookup_; 
 
+	//- The table rows have strictly increasing abscissae: the rate is then
+	//  found by bisection (same interval and interpolation as
+	//  interpolationTable, without its linear search)
+	bool increasing_;
+
+	//- Whether the abscissae of a table increase strictly
+	static bool increasingRows(const interpolationTable<scalar>& t)
+	{
+	    for (label i = 1; i < t.size(); ++i)
+	    {
+	        if (!(t[i].first() > t[i-1].first()))
+	        {
+	            return false;
+	        }
+	    }
+	    return true;
+	}
+
 public:
 
     // Constructors

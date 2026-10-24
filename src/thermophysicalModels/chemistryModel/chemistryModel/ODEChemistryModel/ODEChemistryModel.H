@@ -98,11 +98,50 @@ class ODEChemistryModel
 
         PtrList<scalarField> dRRDi_;
 
+        //- Kind of each reaction (reactionKindType), from its type name; set
+        //  on first use so that the cell loops do not compare type names
+        mutable labelList reactionKind_;
+
 
     // Private Member Functions
 
         //- Disallow default bitwise assignment
         void operator=(const ODEChemistryModel&);
+
+        //- Reaction kinds: rate in the electron temperature (electron-impact
+        //  inelastic), in the ion temperature, electron and ion elastic
+        enum reactionKindType
+        {
+            otherReaction,
+            electronInelastic,
+            ionIrreversible,
+            electronElastic,
+            ionElastic
+        };
+
+        //- Kind of a reaction from its type name
+        static label kindOf(const word& type);
+
+        //- Kinds of all reactions
+        const labelList& reactionKinds() const;
+
+        //- omega for a reaction of known kind (no type-name comparison)
+        scalar omegaKind
+        (
+            const label kind,
+            const Reaction<ThermoType>& r,
+            const scalarField& c,
+            const scalar T,
+            const scalar p,
+            const scalar Te,
+            const scalar Tion,
+            scalar& pf,
+            scalar& cf,
+            label& lRef,
+            scalar& pr,
+            scalar& cr,
+            label& rRef
+        ) const;
 
 
 protected:
@@ -219,6 +258,10 @@ public:
             inline tmp<volScalarField> collFreq(const label i) const;
 
             virtual tmp<volScalarField> eChemSourceExplicit() const;
+
+            //- True if any reaction is an electron-impact elastic reaction
+            //  (its energy loss is included in eChemSource)
+            virtual bool electronElasticLoss() const;
 
         // ODE functions (overriding abstract functions in ODE.H)
 
