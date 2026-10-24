@@ -490,12 +490,17 @@ void Foam::plasmaPotential::sampleCurrent()
 
     if (nSamples_ == 0)
     {
-        // First sample (start or restart): hold the step until the current
-        // has been measured over two windows
+        // First sample (start or restart). Until the current has been
+        // measured over two windows there is no rate of change to limit the
+        // step, so this condition does not limit it (the other limits of the
+        // solver apply, and the step still grows by at most maxIncrease per
+        // step). Holding the step instead kept it at its initial value for
+        // two sampling windows, i.e. thousands of steps when that value is
+        // small.
         tA_ = t;
         tB_ = t;
         qB_ = patchCharge();
-        targetDeltaT_ = dt;
+        targetDeltaT_ = GREAT;
         nSamples_ = 1;
     }
     else if (t - tB_ >= max(sampleInterval_, SMALL*mag(t)))

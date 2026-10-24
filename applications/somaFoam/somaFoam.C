@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
 
 
     #include "createFields.H"
+    #include "correctSpeciesWallFractions.H"
 
     pimpleControl pimple(mesh);
 
@@ -76,6 +77,40 @@ int main(int argc, char *argv[])
         // Upper limit of the step after a rejected step (see below); GREAT
         // when none
         scalar deltaTRejectionCap = GREAT;
+
+        // Optional bound on the ionization number (controlDict
+        // maxIonizationNumber, default 0 = off): the largest net ionization
+        // frequency of the electrons (d(electron source)/dNe, positive part)
+        // times the step. Backward Euler for dN/dt = nu N gives
+        // N_new = N_old/(1 - nu dt), which is negative for nu dt > 1, so
+        // breakdown at high reduced fields needs nu dt well below 1. A
+        // converged step above the bound is rejected and retried with a
+        // smaller step (with stepRejection), and the next step is at most
+        // maxIonizationNumber/nu.
+        const scalar maxIonizationNumber =
+            runTime.controlDict().lookupOrDefault<scalar>
+            (
+                "maxIonizationNumber",
+                0
+            );
+
+        // Cells whose electron temperature is at its upper limit TeMax are
+        // not counted: there the electron energy equation has no solution
+        // within the limits (electrons near the density floor), and the
+        // rates at TeMax mean nothing. Optionally also only cells with at
+        // least ionizationNumberMinDensity electrons [1/m3] (default 0);
+        // note that a growing avalanche starts from low densities.
+        const scalar ionizationNumberMinDensity =
+            runTime.controlDict().lookupOrDefault<scalar>
+            (
+                "ionizationNumberMinDensity",
+                0
+            );
+
+        const label ionizationElectronI = mspm().species()["electron"];
+
+        // Largest positive net ionization frequency of the electrons [1/s]
+        scalar nuIonizationMax = 0;
 
         // Optional upper limit of the step while the discharge conducts
         // (controlDict deltaTMaxDischarge [s], dischargeCurrent [A]): when
@@ -297,7 +332,76 @@ int main(int argc, char *argv[])
                     {
                         Info<< "Outer iterations: " << outerI
                             << ", converged" << endl;
-                        break;
+
+                        if (maxIonizationNumber <= 0)
+                        {
+                            break;
+                        }
+
+                        {
+                            const scalarField nu
+                            (
+                                chemistry.dRRDi(ionizationElectronI)()
+                               .internalField()
+                            );
+                            const scalarField& Ne =
+                                mspm().N(ionizationElectronI).internalField();
+                            const scalarField& TeCells =
+                                thermo.Te().internalField();
+                            const scalar TeLimit = 0.999*mspm().TeMax();
+
+                            scalar nuMax = 0;
+                            forAll(nu, celli)
+                            {
+                                if
+                                (
+                                    Ne[celli] >= ionizationNumberMinDensity
+                                 && TeCells[celli] < TeLimit
+                                )
+                                {
+                                    nuMax = max(nuMax, nu[celli]);
+                                }
+                            }
+                            nuIonizationMax = returnReduce(nuMax, maxOp<scalar>());
+                        }
+
+                        const scalar deltaT = runTime.deltaTValue();
+                        const scalar ionNumber = nuIonizationMax*deltaT;
+
+                        if
+                        (
+                            ionNumber <= maxIonizationNumber
+                         || !stepRejection
+                         || deltaT <= deltaTMin*(1 + SMALL)
+                        )
+                        {
+                            break;
+                        }
+
+                        // Undo the step and retry with a step within the bound
+                        forAll(snapshots, i)
+                        {
+                            snapshots[i].restore();
+                        }
+
+                        const scalar deltaTRetry = max
+                        (
+                            min(0.5*deltaT, 0.9*maxIonizationNumber/nuIonizationMax),
+                            deltaTMin
+                        );
+
+                        runTime.setDeltaT(deltaTRetry, false);
+                        runTime.setTime(tStart + deltaTRetry, runTime.timeIndex());
+
+                        stepRejected = true;
+
+                        Info<< "Step rejected: ionization number " << ionNumber
+                            << " > " << maxIonizationNumber
+                            << ", retrying with deltaT = " << deltaTRetry
+                            << ", Simulation Time = " << runTime.timeName()
+                            << "s" << endl;
+
+                        continue;
                     }
 
                     Info<< "Outer iterations: " << outerI
@@ -412,6 +516,15 @@ int main(int argc, char *argv[])
                 deltaTNew = min(deltaTNew,deltaTMax);
 
                 deltaTNew = min(deltaTNew, deltaTRejectionCap);
+
+                if (maxIonizationNumber > 0 && nuIonizationMax > 0)
+                {
+                    deltaTNew = min
+                    (
+                        deltaTNew,
+                        maxIonizationNumber/nuIonizationMax
+                    );
+                }
 
                 if (deltaTMaxDischarge < GREAT)
                 {
