@@ -495,6 +495,11 @@ public:
                 const scalar defaultMax = GREAT
             ) const;
 
+            //- Change of a field in one inner pass, relative to the largest
+            //  value of the field: max|f - fPass|/max|f|; fPass is then set
+            //  to f for the next pass
+            scalar passChange(const scalarField& f, scalarField& fPass) const;
+
             //- Report an inner loop that ended above the tolerance
             void reportInnerIterations
             (

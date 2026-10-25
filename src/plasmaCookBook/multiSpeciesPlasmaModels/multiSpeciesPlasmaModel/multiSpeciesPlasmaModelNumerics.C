@@ -802,6 +802,21 @@ void Foam::multiSpeciesPlasmaModel::limitField
 
 
 
+Foam::scalar Foam::multiSpeciesPlasmaModel::passChange
+(
+    const scalarField& f,
+    scalarField& fPass
+) const
+{
+    const scalar change =
+        gMax(mag(f - fPass))/max(gMax(mag(f)), VSMALL);
+
+    fPass = f;
+
+    return change;
+}
+
+
 void Foam::multiSpeciesPlasmaModel::reportInnerIterations
 (
     const word& name,
@@ -812,7 +827,7 @@ void Foam::multiSpeciesPlasmaModel::reportInnerIterations
     if (reportUnconverged_ && initialResidual >= innerTolerance_)
     {
         Info<< "Inner iterations of " << name << " not converged after "
-            << maxPasses << " passes: initial residual of the last pass "
+            << maxPasses << " passes: relative change in the last pass "
             << initialResidual << " (tolerance " << innerTolerance_ << ")"
             << endl;
     }
