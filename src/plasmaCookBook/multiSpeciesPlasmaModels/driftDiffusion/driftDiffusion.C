@@ -195,6 +195,9 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
     scalar initialResidual = 1.0;
     label iCorr = 0;
 
+    // Density before each pass (see passChange)
+    scalarField NPass(Ni.internalField());
+
     while ((initialResidual >= innerTolerance_) && (iCorr++ < nCorr))
     {
         fvScalarMatrix NEqn
@@ -214,13 +217,14 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
             NEqn -= fvm::laplacian(D_[i], Ni, "laplacian(D,Nin)");
         }
 
-        initialResidual =
-            NEqn.solve(mesh_.solutionDict().solver(solverName)).initialResidual();
+        NEqn.solve(mesh_.solutionDict().solver(solverName));
 
         if (!charged)
         {
             this->limitField(Ni, densityFloor_);
         }
+
+        initialResidual = this->passChange(Ni.internalField(), NPass);
 
         yi = Ni*W(i)/thermo_.rho()/plasmaConstants::A;
 

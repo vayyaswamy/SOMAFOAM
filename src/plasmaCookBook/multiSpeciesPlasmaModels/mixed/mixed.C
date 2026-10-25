@@ -591,6 +591,9 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         initialResidual = 1.0;
 
+                        // Density before each pass (see passChange)
+                        scalarField NPass(N_[i].internalField());
+
                         while
                         (
                             (initialResidual >= innerTolerance_)
@@ -610,7 +613,8 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                             solverPerf = NEqn->solve(mesh_.solutionDict().solver("Ni"));
 
-                            initialResidual = solverPerf.initialResidual();
+                            initialResidual =
+                                this->passChange(N_[i].internalField(), NPass);
 
                             yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
@@ -721,6 +725,9 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         N_[i].storePrevIter();
 
+                        // Density before each pass (see passChange)
+                        scalarField NPass(N_[i].internalField());
+
                         while
                         (
                             (initialResidual >= innerTolerance_)
@@ -740,10 +747,10 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                             solverPerf = NnEqn->solve(mesh_.solutionDict().solver("Nin"));
 
 
-                            initialResidual = solverPerf.initialResidual();
-
-
                             this->limitField(N_[i], densityFloor_);
+
+                            initialResidual =
+                                this->passChange(N_[i].internalField(), NPass);
 
 
                             yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;

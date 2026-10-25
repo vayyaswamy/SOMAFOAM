@@ -67,6 +67,15 @@ Foam::scalar Foam::efullImplicit::correct
 
     int icorr = 0;
 
+    // Electron energy density Ne*Te before each pass: a pass ends the
+    // iterations when it changes Ne*Te by less than innerTolerance relative to
+    // its largest value (cells without electrons, where Te is not determined,
+    // do not hold it up; the normalised residual used before did)
+    scalarField NeTePass
+    (
+        mspm().N(eIndex_).internalField()*thermo().Te().internalField()
+    );
+
     while
     (
         (icorr++ < mspm().nCorrTe())
@@ -148,9 +157,13 @@ Foam::scalar Foam::efullImplicit::correct
 
        solverPerf = TeEqn.solve();
 
-        initialResidual = solverPerf.initialResidual();
-
         mspm().limitField(TeC, mspm().TeMin(), mspm().TeMax());
+
+        initialResidual = mspm().passChange
+        (
+            mspm().N(eIndex_).internalField()*TeC.internalField(),
+            NeTePass
+        );
 
         thermo().correct();
 
