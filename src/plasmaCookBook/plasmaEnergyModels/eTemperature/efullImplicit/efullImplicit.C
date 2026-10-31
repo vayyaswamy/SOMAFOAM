@@ -147,9 +147,16 @@ Foam::scalar Foam::efullImplicit::correct
           - fvm::laplacian(eConductivity, TeC, "laplacian(eC,Te)")
         );
 
+        // Time derivative of the electron energy density 3/2 k Ne Te,
+        // (Ne Te - Ne^0 Te^0)/dt. fvm::ddt(rho, Te) would take the old
+        // time of rho from the temporary 3/2 k Ne, a copy of the new value,
+        // and so discretize 3/2 k Ne dTe/dt, dropping 3/2 k Te dNe/dt
+        const dimensionedScalar rDeltaT(1.0/mesh().time().deltaT());
+
         fvScalarMatrix TeEqn
         (
-            fvm::ddt((1.5*plasmaConstants::boltzC*Ne), TeC)
+            fvm::Sp(rDeltaT*1.5*plasmaConstants::boltzC*Ne, TeC)
+          - rDeltaT*1.5*plasmaConstants::boltzC*Ne.oldTime()*TeC.oldTime()
             + transport
             + fvm::SuSp(eeSource_SuSp, TeC)
             + eeSource_Su

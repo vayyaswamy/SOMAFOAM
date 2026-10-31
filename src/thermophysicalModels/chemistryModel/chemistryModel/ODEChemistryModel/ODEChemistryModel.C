@@ -269,9 +269,9 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omegaKind
 
     scalar kf, kr;
 
-    //Info << "inside omega " << endl;
-
-    if (kind == electronInelastic)
+    // Electron-impact rates, elastic and inelastic, are functions of the
+    // electron temperature
+    if (kind == electronInelastic || kind == electronElastic)
 	{
       kf = R.kf(Te, p, c);
       kr = R.kr(kf, Te, p, c);
@@ -1227,11 +1227,11 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 				);
 
                 // Central difference in Te; only the electron-impact
-                // inelastic rates depend on Te (omegaKind), for the other
-                // reactions the difference is exactly zero
+                // rates depend on Te (omegaKind), for the other reactions
+                // the difference is exactly zero
                 scalar dOmegaiDTe = 0.0;
 
-                if (kind == electronInelastic)
+                if (kind == electronInelastic || kind == electronElastic)
                 {
                     scalar omegaiplus = omegaKind
                     (
