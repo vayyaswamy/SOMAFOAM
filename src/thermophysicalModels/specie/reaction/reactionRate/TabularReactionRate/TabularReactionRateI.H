@@ -36,7 +36,9 @@ inline TabularReactionRate::TabularReactionRate
 :
   filename_(filename),
   lookup_(filename_),
-  increasing_(increasingRows(lookup_))
+  increasing_(increasingRows(lookup_)),
+  x_(column(lookup_, true)),
+  y_(column(lookup_, false))
 {}
 
 //- Construct from Istream
@@ -48,7 +50,9 @@ inline TabularReactionRate::TabularReactionRate
 :
   filename_((is.readBegin("TabularReactionRate(Istream&)"))),
   lookup_(filename_),
-  increasing_(increasingRows(lookup_))
+  increasing_(increasingRows(lookup_)),
+  x_(column(lookup_, true)),
+  y_(column(lookup_, false))
 {
     is.readEnd("TabularReactionRate(Istream&)");
 }
@@ -65,9 +69,9 @@ inline scalar TabularReactionRate::operator()
 {
     scalar ak;
 
-    const label n = lookup_.size();
+    const label n = x_.size();
 
-    if (increasing_ && n > 1 && T >= lookup_[0].first() && T < lookup_[n-1].first())
+    if (increasing_ && n > 1 && T >= x_[0] && T < x_[n-1])
     {
         // lookup_[lo].first() <= T < lookup_[hi].first(), hi = lo + 1: the
         // interval of interpolationTable::operator(), which searches it
@@ -79,7 +83,7 @@ inline scalar TabularReactionRate::operator()
         {
             const label mid = (lo + hi)/2;
 
-            if (T >= lookup_[mid].first())
+            if (T >= x_[mid])
             {
                 lo = mid;
             }
@@ -91,10 +95,10 @@ inline scalar TabularReactionRate::operator()
 
         // The interpolation of interpolationTable::operator(), term by term
         ak =
-            lookup_[lo].second()
-          + (lookup_[hi].second() - lookup_[lo].second())
-           *(T - lookup_[lo].first())
-           /(lookup_[hi].first() - lookup_[lo].first());
+            y_[lo]
+          + (y_[hi] - y_[lo])
+           *(T - x_[lo])
+           /(x_[hi] - x_[lo]);
     }
     else
     {

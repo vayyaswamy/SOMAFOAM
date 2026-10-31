@@ -61,6 +61,21 @@ class TabularReactionRate
 	//  interpolationTable, without its linear search)
 	bool increasing_;
 
+	//- Abscissae and values of the table for the bisection, as plain
+	//  arrays (interpolationTable::operator[] is not inlined)
+	scalarList x_;
+	scalarList y_;
+
+	static scalarList column(const interpolationTable<scalar>& t, const bool first)
+	{
+	    scalarList v(t.size());
+	    forAll(v, i)
+	    {
+	        v[i] = first ? t[i].first() : t[i].second();
+	    }
+	    return v;
+	}
+
 	//- Whether the abscissae of a table increase strictly
 	static bool increasingRows(const interpolationTable<scalar>& t)
 	{

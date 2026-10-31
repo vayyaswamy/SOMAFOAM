@@ -40,6 +40,7 @@ SourceFiles
 
 #include "Reaction.H"
 #include "ODE.H"
+#include "boolList.H"
 #include "volFieldsFwd.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -102,6 +103,21 @@ class ODEChemistryModel
         //  on first use so that the cell loops do not compare type names
         mutable labelList reactionKind_;
 
+        //- Rate coefficients kf, kr of every reaction in every cell at the
+        //  temperature and pressure they were last evaluated at, for the
+        //  rate, the two Te differences and the linearization (rateSlots).
+        //  A coefficient whose temperature and pressure have not changed
+        //  is reused: the species passes of a time step (Te fixed) need no
+        //  new table lookups. Only for rates that do not depend on the
+        //  concentrations (cacheableRate_)
+        mutable scalarList rateCache_;
+
+        //- Number of cells of rateCache_ (changes with mesh refinement)
+        mutable label rateCacheCells_;
+
+        //- Per reaction: kf and kr independent of the concentrations
+        mutable boolList cacheableRate_;
+
 
     // Private Member Functions
 
@@ -126,6 +142,57 @@ class ODEChemistryModel
         const labelList& reactionKinds() const;
 
         //- omega for a reaction of known kind (no type-name comparison)
+        //- Slots of rateCache_: rate, Te + dTe, Te - dTe, linearization
+        static const label rateSlots = 4;
+
+        //- kf and kr of reaction i in cell celli at T, p: from the cache
+        //  when T and p are those of the stored values
+        void cachedRate
+        (
+            const label i,
+            const label celli,
+            const label slot,
+            const scalar T,
+            const scalar p,
+            const scalarField& c,
+            scalar& kf,
+            scalar& kr
+        ) const;
+
+        //- Temperature at which the rate of a reaction of this kind is
+        //  evaluated
+        static scalar rateTemperature
+        (
+            const label kind,
+            const scalar T,
+            const scalar Te,
+            const scalar Tion
+        );
+
+        //- Forward part pf*cf of omegaFromRates (the reverse part is exactly
+        //  zero when kr is)
+        scalar omegaForward
+        (
+            const Reaction<ThermoType>& r,
+            const scalarField& c,
+            const scalar kf
+        ) const;
+
+        //- omega of a reaction from its rate coefficients kf, kr
+        scalar omegaFromRates
+        (
+            const Reaction<ThermoType>& r,
+            const scalarField& c,
+            const scalar kf,
+            const scalar kr,
+            scalar& pf,
+            scalar& cf,
+            label& lRef,
+            scalar& pr,
+            scalar& cr,
+            label& rRef
+        ) const;
+
         scalar omegaKind
         (
             const label kind,

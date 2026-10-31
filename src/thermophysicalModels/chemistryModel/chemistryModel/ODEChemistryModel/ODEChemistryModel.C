@@ -93,7 +93,10 @@ Foam::ODEChemistryModel<CompType, ThermoType>::ODEChemistryModel
 	eChemSource_(mesh.nCells(), 0.0),
     dEChemSourceDTe_(mesh.nCells(), 0.0),
 	collFreq_(nSpecie_),
-    dRRDi_(nSpecie_)
+    dRRDi_(nSpecie_),
+    rateCache_(),
+    rateCacheCells_(-1),
+    cacheableRate_()
 {
     // create the fields for the chemistry sources
     forAll(RR_, fieldI)
@@ -267,26 +270,155 @@ Foam::scalar Foam::ODEChemistryModel<CompType, ThermoType>::omegaKind
 ) const
 {
 
-    scalar kf, kr;
+    const scalar Tr = rateTemperature(kind, T, Te, Tion);
 
+    const scalar kf = R.kf(Tr, p, c);
+    const scalar kr = R.kr(kf, Tr, p, c);
+
+    return omegaFromRates(R, c, kf, kr, pf, cf, lRef, pr, cr, rRef);
+}
+
+
+template<class CompType, class ThermoType>
+Foam::scalar
+Foam::ODEChemistryModel<CompType, ThermoType>::rateTemperature
+(
+    const label kind,
+    const scalar T,
+    const scalar Te,
+    const scalar Tion
+)
+{
     // Electron-impact rates, elastic and inelastic, are functions of the
     // electron temperature
     if (kind == electronInelastic || kind == electronElastic)
-	{
-      kf = R.kf(Te, p, c);
-      kr = R.kr(kf, Te, p, c);
+    {
+        return Te;
     }
     else if (kind == ionIrreversible)
-	{
-      kf = R.kf(Tion, p, c);
-      kr = R.kr(kf, Tion, p, c);
-    }
-    else
-	{
-      kf = R.kf(T, p, c);
-      kr = R.kr(kf, T, p, c);
+    {
+        return Tion;
     }
 
+    return T;
+}
+
+
+template<class CompType, class ThermoType>
+void Foam::ODEChemistryModel<CompType, ThermoType>::cachedRate
+(
+    const label i,
+    const label celli,
+    const label slot,
+    const scalar T,
+    const scalar p,
+    const scalarField& c,
+    scalar& kf,
+    scalar& kr
+) const
+{
+    const Reaction<ThermoType>& R = reactions_[i];
+
+    if (!cacheableRate_[i])
+    {
+        kf = R.kf(T, p, c);
+        kr = R.kr(kf, T, p, c);
+        return;
+    }
+
+    scalar* e = &rateCache_[4*((celli*nReaction_ + i)*rateSlots + slot)];
+
+    if (e[0] == T && e[1] == p)
+    {
+        kf = e[2];
+        kr = e[3];
+        return;
+    }
+
+    kf = R.kf(T, p, c);
+    kr = R.kr(kf, T, p, c);
+
+    e[0] = T;
+    e[1] = p;
+    e[2] = kf;
+    e[3] = kr;
+}
+
+
+template<class CompType, class ThermoType>
+Foam::scalar
+Foam::ODEChemistryModel<CompType, ThermoType>::omegaForward
+(
+    const Reaction<ThermoType>& R,
+    const scalarField& c,
+    const scalar kf
+) const
+{
+    // The forward part of omegaFromRates, term by term
+    label Nl = R.lhs().size();
+
+    label slRef = 0;
+    label lRef = R.lhs()[slRef].index;
+
+    scalar pf = kf;
+    for (label s=1; s<Nl; s++)
+    {
+        label si = R.lhs()[s].index;
+
+        if (c[si] < c[lRef])
+        {
+            scalar exp = R.lhs()[slRef].exponent;
+            pf *= powE(max(0.0, c[lRef]), exp);
+            lRef = si;
+            slRef = s;
+        }
+        else
+        {
+            scalar exp = R.lhs()[s].exponent;
+            pf *= powE(max(0.0, c[si]), exp);
+        }
+    }
+    const scalar cf = max(0.0, c[lRef]);
+
+    {
+        scalar exp = R.lhs()[slRef].exponent;
+        if (exp<1.0)
+        {
+            if (cf > ROOTVSMALL)
+            {
+                pf *= powE(cf, exp - 1.0);
+            }
+            else
+            {
+                pf = 0.0;
+            }
+        }
+        else
+        {
+            pf *= powE(cf, exp - 1.0);
+        }
+    }
+
+    return pf*cf;
+}
+
+
+template<class CompType, class ThermoType>
+Foam::scalar
+Foam::ODEChemistryModel<CompType, ThermoType>::omegaFromRates
+(
+    const Reaction<ThermoType>& R,
+    const scalarField& c,
+    const scalar kf,
+    const scalar kr,
+    scalar& pf,
+    scalar& cf,
+    label& lRef,
+    scalar& pr,
+    scalar& cr,
+    label& rRef
+) const
+{
     pf = 1.0;
     pr = 1.0;
 
@@ -1178,6 +1310,41 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
     {
         const labelList& kinds = reactionKinds();
 
+        // Rates that do not depend on the concentrations can be cached:
+        // kf and kr at two concentration vectors agree
+        if (cacheableRate_.size() != nReaction_)
+        {
+            cacheableRate_.setSize(nReaction_);
+
+            const scalarField cA(nSpecie_, 1.0);
+            const scalarField cB(nSpecie_, 2.0);
+
+            forAll(reactions_, i)
+            {
+                const Reaction<ThermoType>& R = reactions_[i];
+                const scalar T0 = 1e4;
+                const scalar p0 = 1e2;
+                const scalar kfA = R.kf(T0, p0, cA);
+                const scalar kfB = R.kf(T0, p0, cB);
+
+                cacheableRate_[i] =
+                    kfA == kfB
+                 && R.kr(kfA, T0, p0, cA) == R.kr(kfB, T0, p0, cB);
+            }
+        }
+
+        if (rateCacheCells_ != rho.size())
+        {
+            rateCache_.setSize(4*rho.size()*nReaction_*rateSlots);
+            rateCache_ = -GREAT;
+            rateCacheCells_ = rho.size();
+        }
+
+        const scalarField& TCells = this->thermo().T();
+        const scalarField& pCells = this->thermo().p();
+        const scalarField& TeCells = this->thermo().Te();
+        const scalarField& TionCells = this->thermo().Tion();
+
         // Work arrays, set in every cell
         scalarField c(nSpecie_);
         scalarField dcdt(nEqns(), 0.0);
@@ -1197,10 +1364,10 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
             dEChemSourceDTe_[celli] = 0.0;
 
             scalar rhoi = rho[celli];
-            scalar Ti = this->thermo().T()[celli];
-            scalar pi = this->thermo().p()[celli];
-            scalar Tei = this->thermo().Te()[celli];
-            scalar Tioni = this->thermo().Tion()[celli];
+            scalar Ti = TCells[celli];
+            scalar pi = pCells[celli];
+            scalar Tei = TeCells[celli];
+            scalar Tioni = TionCells[celli];
 
             dcdt = 0.0;
 
@@ -1221,10 +1388,19 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 				const Reaction<ThermoType>& R = reactions_[i];
 				const label kind = kinds[i];
 
-				scalar omegai = omegaKind
-				(
-				    kind, R, c, Ti, pi, Tei, Tioni, pf, cf, lRef, pr, cr, rRef
-				);
+				// Rate coefficients from the cache (unchanged when the
+				// temperature of the reaction is), as omegaKind
+				const scalar Tr = rateTemperature(kind, Ti, Tei, Tioni);
+
+				scalar kfr, krr;
+				cachedRate(i, celli, 0, Tr, pi, c, kfr, krr);
+
+				// With kr = 0 the reverse part pr*cr of omega is +0, and
+				// pf*cf - 0 = pf*cf
+				scalar omegai =
+				    krr == 0.0
+				  ? omegaForward(R, c, kfr)
+				  : omegaFromRates(R, c, kfr, krr, pf, cf, lRef, pr, cr, rRef);
 
                 // Central difference in Te; only the electron-impact
                 // rates depend on Te (omegaKind), for the other reactions
@@ -1233,38 +1409,40 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 
                 if (kind == electronInelastic || kind == electronElastic)
                 {
-                    scalar omegaiplus = omegaKind
-                    (
-                        kind, R, c, Ti, pi, Tei + 1e-08, Tioni,
-                        pf, cf, lRef, pr, cr, rRef
-                    );
+                    scalar kfp, krp, kfm, krm;
+                    cachedRate(i, celli, 1, Tei + 1e-08, pi, c, kfp, krp);
+                    cachedRate(i, celli, 2, Tei - 1e-08, pi, c, kfm, krm);
 
-                    scalar omegaiminus = omegaKind
-                    (
-                        kind, R, c, Ti, pi, Tei - 1e-08, Tioni,
-                        pf, cf, lRef, pr, cr, rRef
-                    );
+                    scalar omegaiplus =
+                        krp == 0.0
+                      ? omegaForward(R, c, kfp)
+                      : omegaFromRates(R, c, kfp, krp, pf, cf, lRef, pr, cr, rRef);
+
+                    scalar omegaiminus =
+                        krm == 0.0
+                      ? omegaForward(R, c, kfm)
+                      : omegaFromRates(R, c, kfm, krm, pf, cf, lRef, pr, cr, rRef);
 
                     dOmegaiDTe = (omegaiplus - omegaiminus) / 2e-08;
                 }
 
+                // Linearization: inelastic at Te, ion reactions at Tion,
+                // the others (elastic included) at T
                 scalar kf0, kr0;
 
+                const scalar T0 =
+                    kind == electronInelastic ? Tei
+                  : kind == ionIrreversible ? Tioni
+                  : Ti;
 
-                if (kind == electronInelastic)
+                if (cacheableRate_[i] && T0 == Tr)
                 {
-                    kf0 = R.kf(Tei, pi, c2);
-                    kr0 = R.kr(kf0, Tei, pi, c2);
-                }
-                else if (kind == ionIrreversible)
-                {
-                    kf0 = R.kf(Tioni, pi, c2);
-                    kr0 = R.kr(kf0, Tioni, pi, c2);
+                    kf0 = kfr;
+                    kr0 = krr;
                 }
                 else
                 {
-                    kf0 = R.kf(Ti, pi, c2);
-                    kr0 = R.kr(kf0, Ti, pi, c2);
+                    cachedRate(i, celli, 3, T0, pi, c2, kf0, kr0);
                 }
 
                 forAll(R.lhs(), j)
@@ -1325,8 +1503,15 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
                     //Info << "dRRDi_[sj][celli]" << dRRDi_[sj][celli] << endl;
                 }
 
+                // With kr0 = 0 every reverse term below adds or subtracts +0
+                // to entries that are never -0: nothing changes
                 forAll(R.rhs(), j)
                 {
+                    if (kr0 == 0.0)
+                    {
+                        break;
+                    }
+
                     label sj = R.rhs()[j].index;
                     scalar kr = kr0;
                     forAll(R.rhs(), i)

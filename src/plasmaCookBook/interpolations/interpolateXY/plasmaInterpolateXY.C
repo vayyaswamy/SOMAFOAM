@@ -14,6 +14,44 @@ look for license file include with distribution.
 namespace Foam
 {
 
+// Whether the abscissae of a table increase strictly, remembered for the
+// last few tables (the transport tables are fixed for the whole run)
+inline bool plasmaInterpolateIncreasing(const scalarField& xOld)
+{
+    static const label nMemo = 16;
+    static const scalar* ptr[nMemo] = {};
+    static label size[nMemo] = {};
+    static bool increasing[nMemo] = {};
+    static label next = 0;
+
+    for (label k = 0; k < nMemo; ++k)
+    {
+        if (ptr[k] == xOld.cdata() && size[k] == xOld.size())
+        {
+            return increasing[k];
+        }
+    }
+
+    bool inc = true;
+
+    for (label i = 1; i < xOld.size(); ++i)
+    {
+        if (!(xOld[i] > xOld[i-1]))
+        {
+            inc = false;
+            break;
+        }
+    }
+
+    ptr[next] = xOld.cdata();
+    size[next] = xOld.size();
+    increasing[next] = inc;
+    next = (next + 1) % nMemo;
+
+    return inc;
+}
+
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 template<class Type>
@@ -45,6 +83,48 @@ Type plasmaInterpolateXY
 )
 {
     label n = xOld.size();
+
+    // Strictly increasing abscissae (the transport tables): bisection for
+    // the interval the scans below find, with the same arithmetic. lo is
+    // the last row with xOld[lo] <= x, hi the first with xOld[hi] >= x
+    if (n > 1 && x == x && plasmaInterpolateIncreasing(xOld))
+    {
+        if (x < xOld[0])
+        {
+            return yOld[0]
+                + ((x - xOld[0])/(xOld[1] - xOld[0]))*(yOld[1] - yOld[0]);
+        }
+
+        if (x >= xOld[n-1])
+        {
+            return yOld[n-1];
+        }
+
+        label l = 0;
+        label h = n - 1;
+
+        while (h - l > 1)
+        {
+            const label mid = (l + h)/2;
+
+            if (xOld[mid] <= x)
+            {
+                l = mid;
+            }
+            else
+            {
+                h = mid;
+            }
+        }
+
+        if (xOld[l] == x)
+        {
+            return yOld[l];
+        }
+
+        return yOld[l]
+            + ((x - xOld[l])/(xOld[h] - xOld[l]))*(yOld[h] - yOld[l]);
+    }
 
     label lo = 0;
     for (lo=0; lo<n && xOld[lo]>x; ++lo)
