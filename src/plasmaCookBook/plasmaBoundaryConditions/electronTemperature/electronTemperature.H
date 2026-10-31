@@ -102,11 +102,12 @@ class electronTemperature
 
     scalar wf_;
 
-    //- Wall energy flux of the plasmaWallFlux condition of HB for the
-    //  electron energy density (diffusion off): 2 k Te per thermal electron
-    //  instead of 5/2 k Te, secondaries with 3/2 k Tse, emitted only where
-    //  the field repels electrons, with the beam term (default off)
-    bool wallEnergyHB_;
+    //- Wall energy flux with the one-way Maxwellian energy: 2 k Te per
+    //  thermal electron leaving the wall instead of the 5/2 k Te of
+    //  Lymberopoulos & Economou, secondaries with 3/2 k Tse, emitted as the
+    //  beam of secondaryElectronBeam (default off). To be used together
+    //  with secondaryElectronBeam on the electron density
+    bool maxwellianWallEnergy_;
 
 
     public:

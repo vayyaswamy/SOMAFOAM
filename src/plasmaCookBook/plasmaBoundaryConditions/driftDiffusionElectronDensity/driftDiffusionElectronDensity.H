@@ -66,10 +66,12 @@ class driftDiffusionElectronDensity
     //- Thermal diffusion term of the wall drift (default on)
     bool thermalDiffusion_;
 
-    //- Secondary emission of the plasmaWallFlux condition of HB (Wilson
-    //  BC5, diffusion off): a beam only where the field repels electrons,
-    //  with its thermal term (default off)
-    bool emissionHB_;
+    //- Secondary electrons as a beam (Wilson & Shotorban, Phys. Plasmas 25
+    //  (2018) 053509, BC5 without the diffusion term): emitted only where
+    //  the sheath field repels electrons from the wall, and the thermal
+    //  flux of the beam density is added (default off: gamma Gamma_i is
+    //  emitted at all times)
+    bool secondaryElectronBeam_;
 
     public:
 

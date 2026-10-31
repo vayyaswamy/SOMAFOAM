@@ -50,7 +50,7 @@ Foam::electronTemperature::electronTemperature
     FE_(false),
     beta_(1.0),
     wf_(1.0),
-    wallEnergyHB_(false)
+    maxwellianWallEnergy_(false)
 {
     this->refValue() = 0;
     this->refGrad() = 0;
@@ -75,7 +75,7 @@ Foam::electronTemperature::electronTemperature
     FE_(ptf.FE_),
     beta_(ptf.beta_),
     wf_(ptf.wf_),
-    wallEnergyHB_(ptf.wallEnergyHB_)
+    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_)
 {}
 
 
@@ -94,7 +94,7 @@ Foam::electronTemperature::electronTemperature
     FE_(readBool(dict.lookup("field_emission"))),
     beta_(readScalar(dict.lookup("field_enhancement_factor"))),
     wf_(readScalar(dict.lookup("work_function"))),
-    wallEnergyHB_(dict.lookupOrDefault<Switch>("wallEnergyHB", false))
+    maxwellianWallEnergy_(dict.lookupOrDefault<Switch>("maxwellianWallEnergy", false))
 {
     this->refValue() = 0;
 
@@ -118,7 +118,7 @@ Foam::electronTemperature::electronTemperature
     FE_(ptf.FE_),
     beta_(ptf.beta_),
     wf_(ptf.wf_),
-    wallEnergyHB_(ptf.wallEnergyHB_)
+    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_)
 {}
 
 
@@ -136,7 +136,7 @@ Foam::electronTemperature::electronTemperature
     FE_(ptf.FE_),
     beta_(ptf.beta_),
     wf_(ptf.wf_),
-    wallEnergyHB_(ptf.wallEnergyHB_)
+    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_)
 {}
 
 
@@ -195,14 +195,15 @@ void Foam::electronTemperature::updateCoeffs()
     // temperature of the emitted electrons. hEmitted is never negative:
     // the weight of the condition lies between 0 and 1 for any wall cell,
     // and without emission it is a zero gradient
-    if (wallEnergyHB_)
+    if (maxwellianWallEnergy_)
     {
-        // Target wall energy flux (plasmaWallFlux of HB, energy density
-        // n_ee = 3/2 n_e k Te, thermal factor 1/3, transport factor 5/3):
+        // Wall energy flux with the one-way Maxwellian energy 2 k Te of the
+        // thermal electrons, the drift energy 5/2 k Te and the beam of
+        // secondary electrons with 3/2 k Tse:
         //     q.n = 5/2 k Te u n_b + 2 k Te vTh n_b - S_ee,
         //     S_ee = 3/2 k Tse Gamma_se (1 + 4/3 vTh/(mu E.n)) where mu E.n > 0,
         // with u n_b + vTh n_b - G the electron flux of the
-        // driftDiffusionElectronDensity condition (secondaryEmissionHB),
+        // driftDiffusionElectronDensity condition (secondaryElectronBeam),
         // G = Gamma_se (1 + vTh/(mu E.n)) where mu E.n > 0. The energy
         // equation carries 5/2 k Te times that flux through the wall face, so
         // conduction must supply
@@ -276,8 +277,8 @@ void Foam::electronTemperature::write(Ostream& os) const
         << beta_ << token::END_STATEMENT << nl;
     os.writeKeyword("work_function")
         << wf_ << token::END_STATEMENT << nl;
-    os.writeKeyword("wallEnergyHB")
-        << wallEnergyHB_ << token::END_STATEMENT << nl;
+    os.writeKeyword("maxwellianWallEnergy")
+        << maxwellianWallEnergy_ << token::END_STATEMENT << nl;
     this->writeEntry("value", os);
 }
 
