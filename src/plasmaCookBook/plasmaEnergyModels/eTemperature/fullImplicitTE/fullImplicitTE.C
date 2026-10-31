@@ -82,9 +82,15 @@ Foam::scalar Foam::efullImplicitTE::correct
 
     volScalarField K = 0.5*plasmaConstants::rA*mspm().W(eIndex_)*magSqr(mspm().U(eIndex_));
 
+    // Time derivative of 3/2 k Ne Te with the old electron density (see
+    // efullImplicit): fvm::ddt of the temporary 3/2 k Ne would drop
+    // 3/2 k Te dNe/dt
+    const dimensionedScalar rDeltaT(1.0/mesh().time().deltaT());
+
     fvScalarMatrix TeEqn
     (
-        fvm::ddt((1.5*plasmaConstants::boltzC*Ne), TeC)
+        fvm::Sp(rDeltaT*1.5*plasmaConstants::boltzC*Ne, TeC)
+      - rDeltaT*1.5*plasmaConstants::boltzC*Ne.oldTime()*TeC.oldTime()
       + fvm::div(eeFluxF, TeC, "div(eeFlux,Te)")
       + fvc::ddt(Ne, K)
       + fvc::div(eFluxF, K, "div(eFlux,K)")
