@@ -63,6 +63,14 @@ class driftDiffusionElectronDensity
 
     scalar wf_;
 
+    //- Thermal diffusion term of the wall drift (default on)
+    bool thermalDiffusion_;
+
+    //- Secondary emission of the plasmaWallFlux condition of HB (Wilson
+    //  BC5, diffusion off): a beam only where the field repels electrons,
+    //  with its thermal term (default off)
+    bool emissionHB_;
+
     public:
 
     //- Runtime type information
