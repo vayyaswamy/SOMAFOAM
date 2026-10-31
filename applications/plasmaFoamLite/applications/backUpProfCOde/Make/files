@@ -1,0 +1,12 @@
+boundaryConditions/plasmaPotential/plasmaPotential.C
+
+boundaryConditions/driftDiffusionElectronDensity/driftDiffusionElectronDensity.C
+boundaryConditions/driftDiffusionPositiveIonDensity/driftDiffusionPositiveIonDensity.C
+boundaryConditions/momentumElectronDensity/momentumElectronDensity.C
+boundaryConditions/momentumElectronEnergy/momentumElectronEnergy.C
+boundaryConditions/momentumPositiveIonDensity/momentumPositiveIonDensity.C
+boundaryConditions/electronTemperature/electronTemperature.C
+boundaryConditions/electronThermalVelocity/electronThermalVelocity.C
+profBC.C
+
+EXE = $(FOAM_APPBIN)/profBC

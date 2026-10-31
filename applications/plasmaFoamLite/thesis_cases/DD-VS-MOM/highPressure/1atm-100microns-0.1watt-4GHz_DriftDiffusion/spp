@@ -1,0 +1,80 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      speciesAndReactions;
+}
+//*****************************************************************************
+backgroundGasDensity  6.5789474e+22;
+gasTemperature 300;
+cosmicRadiation 1e1;
+emSolver	issemiImplicit;
+
+//************************ SPECIES LIST ***************************************
+speciesList
+(
+  electron
+  Arp1
+  Arm
+  Ar
+);
+
+//******************* SPECIES PROPERTIES ***************************************
+electron
+(
+	"9.1e-31"		  // tAr first number on this list will be tAr mass of tAr species
+	"-1"			    // tAr second number is tAr charge
+	"EON"			  // tAr third item on tAr list is tAr mobility model
+	"EON"		    // tAr fourth item is tAr diffusion model
+	"2.4671053e+23"			  // value of mobility
+	"9.8684211e+23"			  // value of diffusion constant
+	"driftDiffusion"
+	"muBased"
+);
+
+//-------------------------------------------------------------------------------
+Arp1
+(
+	"6.6335209e-26"		// mass
+	"1"			      // charge
+	"EON"			    // mobility model
+	"einstein"		// diffusion model
+	"1.1513158e+21"			  // mobility
+	"3.2894737e+19"		  // Diffusion constant 		
+        "driftDiffusion"
+	"muBased"
+);
+//------------------------------------------------------------------------------
+Arm
+(
+	"6.6335209e-26"		// mass
+	"0"			      // charge
+	"constant"		// mobility model
+	"constant"		// diffusion model
+	"0"			      // mobility (since it is chargeless)
+	"3.0975e+20"			// Diffusion constant 			
+        "driftDiffusions"
+	"muBased"
+);
+//------------------------------------------------------------------------------
+Ar
+(
+	"6.6335209e-26"		// mass
+	"0"			      // charge
+	"constant"		// mobility model
+	"constant"		// diffusion model
+	"0"			      // mobility (since it is chargeless)
+	"1.1880952e+20"			// Diffusion constant 			
+	"none"
+	"muBased"
+);
+//------------------------------------------------------------------------------

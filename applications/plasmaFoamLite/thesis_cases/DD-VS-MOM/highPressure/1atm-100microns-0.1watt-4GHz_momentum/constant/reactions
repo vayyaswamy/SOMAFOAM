@@ -1,0 +1,102 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      reactions;
+}
+
+totalNumberOfReactions	7;
+
+//--------------------------------------------------------------
+reaction_1
+(
+        "Ionization"
+	"1 Ar + 1 electron = 1 Arp1 + 2 electron"
+        "eTemp"
+        "0.0"
+	"0.0"
+	"2.531439e-18"
+);
+
+
+reaction_2
+(
+        "excitation"
+        "1 Ar + 1 electron = 1 Arm + 1 electron"
+        "eTemp"
+        "0.0"
+        "0.0"
+        "1.8425e-18"
+);
+
+
+reaction_3
+(
+        "elastic"
+        "1 Ar + 1 electron = 1 Ar + 1 electron"
+        "eTemp"
+        "0.0"
+        "0.0"
+        "0"
+);
+
+
+
+reaction_4
+(
+        "metastableIonization"
+	"1 Arm + 1 electron = 1 Arp1 + 2 electron"
+        "eTemp"
+        "0.0"
+	"0.0"
+	"7.094438e-19"
+);
+
+
+
+reaction_5
+(
+        "metastableIonization"
+        "1 Arm + 1 electron = 1 Ar + 1 electron"
+        "eTemp"
+        "0.0"
+        "0.0"
+        "-1.851912e-18"
+);
+
+
+reaction_6
+(
+        "metastableIonization"
+        "2 Arm = 1 Arp1 + 1 Ar + 1 electron"
+        "eTemp"
+        "0.0"
+        "0.0"
+        "0"
+);
+
+
+reaction_7
+(
+        "metastableIonization"
+        "1 Arm + 1 Ar = 2 Ar"
+        "eTemp"
+        "0.0"
+        "0.0"
+        "0"
+);
+
+
+
+
+
+// =============================================================================
