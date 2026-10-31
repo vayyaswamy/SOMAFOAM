@@ -102,6 +102,12 @@ class electronTemperature
 
     scalar wf_;
 
+    //- Wall energy flux of the plasmaWallFlux condition of HB for the
+    //  electron energy density (diffusion off): 2 k Te per thermal electron
+    //  instead of 5/2 k Te, secondaries with 3/2 k Tse, emitted only where
+    //  the field repels electrons, with the beam term (default off)
+    bool wallEnergyHB_;
+
 
     public:
 

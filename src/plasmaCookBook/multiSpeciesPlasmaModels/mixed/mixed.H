@@ -48,6 +48,10 @@ protected:
 
         volScalarField EON;
 
+        //- Thermal diffusion -(k/e) mu grad T in the drift flux, per species
+        //  (plasmaProperties entry thermalDiffusion, default on)
+        List<bool> thermalDiffusion_;
+
     // Protected member functions
 
         virtual void mixedModelInput();

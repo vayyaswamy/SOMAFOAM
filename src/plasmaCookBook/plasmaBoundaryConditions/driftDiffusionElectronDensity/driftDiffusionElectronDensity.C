@@ -46,7 +46,9 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     Edepend_(true),
     FE_(false),
     beta_(1.0),
-    wf_(1.0)
+    wf_(1.0),
+    thermalDiffusion_(true),
+    emissionHB_(false)
 
 {
     this->refValue() = 0;
@@ -69,7 +71,9 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     Edepend_(ptf.Edepend_),
     FE_(ptf.FE_),
     beta_(ptf.beta_),
-    wf_(ptf.wf_)
+    wf_(ptf.wf_),
+    thermalDiffusion_(ptf.thermalDiffusion_),
+    emissionHB_(ptf.emissionHB_)
 {
 }
 
@@ -86,7 +90,9 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     Edepend_(readBool(dict.lookup("Edepend"))),
     FE_(readBool(dict.lookup("field_emission"))),
     beta_(readScalar(dict.lookup("field_enhancement_factor"))),
-    wf_(readScalar(dict.lookup("work_function")))
+    wf_(readScalar(dict.lookup("work_function"))),
+    thermalDiffusion_(dict.lookupOrDefault<Switch>("thermalDiffusion", true)),
+    emissionHB_(dict.lookupOrDefault<Switch>("secondaryEmissionHB", false))
 {
     this->refValue() = 0.0;
 
@@ -106,7 +112,9 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     Edepend_(ptf.Edepend_),
     FE_(ptf.FE_),
     beta_(ptf.beta_),
-    wf_(ptf.wf_)
+    wf_(ptf.wf_),
+    thermalDiffusion_(ptf.thermalDiffusion_),
+    emissionHB_(ptf.emissionHB_)
 {
     fvPatchField<scalar>::operator=(this->patchInternalField());
 }
@@ -123,7 +131,9 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     Edepend_(ptf.Edepend_),
     FE_(ptf.FE_),
     beta_(ptf.beta_),
-    wf_(ptf.wf_)
+    wf_(ptf.wf_),
+    thermalDiffusion_(ptf.thermalDiffusion_),
+    emissionHB_(ptf.emissionHB_)
 {
 }
 
@@ -170,7 +180,8 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
 
     const scalarField uAway
     (
-        muef*(Ef&n) + 1.38e-23/1.602e-19*muef*(gradTef&n)
+        muef*(Ef&n)
+      + (thermalDiffusion_ ? 1.0 : 0.0)*1.38e-23/1.602e-19*muef*(gradTef&n)
     );
 
     scalarField C1(vThermal + max(uAway, scalar(0)));
@@ -188,7 +199,17 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
     scalarField a = pos(mag(Enorm));
     scalarField b = pos(Fifnorm);
 
-    const scalarField Gamma_se = seec_*(b*Fifnorm);
+    scalarField Gamma_se = seec_*(b*Fifnorm);
+
+    // secondaryEmissionHB: the emitted electrons leave the wall only where
+    // the field drives them away from it, mu E.n > 0, and the closure then
+    // carries the thermal flux of the beam density n_gamma = Gamma_se/(mu E.n)
+    // (plasmaWallFlux of HB, Wilson BC5 without the diffusion term)
+    if (emissionHB_)
+    {
+        const scalarField muEn(muef*Enorm);
+        Gamma_se *= pos(muEn - VSMALL)*(1 + vThermal/max(muEn, VSMALL));
+    }
 
     scalarField c = pos(Enorm); // to ensure field emission happens only if E-field is pointing inward even if Edepend is set to false
 
@@ -231,6 +252,10 @@ void Foam::driftDiffusionElectronDensity::write(Ostream& os) const
         << beta_ << token::END_STATEMENT << nl;
     os.writeKeyword("work_function")
         << wf_ << token::END_STATEMENT << nl;
+    os.writeKeyword("thermalDiffusion")
+        << thermalDiffusion_ << token::END_STATEMENT << nl;
+    os.writeKeyword("secondaryEmissionHB")
+        << emissionHB_ << token::END_STATEMENT << nl;
     this->writeEntry("value", os);
 }
 

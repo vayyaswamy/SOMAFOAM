@@ -25,10 +25,21 @@ void Foam::mixed<ThermoType>::mixedModelInput
         )
     );
 
+    thermalDiffusion_.setSize(species().size(), true);
+
     forAll(species(), i)
     {
         const word& currentSpecie = species()[i];
         const dictionary& subDict = diffDict.subDict(currentSpecie);
+
+        thermalDiffusion_[i] =
+            subDict.lookupOrDefault<Switch>("thermalDiffusion", true);
+
+        if (!thermalDiffusion_[i])
+        {
+            Info<< "Species " << currentSpecie
+                << ": no thermal diffusion in the drift flux" << endl;
+        }
 
         transportModel_.set
         (
@@ -126,7 +137,14 @@ inline void Foam::mixed<ThermoType>::updateFlux
     volVectorField& Fi = F_[i];
 
 
-    Fi = mu_[i]*(z_[i]*E - plasmaConstants::KBE*fvc::grad(T_[i]));
+    if (thermalDiffusion_[i])
+    {
+        Fi = mu_[i]*(z_[i]*E - plasmaConstants::KBE*fvc::grad(T_[i]));
+    }
+    else
+    {
+        Fi = mu_[i]*z_[i]*E;
+    }
 
 
 }
@@ -455,7 +473,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         (
                             fvm::ddt(Ni)
                             + this->driftDiffusionTerms(i, F_[i], D_[i], Ni)
-                            - fvc::laplacian((mu_[i]*plasmaConstants::KBE*Ni), Ti, "laplacian(D,T)")
+                            - (thermalDiffusion_[i] ? 1.0 : 0.0)*fvc::laplacian((mu_[i]*plasmaConstants::KBE*Ni), Ti, "laplacian(D,T)")
                             + fvm::SuSp((-Sy_[i]*plasmaConstants::A/W(i)/Ni), Ni)
                         );
                         NEqn->relax();
@@ -466,11 +484,11 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         if(diffusionModel_[i] == "einsteinRelation")
                         {
-                            J_[i] == (-mu_[i]*(Ti*fvc::grad(plasmaConstants::KBE*N_[i]) + plasmaConstants::KBE*N_[i]*fvc::grad(Ti) - N_[i]*z_[i]*E));
+                            J_[i] == (-mu_[i]*(Ti*fvc::grad(plasmaConstants::KBE*N_[i]) + (thermalDiffusion_[i] ? 1.0 : 0.0)*plasmaConstants::KBE*N_[i]*fvc::grad(Ti) - N_[i]*z_[i]*E));
                         }
                         else
                         {
-                            J_[i] == (-D_[i]*fvc::grad(N_[i]) - plasmaConstants::KBE*mu_[i]*N_[i]*fvc::grad(Ti) + N_[i]*mu_[i]*z_[i]*E);
+                            J_[i] == (-D_[i]*fvc::grad(N_[i]) - (thermalDiffusion_[i] ? 1.0 : 0.0)*plasmaConstants::KBE*mu_[i]*N_[i]*fvc::grad(Ti) + N_[i]*mu_[i]*z_[i]*E);
                         }
                     }
                     else if( transportModel_[i] == "momentum")
@@ -654,11 +672,11 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         if(diffusionModel_[i] == "einsteinRelation")
                         {
-                            J_[i] == (-mu_[i]*(Ti*fvc::grad(plasmaConstants::KBE*N_[i]) + plasmaConstants::KBE*N_[i]*fvc::grad(Ti) - N_[i]*sign(z_[i])*E));
+                            J_[i] == (-mu_[i]*(Ti*fvc::grad(plasmaConstants::KBE*N_[i]) + (thermalDiffusion_[i] ? 1.0 : 0.0)*plasmaConstants::KBE*N_[i]*fvc::grad(Ti) - N_[i]*sign(z_[i])*E));
                         }
                         else
                         {
-                            J_[i] == (-D_[i]*fvc::grad(N_[i]) - plasmaConstants::KBE*mu_[i]*N_[i]*fvc::grad(Ti) + N_[i]*mu_[i]*sign(z_[i])*E);
+                            J_[i] == (-D_[i]*fvc::grad(N_[i]) - (thermalDiffusion_[i] ? 1.0 : 0.0)*plasmaConstants::KBE*mu_[i]*N_[i]*fvc::grad(Ti) + N_[i]*mu_[i]*sign(z_[i])*E);
                         }
 
                         this->correctDriftDiffusionFlux(i, F_[i], D_[i], N_[i]);

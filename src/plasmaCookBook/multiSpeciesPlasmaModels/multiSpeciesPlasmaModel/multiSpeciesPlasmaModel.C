@@ -1277,6 +1277,34 @@ Foam::multiSpeciesPlasmaModel::electronConductivity
 
     volScalarField ptEc = 2.5*plasmaConstants::boltzCsqr*T_[eIndex_]*N(eIndex_)/collFreqT;
 
+    // electronConductivity tabulated: K_e = 5/2 k n_e D_e with the
+    // diffusivity of the electron table instead of mu_e k T_e/e
+    if
+    (
+        IOdictionary::lookupOrDefault<word>("electronConductivity", "einstein")
+     == "tabulated"
+    )
+    {
+        // Field values only: the dimensions are those of the Einstein form
+        const scalar kbe = plasmaConstants::KBE.value();
+        const volScalarField& De = D_[eIndex_];
+        const volScalarField& mue = mu_[eIndex_];
+        const volScalarField& Te = T_[eIndex_];
+
+        ptEc.internalField() *=
+            De.internalField()/(mue.internalField()*kbe*Te.internalField());
+
+        forAll(ptEc.boundaryField(), patchi)
+        {
+            ptEc.boundaryField()[patchi] *=
+                De.boundaryField()[patchi]
+               /(
+                    mue.boundaryField()[patchi]*kbe
+                   *max(Te.boundaryField()[patchi], SMALL)
+                );
+        }
+    }
+
     forAll(ec, celli)
     {
         ec[celli] = ptEc[celli];

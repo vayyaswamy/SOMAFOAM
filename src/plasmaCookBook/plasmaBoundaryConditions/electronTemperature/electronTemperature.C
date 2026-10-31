@@ -49,7 +49,8 @@ Foam::electronTemperature::electronTemperature
     TFN_(0),
     FE_(false),
     beta_(1.0),
-    wf_(1.0)
+    wf_(1.0),
+    wallEnergyHB_(false)
 {
     this->refValue() = 0;
     this->refGrad() = 0;
@@ -73,7 +74,8 @@ Foam::electronTemperature::electronTemperature
     TFN_(ptf.TFN_),
     FE_(ptf.FE_),
     beta_(ptf.beta_),
-    wf_(ptf.wf_)
+    wf_(ptf.wf_),
+    wallEnergyHB_(ptf.wallEnergyHB_)
 {}
 
 
@@ -91,7 +93,8 @@ Foam::electronTemperature::electronTemperature
     TFN_(readScalar(dict.lookup("TFN"))),
     FE_(readBool(dict.lookup("field_emission"))),
     beta_(readScalar(dict.lookup("field_enhancement_factor"))),
-    wf_(readScalar(dict.lookup("work_function")))
+    wf_(readScalar(dict.lookup("work_function"))),
+    wallEnergyHB_(dict.lookupOrDefault<Switch>("wallEnergyHB", false))
 {
     this->refValue() = 0;
 
@@ -114,7 +117,8 @@ Foam::electronTemperature::electronTemperature
     TFN_(ptf.TFN_),
     FE_(ptf.FE_),
     beta_(ptf.beta_),
-    wf_(ptf.wf_)
+    wf_(ptf.wf_),
+    wallEnergyHB_(ptf.wallEnergyHB_)
 {}
 
 
@@ -131,7 +135,8 @@ Foam::electronTemperature::electronTemperature
     TFN_(ptf.TFN_),
     FE_(ptf.FE_),
     beta_(ptf.beta_),
-    wf_(ptf.wf_)
+    wf_(ptf.wf_),
+    wallEnergyHB_(ptf.wallEnergyHB_)
 {}
 
 
@@ -190,6 +195,54 @@ void Foam::electronTemperature::updateCoeffs()
     // temperature of the emitted electrons. hEmitted is never negative:
     // the weight of the condition lies between 0 and 1 for any wall cell,
     // and without emission it is a zero gradient
+    if (wallEnergyHB_)
+    {
+        // Target wall energy flux (plasmaWallFlux of HB, energy density
+        // n_ee = 3/2 n_e k Te, thermal factor 1/3, transport factor 5/3):
+        //     q.n = 5/2 k Te u n_b + 2 k Te vTh n_b - S_ee,
+        //     S_ee = 3/2 k Tse Gamma_se (1 + 4/3 vTh/(mu E.n)) where mu E.n > 0,
+        // with u n_b + vTh n_b - G the electron flux of the
+        // driftDiffusionElectronDensity condition (secondaryEmissionHB),
+        // G = Gamma_se (1 + vTh/(mu E.n)) where mu E.n > 0. The energy
+        // equation carries 5/2 k Te times that flux through the wall face, so
+        // conduction must supply
+        //     kappa dTe/dn = (hMinus - hPlus) Te + S_ee,
+        //     hPlus = 5/2 k G,  hMinus = 1/2 k vTh n_b,
+        // with the hMinus term taken from the current wall value
+        const scalar kB = plasmaConstants::boltzC.value();
+
+        const fvPatchField<scalar>& muef =
+            patch().lookupPatchField<volScalarField, scalar>("mu_electron");
+        const fvPatchField<scalar>& nef =
+            patch().lookupPatchField<volScalarField, scalar>("N_electron");
+
+        const scalarField Tb(*this);
+        const scalarField vTh
+        (
+            0.25*sqrt(8.0*1.38e-23*Tb/9.1e-31/acos(-1.0))
+        );
+        const scalarField muEn(muef*Enorm);
+        const scalarField repel(pos(muEn - VSMALL));
+        const scalarField inv(1/max(muEn, VSMALL));
+
+        const scalarField G(Gamma_se*repel*(1 + vTh*inv));
+        const scalarField See
+        (
+            1.5*kB*Tse_*Gamma_se*repel*(1 + 4.0/3.0*vTh*inv)
+        );
+
+        const scalarField hPlus(2.5*kB*G);
+        const scalarField hMinus(0.5*kB*vTh*nef);
+        const scalarField kd(kappaef*this->patch().deltaCoeffs());
+
+        this->refValue() = 0.0;
+        this->valueFraction() = hPlus/(hPlus + kd + VSMALL);
+        this->refGrad() = (See + hMinus*Tb)/(kappaef + VSMALL);
+
+        mixedFvPatchField<scalar>::updateCoeffs();
+        return;
+    }
+
     const scalarField emitted(Gamma_se + Gamma_FE);
 
     const scalarField hEmitted(2.5*plasmaConstants::boltzC.value()*emitted);
@@ -223,6 +276,8 @@ void Foam::electronTemperature::write(Ostream& os) const
         << beta_ << token::END_STATEMENT << nl;
     os.writeKeyword("work_function")
         << wf_ << token::END_STATEMENT << nl;
+    os.writeKeyword("wallEnergyHB")
+        << wallEnergyHB_ << token::END_STATEMENT << nl;
     this->writeEntry("value", os);
 }
 
