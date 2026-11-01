@@ -7,9 +7,16 @@
     kappa_e = mspm().electronConductivity(chemistry);
 
 
-    thermo.correct();
+    if (!gasThermoFixed)
+    {
+        thermo.correct();
 
-    rho = thermo.rho();
+        // With a gas flow its continuity equation sets the density
+        if (!flowOn)
+        {
+            rho = thermo.rho();
+        }
+    }
 
     gradTe = mspm().gradTe();
 

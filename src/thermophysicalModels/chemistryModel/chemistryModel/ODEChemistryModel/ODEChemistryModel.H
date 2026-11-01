@@ -65,7 +65,9 @@ class ODEChemistryModel
     public CompType,
     public ODE
 {
-    // Private data
+protected:
+
+    // Protected data (also used by plasmaFieldChemistryModel)
 
         //- Reference to the field of specie mass fractions
         PtrList<volScalarField>& Y_;
@@ -294,6 +296,8 @@ public:
         virtual void calculate();
 
         virtual void calculateWcf();
+
+        virtual void calculateElectronEnergySource();
 
 
         // Chemistry model functions (overriding abstract functions in

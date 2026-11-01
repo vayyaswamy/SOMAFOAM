@@ -133,6 +133,14 @@ public:
 
         virtual void calculateWcf() = 0;
 
+        //- Only the electron energy source eChemSource, its Te derivative
+        //  and the electron collision frequency, as calculateWcf gives
+        //  them; the species rates are not updated
+        virtual void calculateElectronEnergySource()
+        {
+            calculateWcf();
+        }
+
 		virtual tmp<volScalarField> collFreq(const label i) const = 0;
 
 		virtual tmp<volScalarField> eChemSource() const = 0;

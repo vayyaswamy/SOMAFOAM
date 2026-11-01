@@ -30,6 +30,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+bool Foam::TabularReactionRate::linearInterpolation = false;
+
 namespace Foam
 {
     makeIRNReactions(constGasThermoPhysics, TabularReactionRate)

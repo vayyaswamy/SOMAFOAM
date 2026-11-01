@@ -578,6 +578,18 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
         lduSolverPerformance solverPerf;
 
+        // The last species solved: after it the rates are not recalculated
+        // here (the electron energy equation needs only its source, and all
+        // rates are recalculated after it)
+        label lastSolved = -1;
+
+        forAll(species(), j)
+        {
+            if (j != bIndex_ && speciesSolution_[j])
+            {
+                lastSolved = j;
+            }
+        }
 
         forAll(species(), i)
         {
@@ -612,10 +624,15 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         // Density before each pass (see passChange)
                         scalarField NPass(N_[i].internalField());
 
+                        // With the reaction rates held, the equation is
+                        // linear in Ni and one pass solves it
+                        const label nPass =
+                            chemistryPerPass_ ? nCorrCharged_ : 1;
+
                         while
                         (
                             (initialResidual >= innerTolerance_)
-                         && (icorr++ < nCorrCharged_)
+                         && (icorr++ < nPass)
                         )
                         {
 
@@ -623,6 +640,7 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                             (
                                 fvm::ddt(Ni)
                                 + this->driftDiffusionTerms(i, F_[i], D_[i], Ni)
+                                + gasConvection(Ni, "div(phiGas,Ni)")
                                 - chemistry.RR(i)*plasmaConstants::A/W(i)
                                 + chemistry.dRRDi(i)*Ni
                                 - fvm::Sp(chemistry.dRRDi(i),Ni)
@@ -636,16 +654,21 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                             yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
-                            updateChemistryCollFreq(chemistry);
-
+                            if (chemistryPerPass_)
+                            {
+                                updateChemistryCollFreq(chemistry);
+                            }
                         }
 
-                        reportInnerIterations
-                        (
-                            species()[i],
-                            nCorrCharged_,
-                            initialResidual
-                        );
+                        if (chemistryPerPass_)
+                        {
+                            reportInnerIterations
+                            (
+                                species()[i],
+                                nCorrCharged_,
+                                initialResidual
+                            );
+                        }
 
                         // Density from the solution, before relaxation and
                         // limits
@@ -668,8 +691,22 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
-                        updateChemistryCollFreq(chemistry);
+                        if
+                        (
+                            chemistryPerPass_
+                         || (!chemistryPerStep_ && i != lastSolved)
+                        )
+                        {
+                            updateChemistryCollFreq(chemistry);
+                        }
 
+                        // The cell-based flux; correctDriftDiffusionFlux
+                        // below replaces it by the face fluxes of the
+                        // equation, except for its tangential component on
+                        // the boundary, which a one-dimensional mesh does not
+                        // have
+                        if (mesh_.nSolutionD() > 1)
+                        {
                         if(diffusionModel_[i] == "einsteinRelation")
                         {
                             J_[i] == (-mu_[i]*(Ti*fvc::grad(plasmaConstants::KBE*N_[i]) + (thermalDiffusion_[i] ? 1.0 : 0.0)*plasmaConstants::KBE*N_[i]*fvc::grad(Ti) - N_[i]*sign(z_[i])*E));
@@ -678,8 +715,11 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         {
                             J_[i] == (-D_[i]*fvc::grad(N_[i]) - (thermalDiffusion_[i] ? 1.0 : 0.0)*plasmaConstants::KBE*mu_[i]*N_[i]*fvc::grad(Ti) + N_[i]*mu_[i]*sign(z_[i])*E);
                         }
+                        }
 
                         this->correctDriftDiffusionFlux(i, F_[i], D_[i], N_[i]);
+
+                        addGasFlux(i);
 
                     }
                     else if( transportModel_[i] == "momentum")
@@ -746,16 +786,20 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         // Density before each pass (see passChange)
                         scalarField NPass(N_[i].internalField());
 
+                        const label nPass =
+                            chemistryPerPass_ ? nCorrNeutral_ : 1;
+
                         while
                         (
                             (initialResidual >= innerTolerance_)
-                         && (icorr++ < nCorrNeutral_)
+                         && (icorr++ < nPass)
                         )
                         {
                             tmp<fvScalarMatrix> NnEqn
                             (
                                 fvm::ddt(Ni)
                               - fvm::laplacian(D_[i],Ni, "laplacian(D,Nin)")
+                              + gasConvection(Ni, "div(phiGas,Nin)")
                               - chemistry.RR(i)*plasmaConstants::A/W(i)
                               + chemistry.dRRDi(i)*Ni
                               - fvm::Sp(chemistry.dRRDi(i),Ni)
@@ -773,18 +817,21 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                             yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
-
-                            updateChemistryCollFreq(chemistry);
-
-
+                            if (chemistryPerPass_)
+                            {
+                                updateChemistryCollFreq(chemistry);
+                            }
                         }
 
-                        reportInnerIterations
-                        (
-                            species()[i],
-                            nCorrNeutral_,
-                            initialResidual
-                        );
+                        if (chemistryPerPass_)
+                        {
+                            reportInnerIterations
+                            (
+                                species()[i],
+                                nCorrNeutral_,
+                                initialResidual
+                            );
+                        }
 
                         relaxFinal(N_[i]);
 
@@ -793,7 +840,14 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
                         yi = N_[i]*W(i)/thermo_.rho()/plasmaConstants::A;
 
-                        updateChemistryCollFreq(chemistry);
+                        if
+                        (
+                            chemistryPerPass_
+                         || (!chemistryPerStep_ && i != lastSolved)
+                        )
+                        {
+                            updateChemistryCollFreq(chemistry);
+                        }
                     }
                 }
                 yt += yi;
@@ -807,7 +861,10 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
 
         N_[bIndex_] == thermo_.rho()*thermo_.composition().Y(bIndex_)*plasmaConstants::A/W(bIndex_);
 
-        updateChemistryCollFreq(chemistry);
+        if (chemistryPerPass_)
+        {
+            updateChemistryCollFreq(chemistry);
+        }
     }
     return 0;
 }

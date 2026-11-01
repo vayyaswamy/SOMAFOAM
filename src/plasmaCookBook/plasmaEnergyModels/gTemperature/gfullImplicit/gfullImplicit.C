@@ -80,6 +80,8 @@ void Foam::gfullImplicit::correct
     volScalarField rhoCp = thermo().Cp()*thermo().rho();
 
 
+    Tc.storePrevIter();
+
     fvScalarMatrix TEqn
     (
       - fvm::laplacian(kappa, Tc, "laplacian(alpha,T)")

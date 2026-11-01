@@ -91,6 +91,13 @@ class TabularReactionRate
 
 public:
 
+    //- Interpolation between the rows of all tables: false (default), ln k
+    //  linearly in the temperature; true, k linearly in the temperature
+    //  (and so in the mean energy 3/2 kB Te). Set by the chemistry model
+    //  from rateInterpolation (logarithmic or linear) in
+    //  chemistryProperties
+    static bool linearInterpolation;
+
     // Constructors
 
         //- Construct from components
@@ -121,6 +128,24 @@ public:
             const scalar p,
             const scalarField& c
         ) const;
+
+        //- Abscissae (temperature) and values (ln k) of the table
+        const scalarList& x() const
+        {
+            return x_;
+        }
+
+        const scalarList& y() const
+        {
+            return y_;
+        }
+
+        //- The abscissae increase strictly (the table is interpolated by
+        //  bisection)
+        bool increasing() const
+        {
+            return increasing_;
+        }
 
 
     // Ostream Operator

@@ -128,6 +128,12 @@ public:
 
     // Member Functions
 
+        //- The rate coefficient
+        const ReactionRate& rate() const
+        {
+            return k_;
+        }
+
         // electronImpactInelasticReaction rate coefficients
 
             //- Forward rate constant

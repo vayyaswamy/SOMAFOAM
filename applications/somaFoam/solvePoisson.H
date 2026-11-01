@@ -27,6 +27,8 @@
 
         phiPlasmaEqn.relax();
 
+        Phi.storePrevIter();
+
         phiPlasmaEqn.solve();
 
         relaxFinal(Phi);

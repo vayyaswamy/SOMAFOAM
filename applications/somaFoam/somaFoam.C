@@ -23,6 +23,9 @@ Description
 #include "thermoPhysicsTypes.H"
 #include "emcModels.H"
 #include "pimpleControl.H"
+#include "simpleControl.H"
+#include "turbulenceModel.H"
+#include "bound.H"
 #include "dynamicFvMesh.H"
 #include "magLongDelta.H"
 #include "staticFvMesh.H"
@@ -44,8 +47,21 @@ int main(int argc, char *argv[])
 
     #include "createFields.H"
     #include "correctSpeciesWallFractions.H"
+    #include "createFlowFields.H"
 
     pimpleControl pimple(mesh);
+
+    // The plasma equations store the previous iterations of the fields they
+    // relax (relaxFinal): pimpleControl need not copy every field in every
+    // outer iteration (storePrevIter yes in PIMPLE restores it)
+    if
+    (
+        mesh.solutionDict().found("PIMPLE")
+     && !mesh.solutionDict().subDict("PIMPLE").found("storePrevIter")
+    )
+    {
+        mesh.solutionDict().subDict("PIMPLE").add("storePrevIter", false);
+    }
 
 
     if (solutionDomain == "plasmaDielectric")
@@ -494,6 +510,8 @@ int main(int argc, char *argv[])
 
                 #include "postStepModeDiagnostics.H"
 
+                #include "flowStep.H"
+
                 scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 
                 // Current-based limit from the electrodes (optional)
@@ -644,18 +662,26 @@ int main(int argc, char *argv[])
 
             }
 
-            gradTe = mspm().gradTe();
+            // gradTe of plasmaEqn.H holds: the species do not change Te
 
-            scalar Cofactor1 = mspm().divFe();
+            // The step limit from the fluxes is needed only for a variable
+            // time step
+            const bool variableDeltaT = deltaTMax > deltaTMin;
+
+            scalar Cofactor1 = variableDeltaT ? mspm().divFe() : 0;
 
         scalar Cofactor2 = pem.ecorrect(chemistry, E);
 
         scalar Cofactor = max(Cofactor1,Cofactor2);
 
-        meshSize = mspm().meshParameter();
+        if (runTime.outputTime())
+        {
+            meshSize = mspm().meshParameter();
 
+            Info << "Mesh Size Reciprocal = " << gMax(meshSize) << endl;
+        }
 
-        Info << "Mesh Size Reciprocal = " << gMax(meshSize) << endl;
+            #include "flowStep.H"
 
             scalar deltaTNew = MaxCo/(Cofactor+1e-10);
 

@@ -170,6 +170,12 @@ Foam::label Foam::solutionControl::applyToField
 
 void Foam::solutionControl::storePrevIterFields() const
 {
+    // storePrevIter no: the solver stores the previous iterations it needs
+    if (!dict().lookupOrDefault<Switch>("storePrevIter", true))
+    {
+        return;
+    }
+
 //    storePrevIter<label>();
     storePrevIter<scalar>();
     storePrevIter<vector>();

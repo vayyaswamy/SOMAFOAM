@@ -46,17 +46,23 @@ void relaxFinal
 
     const word finalName(field.name() + "Final");
 
-    if
-    (
+    const bool useFinal =
         (finalIteration || sol.lookupOrDefault<bool>("finalIteration", false))
-     && sol.relaxField(finalName)
-    )
+     && sol.relaxField(finalName);
+
+    if (!useFinal && !sol.relaxField(field.name()))
     {
-        field.relax(sol.fieldRelaxationFactor(finalName));
+        return;
     }
-    else
+
+    const scalar alpha =
+        sol.fieldRelaxationFactor(useFinal ? finalName : field.name());
+
+    // A factor of 1 leaves the field as it is: the previous iteration is
+    // then not needed (somaFoam does not store it for every field)
+    if (alpha != 1)
     {
-        field.relax();
+        field.relax(alpha);
     }
 }
 

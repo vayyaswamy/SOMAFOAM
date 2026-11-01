@@ -1,0 +1,17 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      flowProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+flow            on;
+solution        steady;
+energy          off;
+steadyMaxIterations 500;
+steadyTolerance 1e-10;
+
+// ************************************************************************* //

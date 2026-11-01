@@ -1,0 +1,11 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+set -x
+
+# Compressible turbulence models of foam-extend 4.0 (laminar, RAS, LES), for
+# the gas flow of somaFoam
+wmake libso LES/LESdeltas
+wmake libso LES/LESfilters
+compressible/Allwmake
+
+# ----------------------------------------------------------------- end-of-file

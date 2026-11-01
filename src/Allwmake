@@ -38,6 +38,9 @@ mesh/Allwmake
 
 thermophysicalModels/Allwmake
 
+# Compressible turbulence models (gas flow of somaFoam)
+turbulenceModels/Allwmake
+
 postProcessing/Allwmake
 conversion/Allwmake
 wmake libso errorEstimation

@@ -26,6 +26,7 @@ License
 #include "ODEChemistryModel.H"
 #include "chemistrySolver.H"
 #include "reactingMixture.H"
+#include "TabularReactionRate.H"
 
 
 // * * * * * * * * * * * * * * Local Functions  * * * * * * * * * * * * * * //
@@ -120,8 +121,28 @@ Foam::ODEChemistryModel<CompType, ThermoType>::ODEChemistryModel
             new scalarField(mesh.nCells(), 0.0)
         );
 	}
+    // Interpolation of the tabulated rates (TabularReactionRate) between
+    // the rows of a table: rateInterpolation logarithmic (default, ln k
+    // linearly in Te) or linear (k linearly in Te, and so in the mean
+    // energy 3/2 kB Te)
+    const word rateInterpolation
+    (
+        this->template lookupOrDefault<word>("rateInterpolation", "logarithmic")
+    );
+
+    if (rateInterpolation != "logarithmic" && rateInterpolation != "linear")
+    {
+        FatalErrorIn("ODEChemistryModel::ODEChemistryModel")
+            << "rateInterpolation " << rateInterpolation
+            << " in chemistryProperties: logarithmic or linear"
+            << exit(FatalError);
+    }
+
+    TabularReactionRate::linearInterpolation = rateInterpolation == "linear";
+
     Info<< "ODEChemistryModel: Number of species = " << nSpecie_
-        << " and reactions = " << nReaction_ << endl;
+        << " and reactions = " << nReaction_
+        << ", tabulated rates interpolated " << rateInterpolation << endl;
 }
 
 
@@ -1605,6 +1626,111 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
             for (label i=0; i<nSpecie_; i++)
             {
                 RR_[i][celli] = dcdt[i]*specieThermo_[i].W();
+            }
+        }
+    }
+}
+
+
+template<class CompType, class ThermoType>
+void Foam::ODEChemistryModel<CompType, ThermoType>::calculateElectronEnergySource()
+{
+    // The rate cache and the cacheable flags are set up by calculateWcf
+    if
+    (
+        !this->chemistry_
+     || cacheableRate_.size() != nReaction_
+     || rateCacheCells_ != this->mesh().nCells()
+    )
+    {
+        calculateWcf();
+        return;
+    }
+
+    const volScalarField rho(this->thermo().rho());
+
+    const labelList& kinds = reactionKinds();
+
+    const scalarField& pCells = this->thermo().p();
+    const scalarField& TCells = this->thermo().T();
+    const scalarField& TeCells = this->thermo().Te();
+
+    scalarField c(nSpecie_);
+
+    scalar pf, cf, pr, cr;
+    label lRef, rRef;
+
+    // The electron-impact reactions of calculateWcf, term by term in the
+    // same order, so that the electron energy source is the same
+    forAll(rho, celli)
+    {
+        eChemSource_[celli] = 0.0;
+        dEChemSourceDTe_[celli] = 0.0;
+
+        forAll(reactions_, i)
+        {
+            if (kinds[i] == electronElastic)
+            {
+                collFreq_[reactions_[i].lhs()[0].index][celli] = 0.0;
+            }
+        }
+
+        const scalar rhoi = rho[celli];
+        const scalar Ti = TCells[celli];
+        const scalar pi = pCells[celli];
+        const scalar Tei = TeCells[celli];
+
+        for (label i=0; i<nSpecie_; i++)
+        {
+            c[i] = rhoi*Y_[i][celli]/specieThermo_[i].W();
+        }
+
+        forAll(reactions_, i)
+        {
+            const label kind = kinds[i];
+
+            if (kind != electronInelastic && kind != electronElastic)
+            {
+                continue;
+            }
+
+            const Reaction<ThermoType>& R = reactions_[i];
+
+            scalar kfr, krr, kfp, krp, kfm, krm;
+            cachedRate(i, celli, 0, Tei, pi, c, kfr, krr);
+            cachedRate(i, celli, 1, Tei + 1e-08, pi, c, kfp, krp);
+            cachedRate(i, celli, 2, Tei - 1e-08, pi, c, kfm, krm);
+
+            const scalar omegai =
+                krr == 0.0
+              ? omegaForward(R, c, kfr)
+              : omegaFromRates(R, c, kfr, krr, pf, cf, lRef, pr, cr, rRef);
+
+            const scalar omegaiplus =
+                krp == 0.0
+              ? omegaForward(R, c, kfp)
+              : omegaFromRates(R, c, kfp, krp, pf, cf, lRef, pr, cr, rRef);
+
+            const scalar omegaiminus =
+                krm == 0.0
+              ? omegaForward(R, c, kfm)
+              : omegaFromRates(R, c, kfm, krm, pf, cf, lRef, pr, cr, rRef);
+
+            const scalar dOmegaiDTe = (omegaiplus - omegaiminus) / 2e-08;
+
+            if (kind == electronInelastic)
+            {
+                scalar sl = R.lhs()[0].stoichCoeff;
+                eChemSource_[celli] += sl*omegai*R.deltaE()*5.48579E-4;
+                dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*5.48579E-4;
+            }
+            else
+            {
+                const label si = R.lhs()[1].index;
+                const label sie = R.lhs()[0].index;
+                eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W();
+                collFreq_[sie][celli] += omegai*5.48579E-4/Y_[sie][celli]/rhoi;
+                dEChemSourceDTe_[celli] += 3.0*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
             }
         }
     }

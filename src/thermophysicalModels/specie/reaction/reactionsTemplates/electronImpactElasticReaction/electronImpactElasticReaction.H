@@ -131,6 +131,12 @@ public:
 
     // Member Functions
 
+        //- The rate coefficient
+        const ReactionRate& rate() const
+        {
+            return k_;
+        }
+
             //- Forward rate constant
             virtual scalar kf
             (

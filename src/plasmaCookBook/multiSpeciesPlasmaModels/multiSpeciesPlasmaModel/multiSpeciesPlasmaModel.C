@@ -10,6 +10,7 @@ look for license file include with distribution.
 #include "multiSpeciesPlasmaModel.H"
 #include "zeroGradientFvPatchFields.H"
 #include "fvMesh.H"
+#include "fvm.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -110,6 +111,9 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     nCorrTe_(6),
     innerTolerance_(1e-5),
     reportUnconverged_(true),
+    chemistryPerPass_(false),
+    chemistryPerStep_(false),
+    chemistryCurrent_(false),
     scharfetterGummel_(species().size(), false),
     faceFlux_(species().size()),
     postSolveCharge_(0),
@@ -545,7 +549,20 @@ Foam::scalar Foam::multiSpeciesPlasmaModel::correct
 {
     updateTemperature();
 
-    updateChemistryCollFreq(chemistry);
+    // The rates of the end of the last time step hold, unless the mesh has
+    // changed since or the gas flows (the flow changes its density and
+    // temperature)
+    if
+    (
+        !chemistryCurrent_
+     || mesh_.changing()
+     || mesh_.foundObject<surfaceScalarField>("phiGas")
+    )
+    {
+        updateChemistryCollFreq(chemistry);
+    }
+
+    chemistryCurrent_ = false;
 
     forAll(Sy_, i)
     {
@@ -555,6 +572,35 @@ Foam::scalar Foam::multiSpeciesPlasmaModel::correct
     NG_ = thermo_.p()/plasmaConstants::boltzC/thermo_.T();
 
     NG_.correctBoundaryConditions();
+
+    // With a gas flow the pressure changes: D = pD/p follows it
+    if (mesh_.foundObject<surfaceScalarField>("phiGas"))
+    {
+        forAll(species(), i)
+        {
+            if (diffusionModel_[i] == "pressureScaled")
+            {
+                const scalar pD
+                (
+                    readScalar(subDict(species()[i]).lookup("pD"))
+                );
+
+                D_[i] =
+                    dimensionedScalar
+                    (
+                        "pD",
+                        dimensionSet(1, -1, -1, 0, 0, 0, 0),
+                        pD
+                    )
+                   /(
+                        thermo_.p()
+                       /dimensionedScalar("p1", thermo_.p().dimensions(), 1.0)
+                    );
+
+                D_[i].correctBoundaryConditions();
+            }
+        }
+    }
 
     readLimitsIfModified();
 
@@ -834,6 +880,43 @@ Foam::multiSpeciesPlasmaModel::ionTempSource
     return tIts;
 }
 
+Foam::tmp<Foam::fvScalarMatrix>
+Foam::multiSpeciesPlasmaModel::gasConvection
+(
+    volScalarField& N,
+    const word& scheme
+) const
+{
+    if (mesh_.foundObject<surfaceScalarField>("phiGas"))
+    {
+        return fvm::div
+        (
+            mesh_.lookupObject<surfaceScalarField>("phiGas"),
+            N,
+            scheme
+        );
+    }
+
+    return tmp<fvScalarMatrix>
+    (
+        new fvScalarMatrix(N, N.dimensions()*dimVolume/dimTime)
+    );
+}
+
+
+void Foam::multiSpeciesPlasmaModel::addGasFlux(const label i)
+{
+    if
+    (
+        mesh_.foundObject<surfaceScalarField>("phiGas")
+     && mesh_.foundObject<volVectorField>("U")
+    )
+    {
+        J_[i] += N_[i]*mesh_.lookupObject<volVectorField>("U");
+    }
+}
+
+
 Foam::tmp<Foam::volScalarField>
 Foam::multiSpeciesPlasmaModel::netCharge()
 {
@@ -994,8 +1077,20 @@ Foam::multiSpeciesPlasmaModel::potentialExpSource()
             volScalarField netExpSource
             = z_[i]*(N(i).oldTime()
             + runTime_.deltaT().value()*((Sy_[i]*plasmaConstants::A/W(i))
-            + fvc::laplacian(D_[i], N(i), "laplacian(D,Ni)")
-            + fvc::laplacian((mu_[i]*plasmaConstants::KBE*N(i)), T_[i], "laplacian(D,T)")));
+            + fvc::laplacian(D_[i], N(i), "laplacian(D,Ni)")));
+
+            // Thermal diffusion, where the flux of the species has it
+            if (thermalDiffusion(i))
+            {
+                netExpSource +=
+                    z_[i]*runTime_.deltaT().value()
+                   *fvc::laplacian
+                    (
+                        (mu_[i]*plasmaConstants::KBE*N(i)),
+                        T_[i],
+                        "laplacian(D,T)"
+                    );
+            }
 
             forAll(pes, celli)
             {
