@@ -93,6 +93,14 @@ inline scalar TabularReactionRate::operator()
             }
         }
 
+        if (linearInterpolation)
+        {
+            // k linearly in T between the rows
+            const scalar klo = exp(y_[lo]);
+
+            return klo + (exp(y_[hi]) - klo)*(T - x_[lo])/(x_[hi] - x_[lo]);
+        }
+
         // The interpolation of interpolationTable::operator(), term by term
         ak =
             y_[lo]

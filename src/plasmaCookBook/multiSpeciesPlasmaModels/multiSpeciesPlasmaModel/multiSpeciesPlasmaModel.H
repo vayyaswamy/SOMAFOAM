@@ -137,6 +137,19 @@ protected:
             //- Report loops that end without reaching the tolerance
             Switch reportUnconverged_;
 
+            //- Reaction rates of the species equations (speciesChemistry in
+            //  innerIterations): by default recalculated after each species
+            //  is solved, so that its equation is linear in its density and
+            //  needs one pass; perPass, after every pass; perStep, those of
+            //  the start of the time step for all species
+            bool chemistryPerPass_;
+            bool chemistryPerStep_;
+
+            //- The rates were calculated for the current state at the end of
+            //  the last time step (electron energy equation): the species
+            //  update of the next step need not recalculate them
+            bool chemistryCurrent_;
+
         //- Per species: Scharfetter-Gummel fluxes instead of the convection
         //  and Laplacian schemes of fvSchemes. Optional entry fluxScheme in
         //  plasmaProperties, and in the dictionary of a species for that
@@ -328,6 +341,13 @@ public:
 
         inline void updateChemistryCollFreq(psiChemistryModel& chemistry);
 
+        //- Only the electron energy source of the chemistry (inner passes
+        //  of the electron energy equation)
+        inline void updateElectronEnergyChemistry
+        (
+            psiChemistryModel& chemistry
+        );
+
         tmp<volScalarField> electronTempSource
         (
             const psiChemistryModel& chemistry
@@ -351,6 +371,25 @@ public:
         tmp<volVectorField> gradTe();
 
         tmp<volScalarField> netCharge();
+
+        //- Does the flux of species i contain thermal diffusion?
+        virtual bool thermalDiffusion(const label i) const
+        {
+            return true;
+        }
+
+        //- Transport of a species density by the gas flow, div(phiGas N),
+        //  when the gas flows (phiGas registered by the flow of the
+        //  solver); an empty matrix otherwise
+        tmp<fvScalarMatrix> gasConvection
+        (
+            volScalarField& N,
+            const word& scheme
+        ) const;
+
+        //- Flux N U of a species density carried by the gas flow, added to
+        //  its flux J when the gas flows
+        void addGasFlux(const label i);
 
         tmp<volScalarField> potentialImpSource();
 
@@ -422,6 +461,17 @@ public:
             scalar innerTolerance() const
             {
                 return innerTolerance_;
+            }
+
+            bool chemistryPerPass() const
+            {
+                return chemistryPerPass_;
+            }
+
+            //- Mark the rates as calculated for the current state
+            void setChemistryCurrent()
+            {
+                chemistryCurrent_ = true;
             }
 
         // Flux scheme

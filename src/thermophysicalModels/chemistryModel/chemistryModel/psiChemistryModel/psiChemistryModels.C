@@ -33,6 +33,7 @@ Description
 
 #include "psiChemistryModel.H"
 #include "ODEChemistryModel.H"
+#include "plasmaFieldChemistryModel.H"
 #include "thermoPhysicsTypes.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -56,6 +57,18 @@ namespace Foam
         ODEChemistryModel,
         psiChemistryModel,
         icoPoly8ThermoPhysics
+    );
+    makeChemistryModel
+    (
+        plasmaFieldChemistryModel,
+        psiChemistryModel,
+        constGasThermoPhysics
+    );
+    makeChemistryModel
+    (
+        plasmaFieldChemistryModel,
+        psiChemistryModel,
+        gasThermoPhysics
     );
 }
 

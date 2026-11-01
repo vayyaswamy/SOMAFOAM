@@ -98,6 +98,12 @@ public:
             return speciesThermo_[i].W();
         }
 
+        //- Does the flux of species i contain thermal diffusion?
+        virtual bool thermalDiffusion(const label i) const
+        {
+            return thermalDiffusion_[i];
+        }
+
         virtual inline scalar correct
         (
             psiChemistryModel& chemistry,

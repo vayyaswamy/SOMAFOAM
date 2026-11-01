@@ -141,4 +141,19 @@ inline void Foam::multiSpeciesPlasmaModel::updateChemistryCollFreq
     }
 }
 
+inline void Foam::multiSpeciesPlasmaModel::updateElectronEnergyChemistry
+(
+    psiChemistryModel& chemistry
+)
+{
+    if (plasmaChemistry == "directSolution")
+    {
+        chemistry.calculateElectronEnergySource();
+    }
+    else
+    {
+        updateChemistryCollFreq(chemistry);
+    }
+}
+
 // ************************************************************************* //

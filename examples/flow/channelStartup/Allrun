@@ -1,0 +1,6 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+blockMesh > log.blockMesh 2>&1
+somaFoam > log.somaFoam 2>&1
+python3 ../verify.py channelStartup .

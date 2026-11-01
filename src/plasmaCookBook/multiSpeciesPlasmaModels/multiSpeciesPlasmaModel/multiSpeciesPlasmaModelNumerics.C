@@ -37,6 +37,11 @@ Description
         electronTemperature 6;
         tolerance           1e-5;   // initial residual that ends the passes
         reportUnconverged   yes;
+        speciesChemistry    perSpecies; // reaction rates of the species
+                                    // equations: perSpecies, after each
+                                    // species is solved; perPass, after
+                                    // every pass; perStep, those of the
+                                    // start of the time step
     }
     \endverbatim
 
@@ -224,11 +229,32 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         dict.readIfPresent("electronTemperature", nCorrTe_);
         dict.readIfPresent("tolerance", innerTolerance_);
         dict.readIfPresent("reportUnconverged", reportUnconverged_);
+        const word speciesChemistry
+        (
+            dict.lookupOrDefault<word>("speciesChemistry", "perSpecies")
+        );
+
+        if
+        (
+            speciesChemistry != "perSpecies"
+         && speciesChemistry != "perPass"
+         && speciesChemistry != "perStep"
+        )
+        {
+            FatalIOErrorIn("multiSpeciesPlasmaModel::readNumericalControls", dict)
+                << "speciesChemistry " << speciesChemistry
+                << ": perSpecies, perPass or perStep" << exit(FatalIOError);
+        }
+
+        chemistryPerPass_ = speciesChemistry == "perPass";
+        chemistryPerStep_ = speciesChemistry == "perStep";
 
         Info<< "Inner iterations: charged species " << nCorrCharged_
             << ", neutral species " << nCorrNeutral_
             << ", electron temperature " << nCorrTe_
-            << ", tolerance " << innerTolerance_ << endl;
+            << ", tolerance " << innerTolerance_
+            << ", species chemistry "
+            << (chemistryPerPass_ ? "perPass" : chemistryPerStep_ ? "perStep" : "perSpecies") << endl;
     }
 
     // Flux scheme: for all species, and optionally per species

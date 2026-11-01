@@ -67,6 +67,13 @@ Foam::scalar Foam::efullImplicit::correct
 
     int icorr = 0;
 
+    // The species update leaves the rates of the last species unchanged:
+    // the energy source of the reactions for the present state
+    if (!mspm().chemistryPerPass())
+    {
+        mspm().updateElectronEnergyChemistry(chemistry);
+    }
+
     // Electron energy density Ne*Te before each pass: a pass ends the
     // iterations when it changes Ne*Te by less than innerTolerance relative to
     // its largest value (cells without electrons, where Te is not determined,
@@ -76,14 +83,18 @@ Foam::scalar Foam::efullImplicit::correct
         mspm().N(eIndex_).internalField()*thermo().Te().internalField()
     );
 
-    while
+    const dimensionedScalar rDeltaT(1.0/mesh().time().deltaT());
+
+    // Energy density of the start of the step over the step
+    const volScalarField oldEnergy
     (
-        (icorr++ < mspm().nCorrTe())
-     && (initialResidual >= mspm().innerTolerance())
-    )
+        rDeltaT*1.5*plasmaConstants::boltzC
+       *mspm().N(eIndex_).oldTime()*TeC.oldTime()
+    );
 
-    {
-
+    // The energy flux of the electrons and the work of the field depend
+    // only on the electron flux and the potential, which the passes do not
+    // change
        eeFlux = 2.5*plasmaConstants::boltzC*mspm().J(eIndex_);
 
        surfaceScalarField eeFluxF = fvc::interpolate(eeFlux) & mesh().Sf();
@@ -102,6 +113,16 @@ Foam::scalar Foam::efullImplicit::correct
                mesh().lookupObject<volScalarField>("Phi");
 
            eeFluxF = 2.5*plasmaConstants::boltzC*Jf;
+
+           // The face flux of the electrons has no part carried by the gas
+           // flow (with the cell flux J, addGasFlux adds it)
+           if (mesh().foundObject<surfaceScalarField>("phiGas"))
+           {
+               eeFluxF +=
+                   2.5*plasmaConstants::boltzC
+                  *mesh().lookupObject<surfaceScalarField>("phiGas")
+                  *fvc::interpolate(mspm().N(eIndex_));
+           }
 
            // Potential at the face centres. Where the line between two
            // cell centres does not pass through the face centre (faces
@@ -122,13 +143,26 @@ Foam::scalar Foam::efullImplicit::correct
              - fvc::div(Jf*PhiF)().internalField();
        }
 
-       volScalarField eeSource = - plasmaConstants::eCharge*jDotE - mspm().electronTempSource(chemistry);
 
-        volScalarField eeSource_Su = plasmaConstants::eCharge*jDotE
-                                    + mspm().electronTempSource(chemistry)
-                                    - mspm().dElectronTempSourceDTe(chemistry)*TeC;
+    while
+    (
+        (icorr++ < mspm().nCorrTe())
+     && (initialResidual >= mspm().innerTolerance())
+    )
+
+    {
+
+        // Energy source of the reactions and its Te derivative, once each
+        const volScalarField eeChemSource
+        (
+            mspm().electronTempSource(chemistry)
+        );
 
         volScalarField eeSource_SuSp = mspm().dElectronTempSourceDTe(chemistry);
+
+        volScalarField eeSource_Su = plasmaConstants::eCharge*jDotE
+                                    + eeChemSource
+                                    - eeSource_SuSp*TeC;
 
 
        const volScalarField& Ne = mspm().N(eIndex_);
@@ -151,12 +185,10 @@ Foam::scalar Foam::efullImplicit::correct
         // (Ne Te - Ne^0 Te^0)/dt. fvm::ddt(rho, Te) would take the old
         // time of rho from the temporary 3/2 k Ne, a copy of the new value,
         // and so discretize 3/2 k Ne dTe/dt, dropping 3/2 k Te dNe/dt
-        const dimensionedScalar rDeltaT(1.0/mesh().time().deltaT());
-
         fvScalarMatrix TeEqn
         (
             fvm::Sp(rDeltaT*1.5*plasmaConstants::boltzC*Ne, TeC)
-          - rDeltaT*1.5*plasmaConstants::boltzC*Ne.oldTime()*TeC.oldTime()
+          - oldEnergy
             + transport
             + fvm::SuSp(eeSource_SuSp, TeC)
             + eeSource_Su
@@ -172,12 +204,14 @@ Foam::scalar Foam::efullImplicit::correct
             NeTePass
         );
 
-        thermo().correct();
+        // The thermo (gas temperature, compressibility, viscosity) does not
+        // depend on Te and is not updated here
 
         mspm().updateTemperature();
 
-        mspm().updateChemistryCollFreq(chemistry);
-
+        // The passes need only the electron energy source; all rates are
+        // updated after the loop
+        mspm().updateElectronEnergyChemistry(chemistry);
     }
 
     mspm().reportInnerIterations("Te", mspm().nCorrTe(), initialResidual);
@@ -187,11 +221,11 @@ Foam::scalar Foam::efullImplicit::correct
 
     mspm().limitField(TeC, mspm().TeMin(), mspm().TeMax());
 
-    thermo().correct();
-
     mspm().updateTemperature();
 
     mspm().updateChemistryCollFreq(chemistry);
+
+    mspm().setChemistryCurrent();
 
     volScalarField divEeFlux = mag(0.5*fvc::div(eeFlux));
 
