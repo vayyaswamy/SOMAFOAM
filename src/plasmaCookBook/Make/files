@@ -12,6 +12,7 @@ plasmaEnergyModels/plasmaEnergyModel/plasmaEnergyModel.C
 plasmaEnergyModels/eTemperature/eTemp/eTemp.C
 plasmaEnergyModels/eTemperature/eTemp/neweTemp.C
 plasmaEnergyModels/eTemperature/efullImplicit/efullImplicit.C
+plasmaEnergyModels/eTemperature/eEnergyDensity/eEnergyDensity.C
 plasmaEnergyModels/eTemperature/fullImplicitTE/fullImplicitTE.C
 
 plasmaEnergyModels/iTemperature/iTemp/iTemp.C
