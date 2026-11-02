@@ -156,6 +156,12 @@ protected:
         //  species alone
         boolList scharfetterGummel_;
 
+        //- Drift fluxes through the faces from the potential difference
+        //  across each face, z mu_f (-snGrad(Phi)) |S| (driftFlux face in
+        //  plasmaProperties), instead of the interpolated cell drift
+        //  velocity F.S (cell, default)
+        bool driftFluxFace_;
+
         //- Fluxes of the drift-diffusion species through the faces [1/s],
         //  as discretised in their equations; set after each species has
         //  been solved. The electron energy equation and the fluxes in the
@@ -482,15 +488,26 @@ public:
                 return scharfetterGummel_[i];
             }
 
+            //- Drift flux of species i through the faces for its drift
+            //  velocity F (cell) or its mobility and the potential (face),
+            //  times driftScale
+            tmp<surfaceScalarField> driftFaceFlux
+            (
+                const label i,
+                const volVectorField& F,
+                const scalar driftScale = 1
+            ) const;
+
             //- Implicit drift and diffusion terms of the equation of
             //  species i, div(F Ni) - laplacian(D, Ni), for a drift
-            //  velocity F
+            //  velocity F (times driftScale)
             tmp<fvScalarMatrix> driftDiffusionTerms
             (
                 const label i,
                 const volVectorField& F,
                 const volScalarField& D,
-                const volScalarField& Ni
+                const volScalarField& Ni,
+                const scalar driftScale = 1
             ) const;
 
             //- Store the flux of species i through the faces, as

@@ -25,6 +25,7 @@ License
 
 #include "electronTemperature.H"
 #include "addToRunTimeSelectionTable.H"
+#include "plasmaWallFluxes.H"
 #include "fvPatchFieldMapper.H"
 #include "volFields.H"
 #include "fvPatch.H"
@@ -50,7 +51,10 @@ Foam::electronTemperature::electronTemperature
     FE_(false),
     beta_(1.0),
     wf_(1.0),
-    maxwellianWallEnergy_(false)
+    maxwellianWallEnergy_(false),
+    thermalSpeedCell_(false),
+    emissionIonFluxWall_(false),
+    emissionIons_()
 {
     this->refValue() = 0;
     this->refGrad() = 0;
@@ -75,7 +79,10 @@ Foam::electronTemperature::electronTemperature
     FE_(ptf.FE_),
     beta_(ptf.beta_),
     wf_(ptf.wf_),
-    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_)
+    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_),
+    thermalSpeedCell_(ptf.thermalSpeedCell_),
+    emissionIonFluxWall_(ptf.emissionIonFluxWall_),
+    emissionIons_(ptf.emissionIons_)
 {}
 
 
@@ -94,7 +101,21 @@ Foam::electronTemperature::electronTemperature
     FE_(readBool(dict.lookup("field_emission"))),
     beta_(readScalar(dict.lookup("field_enhancement_factor"))),
     wf_(readScalar(dict.lookup("work_function"))),
-    maxwellianWallEnergy_(dict.lookupOrDefault<Switch>("maxwellianWallEnergy", false))
+    maxwellianWallEnergy_(dict.lookupOrDefault<Switch>("maxwellianWallEnergy", false)),
+    thermalSpeedCell_
+    (
+        dict.lookupOrDefault<word>("thermalSpeed", "wall") == "cell"
+    ),
+    emissionIonFluxWall_
+    (
+        dict.lookupOrDefault<word>("emissionIonFlux", "field") == "wall"
+    ),
+    emissionIons_
+    (
+        emissionIonFluxWall_
+      ? wordList(dict.lookup("emissionIons"))
+      : wordList()
+    )
 {
     this->refValue() = 0;
 
@@ -118,7 +139,10 @@ Foam::electronTemperature::electronTemperature
     FE_(ptf.FE_),
     beta_(ptf.beta_),
     wf_(ptf.wf_),
-    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_)
+    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_),
+    thermalSpeedCell_(ptf.thermalSpeedCell_),
+    emissionIonFluxWall_(ptf.emissionIonFluxWall_),
+    emissionIons_(ptf.emissionIons_)
 {}
 
 
@@ -136,7 +160,10 @@ Foam::electronTemperature::electronTemperature
     FE_(ptf.FE_),
     beta_(ptf.beta_),
     wf_(ptf.wf_),
-    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_)
+    maxwellianWallEnergy_(ptf.maxwellianWallEnergy_),
+    thermalSpeedCell_(ptf.thermalSpeedCell_),
+    emissionIonFluxWall_(ptf.emissionIonFluxWall_),
+    emissionIons_(ptf.emissionIons_)
 {}
 
 
@@ -162,7 +189,12 @@ void Foam::electronTemperature::updateCoeffs()
         patch().lookupPatchField<volVectorField, vector>("ionFlux");
 
     const scalarField Enorm(Ef & n);
-    const scalarField Fifnorm(Fif & n);
+    scalarField Fifnorm(Fif & n);
+
+    if (emissionIonFluxWall_)
+    {
+        Fifnorm = wallIonFlux(patch(), emissionIons_);
+    }
 
     // Emitted electrons: secondaries from the ions that reach the wall and
     // field emission where the field points into the wall
@@ -218,9 +250,10 @@ void Foam::electronTemperature::updateCoeffs()
             patch().lookupPatchField<volScalarField, scalar>("N_electron");
 
         const scalarField Tb(*this);
+        const scalarField Tv(wallThermalTemperature(*this, thermalSpeedCell_));
         const scalarField vTh
         (
-            0.25*sqrt(8.0*1.38e-23*Tb/9.1e-31/acos(-1.0))
+            0.25*sqrt(8.0*1.38e-23*Tv/9.1e-31/acos(-1.0))
         );
         const scalarField muEn(muef*Enorm);
         const scalarField repel(pos(muEn - VSMALL));
@@ -279,6 +312,14 @@ void Foam::electronTemperature::write(Ostream& os) const
         << wf_ << token::END_STATEMENT << nl;
     os.writeKeyword("maxwellianWallEnergy")
         << maxwellianWallEnergy_ << token::END_STATEMENT << nl;
+    os.writeKeyword("thermalSpeed")
+        << word(thermalSpeedCell_ ? "cell" : "wall") << token::END_STATEMENT << nl;
+    os.writeKeyword("emissionIonFlux")
+        << word(emissionIonFluxWall_ ? "wall" : "field") << token::END_STATEMENT << nl;
+    if (emissionIonFluxWall_)
+    {
+        os.writeKeyword("emissionIons") << emissionIons_ << token::END_STATEMENT << nl;
+    }
     this->writeEntry("value", os);
 }
 
