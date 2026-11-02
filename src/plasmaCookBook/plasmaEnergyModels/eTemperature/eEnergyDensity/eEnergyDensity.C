@@ -83,10 +83,8 @@ Foam::scalar Foam::eEnergyDensity::correct
 
     // Drift velocity and diffusivity of the energy, 5/3 of those of the
     // electrons
-    const volVectorField Feps
-    (
-        (5.0/3.0)*mesh().lookupObject<volVectorField>("F_" + eSpecie)
-    );
+    const volVectorField& Fe =
+        mesh().lookupObject<volVectorField>("F_" + eSpecie);
     const volScalarField Deps
     (
         (5.0/3.0)*mesh().lookupObject<volScalarField>("D_" + eSpecie)
@@ -187,7 +185,7 @@ Foam::scalar Foam::eEnergyDensity::correct
         fvScalarMatrix epsEqn
         (
             fvm::Sp(rDeltaT, nEps) - oldEnergy
-          + mspm().driftDiffusionTerms(eIndex_, Feps, Deps, nEps)
+          + mspm().driftDiffusionTerms(eIndex_, Fe, Deps, nEps, 5.0/3.0)
           + mspm().gasConvection(nEps, "div(phiGas,Ni)")
           + fvm::SuSp(dSdTe*rk15Ne, nEps)
           + plasmaConstants::eCharge*jDotE

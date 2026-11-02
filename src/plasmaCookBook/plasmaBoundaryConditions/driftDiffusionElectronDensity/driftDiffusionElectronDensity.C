@@ -25,6 +25,7 @@ License
 
 #include "driftDiffusionElectronDensity.H"
 #include "addToRunTimeSelectionTable.H"
+#include "plasmaWallFluxes.H"
 #include "fvPatchFieldMapper.H"
 #include "volFields.H"
 #include "fvPatch.H"
@@ -48,7 +49,10 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(1.0),
     wf_(1.0),
     thermalDiffusion_(true),
-    secondaryElectronBeam_(false)
+    secondaryElectronBeam_(false),
+    thermalSpeedCell_(false),
+    emissionIonFluxWall_(false),
+    emissionIons_()
 
 {
     this->refValue() = 0;
@@ -73,7 +77,10 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_),
     thermalDiffusion_(ptf.thermalDiffusion_),
-    secondaryElectronBeam_(ptf.secondaryElectronBeam_)
+    secondaryElectronBeam_(ptf.secondaryElectronBeam_),
+    thermalSpeedCell_(ptf.thermalSpeedCell_),
+    emissionIonFluxWall_(ptf.emissionIonFluxWall_),
+    emissionIons_(ptf.emissionIons_)
 {
 }
 
@@ -92,7 +99,21 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(readScalar(dict.lookup("field_enhancement_factor"))),
     wf_(readScalar(dict.lookup("work_function"))),
     thermalDiffusion_(dict.lookupOrDefault<Switch>("thermalDiffusion", true)),
-    secondaryElectronBeam_(dict.lookupOrDefault<Switch>("secondaryElectronBeam", false))
+    secondaryElectronBeam_(dict.lookupOrDefault<Switch>("secondaryElectronBeam", false)),
+    thermalSpeedCell_
+    (
+        dict.lookupOrDefault<word>("thermalSpeed", "wall") == "cell"
+    ),
+    emissionIonFluxWall_
+    (
+        dict.lookupOrDefault<word>("emissionIonFlux", "field") == "wall"
+    ),
+    emissionIons_
+    (
+        emissionIonFluxWall_
+      ? wordList(dict.lookup("emissionIons"))
+      : wordList()
+    )
 {
     this->refValue() = 0.0;
 
@@ -114,7 +135,10 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_),
     thermalDiffusion_(ptf.thermalDiffusion_),
-    secondaryElectronBeam_(ptf.secondaryElectronBeam_)
+    secondaryElectronBeam_(ptf.secondaryElectronBeam_),
+    thermalSpeedCell_(ptf.thermalSpeedCell_),
+    emissionIonFluxWall_(ptf.emissionIonFluxWall_),
+    emissionIons_(ptf.emissionIons_)
 {
     fvPatchField<scalar>::operator=(this->patchInternalField());
 }
@@ -133,7 +157,10 @@ Foam::driftDiffusionElectronDensity::driftDiffusionElectronDensity
     beta_(ptf.beta_),
     wf_(ptf.wf_),
     thermalDiffusion_(ptf.thermalDiffusion_),
-    secondaryElectronBeam_(ptf.secondaryElectronBeam_)
+    secondaryElectronBeam_(ptf.secondaryElectronBeam_),
+    thermalSpeedCell_(ptf.thermalSpeedCell_),
+    emissionIonFluxWall_(ptf.emissionIonFluxWall_),
+    emissionIons_(ptf.emissionIons_)
 {
 }
 
@@ -176,7 +203,10 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
     // The drift velocity away from the wall is uAway below, and the
     // diffusive flux that the condition sets is D dn/dn = -C1 n + emitted.
     // C1 is never negative, so the weight stays between 0 and 1.
-    const scalarField vThermal(0.25*sqrt(8.0*1.38e-23*Tef/9.1e-31/acos(-1.0)));
+    // Thermal speed at the temperature of the wall face, or of the wall cell
+    // (thermalSpeed cell)
+    const scalarField Tv(wallThermalTemperature(Tef, thermalSpeedCell_));
+    const scalarField vThermal(0.25*sqrt(8.0*1.38e-23*Tv/9.1e-31/acos(-1.0)));
 
     const scalarField uAway
     (
@@ -195,7 +225,14 @@ void Foam::driftDiffusionElectronDensity::updateCoeffs()
 
     scalarField Enorm = Ef&n ;
 
+    // Ion flux of secondary emission: the ion flux field, or computed at the
+    // wall from the ion densities and the field (emissionIonFlux wall)
     scalarField Fifnorm = Fif&n;
+
+    if (emissionIonFluxWall_)
+    {
+        Fifnorm = wallIonFlux(patch(), emissionIons_);
+    }
     scalarField a = pos(mag(Enorm));
     scalarField b = pos(Fifnorm);
 
@@ -256,6 +293,14 @@ void Foam::driftDiffusionElectronDensity::write(Ostream& os) const
         << thermalDiffusion_ << token::END_STATEMENT << nl;
     os.writeKeyword("secondaryElectronBeam")
         << secondaryElectronBeam_ << token::END_STATEMENT << nl;
+    os.writeKeyword("thermalSpeed")
+        << word(thermalSpeedCell_ ? "cell" : "wall") << token::END_STATEMENT << nl;
+    os.writeKeyword("emissionIonFlux")
+        << word(emissionIonFluxWall_ ? "wall" : "field") << token::END_STATEMENT << nl;
+    if (emissionIonFluxWall_)
+    {
+        os.writeKeyword("emissionIons") << emissionIons_ << token::END_STATEMENT << nl;
+    }
     this->writeEntry("value", os);
 }
 

@@ -109,6 +109,16 @@ class electronTemperature
     //  with secondaryElectronBeam on the electron density
     bool maxwellianWallEnergy_;
 
+    //- Thermal speed of the wall flux from the temperature in the wall cell
+    //  (thermalSpeed cell) instead of at the wall face (wall, default)
+    bool thermalSpeedCell_;
+
+    //- Ion flux of secondary emission computed at the wall from the ion
+    //  densities emissionIons and the field (emissionIonFlux wall) instead
+    //  of the ion flux field (field, default)
+    bool emissionIonFluxWall_;
+    wordList emissionIons_;
+
 
     public:
 

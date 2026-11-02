@@ -115,6 +115,7 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     chemistryPerStep_(false),
     chemistryCurrent_(false),
     scharfetterGummel_(species().size(), false),
+    driftFluxFace_(false),
     faceFlux_(species().size()),
     postSolveCharge_(0),
     chargedSpeciesChange_(0),

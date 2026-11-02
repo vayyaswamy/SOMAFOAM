@@ -104,16 +104,52 @@ Description
 
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
+Foam::tmp<Foam::surfaceScalarField>
+Foam::multiSpeciesPlasmaModel::driftFaceFlux
+(
+    const label i,
+    const volVectorField& F,
+    const scalar driftScale
+) const
+{
+    if (!driftFluxFace_)
+    {
+        return driftScale*(fvc::interpolate(F) & mesh_.Sf());
+    }
+
+    // z mu (E - kB/e grad(T)) with the normal components at the face from
+    // the values on its two sides, E.n = -snGrad(Phi)
+    const volScalarField& Phi = mesh_.lookupObject<volScalarField>("Phi");
+
+    const surfaceScalarField muf(fvc::interpolate(mu_[i]));
+
+    tmp<surfaceScalarField> tphi
+    (
+        -driftScale*z_[i]*muf*fvc::snGrad(Phi)*mesh_.magSf()
+    );
+
+    if (thermalDiffusion(i))
+    {
+        tphi() -=
+            driftScale*plasmaConstants::KBE*muf*fvc::snGrad(T_[i])
+           *mesh_.magSf();
+    }
+
+    return tphi;
+}
+
+
 Foam::tmp<Foam::fvScalarMatrix>
 Foam::multiSpeciesPlasmaModel::driftDiffusionTerms
 (
     const label i,
     const volVectorField& F,
     const volScalarField& D,
-    const volScalarField& Ni
+    const volScalarField& Ni,
+    const scalar driftScale
 ) const
 {
-    const surfaceScalarField phi(fvc::interpolate(F) & mesh_.Sf());
+    const surfaceScalarField phi(driftFaceFlux(i, F, driftScale));
 
     if (scharfetterGummel_[i])
     {
@@ -134,7 +170,7 @@ void Foam::multiSpeciesPlasmaModel::correctDriftDiffusionFlux
     const volScalarField& Ni
 )
 {
-    const surfaceScalarField phi(fvc::interpolate(F) & mesh_.Sf());
+    const surfaceScalarField phi(driftFaceFlux(i, F));
 
     // The flux as discretised in the equation of the species
     tmp<surfaceScalarField> tflux;
@@ -292,6 +328,26 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         }
 
         Info<< endl;
+    }
+
+    // Drift flux through the faces: cell (interpolated drift velocity,
+    // default) or face (mobility and potential difference across the face)
+    {
+        const word driftFlux(lookupOrDefault<word>("driftFlux", "cell"));
+
+        if (driftFlux != "cell" && driftFlux != "face")
+        {
+            FatalIOErrorIn
+            (
+                "multiSpeciesPlasmaModel::readNumericalControls()",
+                *this
+            )   << "Unknown driftFlux " << driftFlux
+                << "; valid entries are cell and face" << exit(FatalIOError);
+        }
+
+        driftFluxFace_ = (driftFlux == "face");
+
+        Info<< "Drift fluxes through the faces: " << driftFlux << endl;
     }
 
     limitsTime_ = lastModified(filePath());
