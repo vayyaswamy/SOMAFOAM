@@ -44,6 +44,7 @@ Options are set in the case dictionaries; the examples show them in use.
 | Inner iterations, limits on the variables, acceleration of slow species: `innerIterations`, `limits`, `slowSpeciesAcceleration` in `constant/plasmaProperties` | `examples/plasma/100TorrArgonPlasma` (acceleration only) |
 | Adaptive mesh refinement (1D, 2D, 3D): `constant/dynamicMeshDict`; `rebalancePar` for parallel runs | `examples/plasma/2DAdaptiveMeshArgon` |
 | Initial fields from formulas of x, y, z: `setExpressionFields` | `examples/plasma/2DAdaptiveMeshArgon/system/setExpressionFieldsDict` |
+| Stop at a steady or periodic state when window-averaged fields stop changing: `convergenceStop` in `system/controlDict` (fields, window, tolerance, nWindows, startTime) | `applications/somaFoam/convergenceStop.H` |
 | Electrode voltage and current: `electrodeVoltageCurrent` function object | `system/controlDict` of the examples |
 | RF electrode at a given mean power (constant or a profile in time) with a blocking capacitor and sine, multi-harmonic or tabulated voltage waveforms: `rfPowerElectrode` condition for `Phi` | `doc/manual` |
 | Electron transport and rate tables from cross sections (LXCat format), two-term or Monte Carlo: `electronBoltzmann`; run by `somaFoam` at start-up with `electronBoltzmann yes;` in `constant/plasmaProperties` | step-by-step guide: [`applications/preProcessing/electronBoltzmann/README.md`](applications/preProcessing/electronBoltzmann/README.md); case `examples/electronBoltzmann/Argon` |
