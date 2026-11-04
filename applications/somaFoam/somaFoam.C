@@ -33,6 +33,7 @@ Description
 #include "currentTimeStepControl.H"
 #include "OFstream.H"
 #include "stepSnapshot.H"
+#include "convergenceStop.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -50,6 +51,10 @@ int main(int argc, char *argv[])
     #include "createFlowFields.H"
 
     pimpleControl pimple(mesh);
+
+    // Optional stop at a steady or periodic state (convergenceStop in
+    // system/controlDict)
+    convergenceStop stopCheck(mesh);
 
     // The plasma equations store the previous iterations of the fields they
     // relax (relaxFinal): pimpleControl need not copy every field in every
@@ -570,6 +575,11 @@ int main(int argc, char *argv[])
                 runTime.setDeltaT(deltaTNew);
 
 
+            if (stopCheck.converged())
+            {
+                runTime.writeAndEnd();
+            }
+
             if (runTime.write() && restartCapabale)
             {
 
@@ -705,6 +715,11 @@ int main(int argc, char *argv[])
 
             Info << "New timestep = " << runTime.deltaTValue() << endl;
 
+
+            if (stopCheck.converged())
+            {
+                runTime.writeAndEnd();
+            }
 
             if (runTime.write() && restartCapabale)
             {
