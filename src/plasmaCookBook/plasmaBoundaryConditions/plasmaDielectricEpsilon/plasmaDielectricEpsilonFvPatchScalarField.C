@@ -13,7 +13,6 @@ look for license file include with distribution.
 #include "addToRunTimeSelectionTable.H"
 #include "fvPatchFieldMapper.H"
 #include "volFields.H"
-#include "harmonic.H"
 #include "VectorN.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -174,23 +173,10 @@ Foam::plasmaDielectricEpsilonFvPatchScalarField::calcEpsilon
     const scalarField kOwn = fOwn/(1.0 - p.weights())/mld.magDelta(p.index());
     const scalarField kNei = fNei/p.weights()/mld.magDelta(p.index());
 
-    const scalarField deltaOwn = (1.0 - p.weights())*mld.magDelta(p.index());
-
-    const scalarField deltaNei = p.weights()*mld.magDelta(p.index());
-
-
     tmp<scalarField> kTmp(new scalarField(p.size()));
     scalarField& k = kTmp();
 
-
     k = kOwn*(kNei)/p.deltaCoeffs()/(kOwn + kNei);
-
-
-    // Do interpolation
-    harmonic<scalar> interp(mesh);
-    const scalarField weights = interp.weights(fOwn, fNei, p);
-    const scalarField kHarm = kOwn*(kNei)/p.deltaCoeffs()/(kOwn + kNei);
-
 
     return kTmp;
 
@@ -273,23 +259,15 @@ Foam::plasmaDielectricEpsilonFvPatchScalarField::calcPotential
     }
 
 
-    harmonic<scalar> interp(mesh);
-    scalarField weights = interp.weights(fOwn, fNei, p);
-    const scalarField kHarm = weights*fOwn + (1.0 - weights)*fNei;
-
     const scalarField kOwn = fOwn/(1.0 - p.weights())/mld.magDelta(p.index());
     const scalarField kNei = fNei/p.weights()/mld.magDelta(p.index());
-
-    const scalarField deltaOwn = (1.0 - p.weights())*mld.magDelta(p.index());
-
-    const scalarField deltaNei = p.weights()*mld.magDelta(p.index());
 
     tmp<scalarField> TwTmp(new scalarField(TwOwn.Phiw()));
     scalarField& Tw = TwTmp();
 
-
-    Tw = kOwn*TcOwn*(1.0 + kNei/kOwn*TcNei/TcOwn + Sc/kOwn/TcOwn)/(kOwn + kNei);
-
+    // Without dividing by the potential of the adjacent cell, which is zero in
+    // a case started from Phi = 0 and gave a floating point exception
+    Tw = (kOwn*TcOwn + kNei*TcNei + Sc)/(kOwn + kNei);
 
     return TwTmp;
 
