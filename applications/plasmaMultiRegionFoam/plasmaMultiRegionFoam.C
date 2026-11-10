@@ -69,6 +69,11 @@ int main(int argc, char *argv[])
     #include "createDielectricFields.H"
     #include "createCouplingFields.H"
 
+    // plasmaEqn.H of somaFoam: no gas flow here, and the gas thermo is updated
+    // every pass as before the flow module
+    const bool flowOn = false;
+    const bool gasThermoFixed = false;
+
     while (runTime.run())
     {
         runTime++;
