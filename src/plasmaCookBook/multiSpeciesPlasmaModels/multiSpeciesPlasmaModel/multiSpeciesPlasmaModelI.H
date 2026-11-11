@@ -130,11 +130,11 @@ inline void Foam::multiSpeciesPlasmaModel::updateChemistryCollFreq
     if (plasmaChemistry == "temporal")
     {
         // The ODE solve gives only the species rates averaged over the step.
-        // The electron energy source and the collision frequencies of the
-        // present state come from calculateElectronEnergySource; it is
-        // called first because on its first call it falls back to
-        // calculateWcf, whose instantaneous rates the solve then replaces
-        chemistry.calculateElectronEnergySource();
+        // calculateWcf gives everything else for the present state: the
+        // diagonal Jacobian dRRDi that linearises the species equations,
+        // the electron energy source and the collision frequencies. Its
+        // instantaneous rates are then replaced by the averages of the solve
+        chemistry.calculateWcf();
 
         chemistry.solve
         (
