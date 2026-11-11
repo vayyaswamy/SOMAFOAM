@@ -17,12 +17,24 @@ if (dielectricWeightsOutdated)
     dielectricWeightsOutdated = false;
 }
 
+solverTimers::outer++;
+
+double tTimer = solverTimers::now();
+
 while (pimple.correct())
 {
         #include "solvePoissonD.H"
 }
 #include "detachPatches.H"
 
+solverTimers::poisson += solverTimers::now() - tTimer;
+tTimer = solverTimers::now();
+
 #include "plasmaEqn.H"
 
+solverTimers::species += solverTimers::now() - tTimer;
+tTimer = solverTimers::now();
+
 #include "surfaceCharge.H"
+
+solverTimers::surface += solverTimers::now() - tTimer;

@@ -20,6 +20,8 @@ SourceFiles
 #ifndef multiSpeciesPlasmaModel_H
 #define multiSpeciesPlasmaModel_H
 
+#include <chrono>
+
 #include "fvc.H"
 #include "IOdictionary.H"
 #include "psiChemistryModel.H"
@@ -270,6 +272,13 @@ private:
         ) const;
 
 public:
+
+        //- Wall-clock time spent evaluating the chemistry [s], summed over
+        //  the run (reported by somaFoam with timingReport yes)
+        static double chemistryWallTime;
+
+        //- Wall clock [s]
+        static inline double wallClockNow();
 
     TypeName("multiSpeciesPlasmaModel");
 

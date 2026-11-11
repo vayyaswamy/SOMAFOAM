@@ -34,6 +34,7 @@ Description
 #include "OFstream.H"
 #include "stepSnapshot.H"
 #include "convergenceStop.H"
+#include "solverTimers.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -47,6 +48,12 @@ int main(int argc, char *argv[])
 
 
     #include "createFields.H"
+
+    // Wall-clock time of the parts of a step (solverTimers.H)
+    const Switch timingReport
+    (
+        runTime.controlDict().lookupOrDefault<Switch>("timingReport", false)
+    );
     #include "correctSpeciesWallFractions.H"
     #include "createFlowFields.H"
 
@@ -157,10 +164,14 @@ int main(int argc, char *argv[])
                 0
             );
 
+        solverTimers::start = solverTimers::now();
+
         while (runTime.run())
         {
 
             runTime++;
+
+            solverTimers::steps++;
 
             Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
                     << runTime.elapsedCpuTime() << "s" << endl;
@@ -309,7 +320,13 @@ int main(int argc, char *argv[])
                                *thermo.Te().internalField()
                             );
 
-                            pem.ecorrect(chemistry, E);
+                            {
+                                const double tTimerE = solverTimers::now();
+
+                                pem.ecorrect(chemistry, E);
+
+                                solverTimers::energy += solverTimers::now() - tTimerE;
+                            }
 
                             const scalarField NeTe
                             (
@@ -508,7 +525,13 @@ int main(int argc, char *argv[])
 
                 if (!TeSolvedInOuterLoop)
                 {
-                    pem.ecorrect(chemistry, E);
+                    {
+                        const double tTimerE = solverTimers::now();
+
+                        pem.ecorrect(chemistry, E);
+
+                        solverTimers::energy += solverTimers::now() - tTimerE;
+                    }
                 }
 
                 #include "postStepTotalCurrent.H"
@@ -580,6 +603,11 @@ int main(int argc, char *argv[])
                 runTime.writeAndEnd();
             }
 
+            if (timingReport && runTime.outputTime())
+            {
+                #include "reportTimers.H"
+            }
+
             if (runTime.write() && restartCapabale)
             {
 
@@ -632,11 +660,15 @@ int main(int argc, char *argv[])
     {
         #include "refreshProcessorPatches.H"
 
+        solverTimers::start = solverTimers::now();
+
         while (runTime.run())
         {
 
 
             runTime++;
+
+            solverTimers::steps++;
 
             Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
                 << runTime.elapsedCpuTime() << "s" << endl;
@@ -658,18 +690,26 @@ int main(int argc, char *argv[])
 
             while (pimple.loop())
             {
+                solverTimers::outer++;
 
+                double tTimer = solverTimers::now();
 
-            while (pimple.correct())
-            {
-                #include "solvePoisson.H"
-            }
+                while (pimple.correct())
+                {
+                    #include "solvePoisson.H"
+                }
 
+                solverTimers::poisson += solverTimers::now() - tTimer;
+                tTimer = solverTimers::now();
 
-            #include "plasmaEqn.H"
-            #include "surfaceCharge_new.H"
+                #include "plasmaEqn.H"
 
+                solverTimers::species += solverTimers::now() - tTimer;
+                tTimer = solverTimers::now();
 
+                #include "surfaceCharge_new.H"
+
+                solverTimers::surface += solverTimers::now() - tTimer;
             }
 
             // gradTe of plasmaEqn.H holds: the species do not change Te
@@ -682,8 +722,12 @@ int main(int argc, char *argv[])
 
         // With a prescribed Te (zeroD) the electron energy equation is not
         // solved
+        const double tTimerE = solverTimers::now();
+
         scalar Cofactor2 =
             mspm().fixesTe() ? 0 : pem.ecorrect(chemistry, E);
+
+        solverTimers::energy += solverTimers::now() - tTimerE;
 
         scalar Cofactor = max(Cofactor1,Cofactor2);
 
@@ -724,6 +768,11 @@ int main(int argc, char *argv[])
                 runTime.writeAndEnd();
             }
 
+            if (timingReport && runTime.outputTime())
+            {
+                #include "reportTimers.H"
+            }
+
             if (runTime.write() && restartCapabale)
             {
                 thermo.Te().write();
@@ -753,6 +802,11 @@ int main(int argc, char *argv[])
             }
         }
     }
+    if (timingReport)
+    {
+        #include "reportTimers.H"
+    }
+
     return(0);
 }
 
