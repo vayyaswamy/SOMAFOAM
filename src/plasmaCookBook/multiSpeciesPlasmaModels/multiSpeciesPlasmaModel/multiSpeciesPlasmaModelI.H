@@ -7,6 +7,15 @@ look for license file include with distribution.
 
 \*---------------------------------------------------------------------------*/
 
+// Wall clock [s] for chemistryWallTime
+inline double Foam::multiSpeciesPlasmaModel::wallClockNow()
+{
+    return std::chrono::duration<double>
+    (
+        std::chrono::steady_clock::now().time_since_epoch()
+    ).count();
+}
+
 const inline Foam::speciesTable&
 Foam::multiSpeciesPlasmaModel::species() const
 {
@@ -127,6 +136,8 @@ inline void Foam::multiSpeciesPlasmaModel::updateChemistryCollFreq
     psiChemistryModel& chemistry
 )
 {
+    const double tWall0 = wallClockNow();
+
     if (plasmaChemistry == "temporal")
     {
         // The ODE solve gives only the species rates averaged over the step.
@@ -146,6 +157,8 @@ inline void Foam::multiSpeciesPlasmaModel::updateChemistryCollFreq
     {
         chemistry.calculateWcf();
     }
+
+    chemistryWallTime += wallClockNow() - tWall0;
 }
 
 inline void Foam::multiSpeciesPlasmaModel::updateElectronEnergyChemistry
@@ -155,7 +168,11 @@ inline void Foam::multiSpeciesPlasmaModel::updateElectronEnergyChemistry
 {
     // The passes of the electron energy equation change Te only: the
     // species rates are not needed again
+    const double tWall0 = wallClockNow();
+
     chemistry.calculateElectronEnergySource();
+
+    chemistryWallTime += wallClockNow() - tWall0;
 }
 
 // ************************************************************************* //

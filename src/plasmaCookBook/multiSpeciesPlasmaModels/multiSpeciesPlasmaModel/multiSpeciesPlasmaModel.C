@@ -23,6 +23,8 @@ namespace Foam
     defineRunTimeSelectionTable(multiSpeciesPlasmaModel, fvMesh);
 }
 
+double Foam::multiSpeciesPlasmaModel::chemistryWallTime = 0;
+
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 void Foam::multiSpeciesPlasmaModel::updateChemistry
 (
