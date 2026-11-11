@@ -257,6 +257,21 @@ Foam::label Foam::ODEChemistryModel<CompType, ThermoType>::kindOf
 
 
 template<class CompType, class ThermoType>
+Foam::scalar
+Foam::ODEChemistryModel<CompType, ThermoType>::electronW() const
+{
+    const speciesTable& species = this->thermo().composition().species();
+
+    if (species.contains("electron"))
+    {
+        return specieThermo_[species["electron"]].W();
+    }
+
+    return 5.48579909e-4;
+}
+
+
+template<class CompType, class ThermoType>
 const Foam::labelList&
 Foam::ODEChemistryModel<CompType, ThermoType>::reactionKinds() const
 {
@@ -913,6 +928,10 @@ template<class CompType, class ThermoType>
 Foam::tmp<Foam::volScalarField>
 Foam::ODEChemistryModel<CompType, ThermoType>::eChemSourceExplicit() const
 {
+    // Molar mass of the electrons of the mechanism: the plasma model divides
+    // the electron energy source by it
+    const scalar We = electronW();
+
     scalar pf, cf, pr, cr;
     label lRef, rRef;
 
@@ -983,14 +1002,14 @@ Foam::ODEChemistryModel<CompType, ThermoType>::eChemSourceExplicit() const
                 );
 				if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
 				{
-		        	She[celli] += omegai*R.deltaE()*5.48579E-4; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s, electron weight hard coded 
+		        	She[celli] += omegai*R.deltaE()*We; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s 
 				}
 				if ((R.type() == "electronImpactElasticArrheniusReaction") || (R.type() == "electronImpactElasticTabularReaction"))
 				{
 				  // getting index of neutral species
 					const label si = R.lhs()[1].index; 
 
-					She[celli] += 3.0*omegai*(Tei-Ti)*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W(); //electron weight square
+					She[celli] += 3.0*omegai*(Tei-Ti)*We*We*1.38064852E-23/specieThermo_[si].W(); //electron weight square
 				  // need to multiply by electron mass and divide by other species mass
 				}
             }              
@@ -1045,6 +1064,10 @@ Foam::label Foam::ODEChemistryModel<CompType, ThermoType>::nEqns() const
 template<class CompType, class ThermoType>
 void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
 {
+    // Molar mass of the electrons of the mechanism: the plasma model divides
+    // the electron energy source by it
+    const scalar We = electronW();
+
     const volScalarField rho
     (
         IOobject
@@ -1261,17 +1284,17 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
 				if ((R.type() == "electronImpactInelasticArrheniusReaction") || (R.type() == "electronImpactInelasticTabularReaction"))
 				{
 				    scalar sl = R.lhs()[0].stoichCoeff;
-			    	eChemSource_[celli] += sl*omegai*R.deltaE()*5.48579E-4; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s, electron weight hard coded 
-				    dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*5.48579E-4;
+			    	eChemSource_[celli] += sl*omegai*R.deltaE()*We; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s 
+				    dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*We;
                 }
 				if ((R.type() == "electronImpactElasticArrheniusReaction") || (R.type() == "electronImpactElasticTabularReaction"))
 				{
 				  // getting index of neutral species
 					const label si = R.lhs()[1].index; 
 
-					eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W(); //electron weight square
+					eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*We*We*1.38064852E-23/specieThermo_[si].W(); //electron weight square
 				  // need to multiply by electron mass and divide by other species mass
-                    dEChemSourceDTe_[celli] += 3.0*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
+                    dEChemSourceDTe_[celli] += 3.0*We*We*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
 				}
 
 				forAll(R.lhs(), s)
@@ -1301,6 +1324,10 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculate()
 template<class CompType, class ThermoType>
 void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 {
+    // Molar mass of the electrons of the mechanism: the plasma model divides
+    // the electron energy source by it
+    const scalar We = electronW();
+
     //Info << "Inside calculateWcf" << endl;
     const volScalarField rho
     (
@@ -1587,17 +1614,17 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 				if (kind == electronInelastic)
 				{
 				    scalar sl = R.lhs()[0].stoichCoeff;
-			    	eChemSource_[celli] += sl*omegai*R.deltaE()*5.48579E-4; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s, electron weight hard coded 
-				    dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*5.48579E-4;
+			    	eChemSource_[celli] += sl*omegai*R.deltaE()*We; //*dimensionedScalar("one",dimEnergy,1.0); // in J.kg/m^3/s 
+				    dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*We;
                 }
 				if (kind == electronElastic)
 				{
 				  // getting index of neutral species
 					const label si = R.lhs()[1].index; 
 					const label sie = R.lhs()[0].index; 
-					eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W(); //electron weight square
-					collFreq_[sie][celli] += omegai*5.48579E-4/Y_[sie][celli]/rhoi;
-                    dEChemSourceDTe_[celli] += 3.0*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
+					eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*We*We*1.38064852E-23/specieThermo_[si].W(); //electron weight square
+					collFreq_[sie][celli] += omegai*We/Y_[sie][celli]/rhoi;
+                    dEChemSourceDTe_[celli] += 3.0*We*We*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
 				  // need to multiply by electron mass and divide by other species mass
 				}
 				if (kind == ionElastic)
@@ -1635,6 +1662,10 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateWcf()
 template<class CompType, class ThermoType>
 void Foam::ODEChemistryModel<CompType, ThermoType>::calculateElectronEnergySource()
 {
+    // Molar mass of the electrons of the mechanism: the plasma model divides
+    // the electron energy source by it
+    const scalar We = electronW();
+
     // The rate cache and the cacheable flags are set up by calculateWcf
     if
     (
@@ -1721,16 +1752,16 @@ void Foam::ODEChemistryModel<CompType, ThermoType>::calculateElectronEnergySourc
             if (kind == electronInelastic)
             {
                 scalar sl = R.lhs()[0].stoichCoeff;
-                eChemSource_[celli] += sl*omegai*R.deltaE()*5.48579E-4;
-                dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*5.48579E-4;
+                eChemSource_[celli] += sl*omegai*R.deltaE()*We;
+                dEChemSourceDTe_[celli] += sl*dOmegaiDTe*R.deltaE()*We;
             }
             else
             {
                 const label si = R.lhs()[1].index;
                 const label sie = R.lhs()[0].index;
-                eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W();
-                collFreq_[sie][celli] += omegai*5.48579E-4/Y_[sie][celli]/rhoi;
-                dEChemSourceDTe_[celli] += 3.0*3.00938919241e-7*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
+                eChemSource_[celli] += 3.0*omegai*(Tei-Ti)*We*We*1.38064852E-23/specieThermo_[si].W();
+                collFreq_[sie][celli] += omegai*We/Y_[sie][celli]/rhoi;
+                dEChemSourceDTe_[celli] += 3.0*We*We*1.38064852E-23/specieThermo_[si].W()*(dOmegaiDTe*(Tei-Ti) + omegai);
             }
         }
     }
