@@ -129,6 +129,13 @@ inline void Foam::multiSpeciesPlasmaModel::updateChemistryCollFreq
 {
     if (plasmaChemistry == "temporal")
     {
+        // The ODE solve gives only the species rates averaged over the step.
+        // The electron energy source and the collision frequencies of the
+        // present state come from calculateElectronEnergySource; it is
+        // called first because on its first call it falls back to
+        // calculateWcf, whose instantaneous rates the solve then replaces
+        chemistry.calculateElectronEnergySource();
+
         chemistry.solve
         (
             runTime_.value() - runTime_.deltaT().value(),
@@ -146,14 +153,9 @@ inline void Foam::multiSpeciesPlasmaModel::updateElectronEnergyChemistry
     psiChemistryModel& chemistry
 )
 {
-    if (plasmaChemistry == "directSolution")
-    {
-        chemistry.calculateElectronEnergySource();
-    }
-    else
-    {
-        updateChemistryCollFreq(chemistry);
-    }
+    // The passes of the electron energy equation change Te only: the
+    // species rates are not needed again
+    chemistry.calculateElectronEnergySource();
 }
 
 // ************************************************************************* //

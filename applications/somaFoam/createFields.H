@@ -45,7 +45,8 @@
             << solutionDomain << abort(FatalError);
     }
 
-    if ((poissonEquationSolver != "semiImplicit") && (poissonEquationSolver != "explicit") && (poissonEquationSolver != "linearized"))
+    // none: no Poisson equation, the plasma model sets E (zeroD)
+    if ((poissonEquationSolver != "semiImplicit") && (poissonEquationSolver != "explicit") && (poissonEquationSolver != "linearized") && (poissonEquationSolver != "none"))
     {
         FatalError << "in electroMagnetics, unknown poissonEquationSolver type " << nl
             << poissonEquationSolver << abort(FatalError);

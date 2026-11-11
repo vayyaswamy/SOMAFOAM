@@ -447,6 +447,26 @@ public:
 
         virtual void input();
 
+        // Electric field and electron temperature set by the model itself
+        // (zeroD with a zeroDDrive) instead of the Poisson and electron
+        // energy equations
+
+            //- Set E from the model (poissonEquationSolver none)
+            virtual void setDrivenField(volVectorField& E) const
+            {
+                FatalErrorIn("multiSpeciesPlasmaModel::setDrivenField")
+                    << "poissonEquationSolver none needs a plasma model that"
+                    << " sets the field (zeroD with zeroDDrive)"
+                    << exit(FatalError);
+            }
+
+            //- Is Te prescribed, so that the electron energy equation is
+            //  not solved?
+            virtual bool fixesTe() const
+            {
+                return false;
+            }
+
         // Inner iteration controls
 
             label nCorrCharged() const

@@ -1,0 +1,47 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// temporal: the ODE solver integrates the chemistry over each step
+plasmaChemistryModel temporal;
+
+psiChemistryModel  ODEChemistryModel<constGasThermoPhysics>;
+
+chemistry           on;
+
+chemistrySolver     ode;//EulerImplicit/ode/sequential
+
+initialChemicalTimeStep 1e-11;
+
+odeCoeffs
+{
+    ODESolver       SIBS;
+    eps             1e-8;
+    scale           1;
+}
+
+sequentialCoeffs
+{
+    cTauChem        1E-8;
+    equilibriumRateLimiter off;
+}
+
+EulerImplicitCoeffs
+{
+    cTauChem        0.001;
+    equilibriumRateLimiter off;
+}
+
+// ************************************************************************* //

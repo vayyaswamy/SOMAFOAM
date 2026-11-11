@@ -1,7 +1,12 @@
 {
     emc->correct(voltageDict);
 
-    if (poissonEquationSolver == "semiImplicit")
+    if (poissonEquationSolver == "none")
+    {
+        // The plasma model sets the field (zeroD with a zeroDDrive)
+        mspm().setDrivenField(E);
+    }
+    else if (poissonEquationSolver == "semiImplicit")
     {
         volScalarField epsSource = eps + runTime.deltaTValue()*eCharge*mspm().potentialImpSource();
 
