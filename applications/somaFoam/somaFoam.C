@@ -680,7 +680,10 @@ int main(int argc, char *argv[])
 
             scalar Cofactor1 = variableDeltaT ? mspm().divFe() : 0;
 
-        scalar Cofactor2 = pem.ecorrect(chemistry, E);
+        // With a prescribed Te (zeroD) the electron energy equation is not
+        // solved
+        scalar Cofactor2 =
+            mspm().fixesTe() ? 0 : pem.ecorrect(chemistry, E);
 
         scalar Cofactor = max(Cofactor1,Cofactor2);
 

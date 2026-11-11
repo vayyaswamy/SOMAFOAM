@@ -1,0 +1,87 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      plasmaProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Zero-dimensional (global) model on one cell whose faces are all empty: the
+// species change by the chemistry alone. Needs plasmaChemistryModel temporal
+// (constant/chemistryProperties) and poissonEquationSolver none
+// (constant/electroMagnetics)
+plasmaModel  zeroD<constGasThermoPhysics>;
+
+activeSpecies 2;
+
+backgroundGas Ar;
+
+multiTimeStep false;
+
+// Discretisation of the drift and diffusion fluxes of the charged species and
+// of the electron energy equation (see README, "Scharfetter-Gummel fluxes"):
+//   fvSchemes          the convection and Laplacian schemes of system/fvSchemes,
+//                      treated as separate terms (default if the entry is absent)
+//   scharfetterGummel  drift and diffusion as one flux, exact between two
+//                      neighbouring cells
+// It can also be set in the dictionary of a species, for that species alone.
+// With either scheme the electron energy equation uses the flux of the
+// electron equation through the faces.
+fluxScheme      fvSchemes;
+
+electron
+{
+	diffusionModel eTemp;
+	mobilityModel eTemp;
+	charge -1;
+	speciesSolution true;
+	collisionFrequency muBased;
+	transportModel driftDiffusion;
+}
+Arp1
+{
+	diffusionModel einsteinRelation;
+	//D 0.0007376;
+	mobilityModel EON;
+	charge 1;
+	speciesSolution true;
+	transportModel driftDiffusion;
+}
+Arm
+{
+	diffusionModel constant;
+	D 4.7082e-3;
+	speciesSolution true;
+}
+Ar
+{
+	speciesSolution false;
+}
+
+energyModel
+{
+    electron efullImplicit;
+	ion gasTemp;
+	gas none;
+}
+
+// Drive of the discharge: reducedField (E/N in Td; the electron energy
+// equation gives Te) or electronTemperature (Te in K, no electron energy
+// equation), as a table (time value), interpolated linearly in time, or as a
+// constant "value". Here a pulse of 30 Td for 2 us and its afterglow
+zeroDDrive
+{
+    mode    reducedField;
+    table   ((0 30) (2e-6 30) (2.05e-6 0) (1e-5 0));
+}
+
+// ************************************************************************* //
