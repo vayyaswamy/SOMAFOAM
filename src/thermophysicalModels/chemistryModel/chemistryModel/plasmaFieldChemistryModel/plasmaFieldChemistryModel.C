@@ -421,8 +421,8 @@ void Foam::plasmaFieldChemistryModel<CompType, ThermoType>::addElectronTerms
     const scalarField& Te
 )
 {
-    // Electron mass [kg/kmol] and its square over k_B, as ODEChemistryModel
-    const scalar me = 5.48579E-4;
+    // Molar mass of the electrons [kg/kmol], as ODEChemistryModel
+    const scalar me = this->electronW();
 
     if (kind == ODEChemistryModel<CompType, ThermoType>::electronInelastic)
     {
@@ -439,7 +439,7 @@ void Foam::plasmaFieldChemistryModel<CompType, ThermoType>::addElectronTerms
         const label sie = lhsSpecie_[i][0];
         const label si = lhsSpecie_[i][1];
         const scalar f =
-            3.0*3.00938919241e-7*1.38064852E-23/this->specieThermo_[si].W();
+            3.0*me*me*1.38064852E-23/this->specieThermo_[si].W();
         const scalarField& Ye = this->Y_[sie].internalField();
         scalarField& nu = this->collFreq_[sie];
 

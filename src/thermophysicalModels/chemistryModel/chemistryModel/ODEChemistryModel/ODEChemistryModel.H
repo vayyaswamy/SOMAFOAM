@@ -143,6 +143,10 @@ protected:
         //- Kinds of all reactions
         const labelList& reactionKinds() const;
 
+        //- Molar mass of the species electron [kg/kmol], 5.48579909e-4 if
+        //  there is none: the electron energy source is multiplied by it
+        scalar electronW() const;
+
         //- omega for a reaction of known kind (no type-name comparison)
         //- Slots of rateCache_: rate, Te + dTe, Te - dTe, linearization
         static const label rateSlots = 4;
