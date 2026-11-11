@@ -182,18 +182,23 @@ Foam::scalar Foam::eEnergyDensity::correct
             1.0/(k15*max(Ne, dimensionedScalar("small", Ne.dimensions(), VSMALL)))
         );
 
-        fvScalarMatrix epsEqn
-        (
-            fvm::Sp(rDeltaT, nEps) - oldEnergy
-          + mspm().driftDiffusionTerms(eIndex_, Fe, Deps, nEps, 5.0/3.0)
-          + mspm().gasConvection(nEps, "div(phiGas,Ni)")
-          + fvm::SuSp(dSdTe*rk15Ne, nEps)
-          + plasmaConstants::eCharge*jDotE
-          + eeChemSource
-          - dSdTe*TeC
-        );
+        // Te of the source linearisation is that of the start of the pass,
+        // through the non-orthogonal correctors
+        for (label nonOrth = 0; nonOrth <= mspm().nNonOrthCorr(); nonOrth++)
+        {
+            fvScalarMatrix epsEqn
+            (
+                fvm::Sp(rDeltaT, nEps) - oldEnergy
+              + mspm().driftDiffusionTerms(eIndex_, Fe, Deps, nEps, 5.0/3.0)
+              + mspm().gasConvection(nEps, "div(phiGas,Ni)")
+              + fvm::SuSp(dSdTe*rk15Ne, nEps)
+              + plasmaConstants::eCharge*jDotE
+              + eeChemSource
+              - dSdTe*TeC
+            );
 
-        epsEqn.solve(mesh().solutionDict().solver(TeC.name()));
+            epsEqn.solve(mesh().solutionDict().solver(TeC.name()));
+        }
 
         // Te from the energy density, within its limits
         TeC.internalField() = nEps.internalField()*rk15Ne.internalField();

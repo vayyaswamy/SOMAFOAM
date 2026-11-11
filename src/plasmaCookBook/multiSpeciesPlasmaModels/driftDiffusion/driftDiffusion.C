@@ -200,28 +200,35 @@ void Foam::driftDiffusion<ThermoType>::solveSpecie
 
     while ((initialResidual >= innerTolerance_) && (iCorr++ < nCorr))
     {
-        fvScalarMatrix NEqn
-        (
-            fvm::ddt(Ni)
-          - chemistry.RR(i)*plasmaConstants::A/W(i)
-          + chemistry.dRRDi(i)*Ni
-          - fvm::Sp(chemistry.dRRDi(i), Ni)
-        );
+        // Density about which the chemistry source is linearised, kept
+        // through the non-orthogonal correctors
+        const volScalarField NiLin("NiLin", Ni);
 
-        if (charged)
+        for (label nonOrth = 0; nonOrth <= nNonOrthCorr_; nonOrth++)
         {
-            NEqn += this->driftDiffusionTerms(i, F_[i], D_[i], Ni);
-        }
-        else
-        {
-            NEqn -= fvm::laplacian(D_[i], Ni, "laplacian(D,Nin)");
-        }
+            fvScalarMatrix NEqn
+            (
+                fvm::ddt(Ni)
+              - chemistry.RR(i)*plasmaConstants::A/W(i)
+              + chemistry.dRRDi(i)*NiLin
+              - fvm::Sp(chemistry.dRRDi(i), Ni)
+            );
 
-        NEqn.solve(mesh_.solutionDict().solver(solverName));
+            if (charged)
+            {
+                NEqn += this->driftDiffusionTerms(i, F_[i], D_[i], Ni);
+            }
+            else
+            {
+                NEqn -= fvm::laplacian(D_[i], Ni, "laplacian(D,Nin)");
+            }
 
-        if (!charged)
-        {
-            this->limitField(Ni, densityFloor_);
+            NEqn.solve(mesh_.solutionDict().solver(solverName));
+
+            if (!charged)
+            {
+                this->limitField(Ni, densityFloor_);
+            }
         }
 
         initialResidual = this->passChange(Ni.internalField(), NPass);

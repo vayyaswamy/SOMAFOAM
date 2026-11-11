@@ -111,6 +111,7 @@ Foam::multiSpeciesPlasmaModel::multiSpeciesPlasmaModel
     nCorrCharged_(4),
     nCorrNeutral_(2),
     nCorrTe_(6),
+    nNonOrthCorr_(0),
     innerTolerance_(1e-5),
     reportUnconverged_(true),
     chemistryPerPass_(false),

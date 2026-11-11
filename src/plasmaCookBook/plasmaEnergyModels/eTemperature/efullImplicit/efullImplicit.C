@@ -172,31 +172,37 @@ Foam::scalar Foam::efullImplicit::correct
             mspm().electronConductivity(chemistry)
         );
 
-        // Convection with the electron flux and conduction
-        tmp<fvScalarMatrix> transport
-        (
-            mspm().scharfetterGummel(eIndex_)
-          ? scharfetterGummel(eeFluxF, eConductivity, TeC)
-          : fvm::div(eeFluxF, TeC)
-          - fvm::laplacian(eConductivity, TeC, "laplacian(eC,Te)")
-        );
+        // The sources keep the Te of the start of the pass through the
+        // non-orthogonal correctors
+        for (label nonOrth = 0; nonOrth <= mspm().nNonOrthCorr(); nonOrth++)
+        {
+            // Convection with the electron flux and conduction
+            tmp<fvScalarMatrix> transport
+            (
+                mspm().scharfetterGummel(eIndex_)
+              ? scharfetterGummel(eeFluxF, eConductivity, TeC)
+              : fvm::div(eeFluxF, TeC)
+              - fvm::laplacian(eConductivity, TeC, "laplacian(eC,Te)")
+            );
 
-        // Time derivative of the electron energy density 3/2 k Ne Te,
-        // (Ne Te - Ne^0 Te^0)/dt. fvm::ddt(rho, Te) would take the old
-        // time of rho from the temporary 3/2 k Ne, a copy of the new value,
-        // and so discretize 3/2 k Ne dTe/dt, dropping 3/2 k Te dNe/dt
-        fvScalarMatrix TeEqn
-        (
-            fvm::Sp(rDeltaT*1.5*plasmaConstants::boltzC*Ne, TeC)
-          - oldEnergy
-            + transport
-            + fvm::SuSp(eeSource_SuSp, TeC)
-            + eeSource_Su
-        );
+            // Time derivative of the electron energy density 3/2 k Ne Te,
+            // (Ne Te - Ne^0 Te^0)/dt. fvm::ddt(rho, Te) would take the old
+            // time of rho from the temporary 3/2 k Ne, a copy of the new
+            // value, and so discretize 3/2 k Ne dTe/dt, dropping
+            // 3/2 k Te dNe/dt
+            fvScalarMatrix TeEqn
+            (
+                fvm::Sp(rDeltaT*1.5*plasmaConstants::boltzC*Ne, TeC)
+              - oldEnergy
+              + transport
+              + fvm::SuSp(eeSource_SuSp, TeC)
+              + eeSource_Su
+            );
 
-       solverPerf = TeEqn.solve();
+            solverPerf = TeEqn.solve();
 
-        mspm().limitField(TeC, mspm().TeMin(), mspm().TeMax());
+            mspm().limitField(TeC, mspm().TeMin(), mspm().TeMax());
+        }
 
         initialResidual = mspm().passChange
         (
