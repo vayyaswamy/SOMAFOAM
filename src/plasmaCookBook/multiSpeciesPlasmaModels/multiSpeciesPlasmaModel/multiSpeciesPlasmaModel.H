@@ -133,6 +133,12 @@ protected:
             label nCorrNeutral_;
             label nCorrTe_;
 
+            //- Non-orthogonal correctors: within each pass, the equations of
+            //  the potential, the species and the electron energy are solved
+            //  again this many times with their explicit non-orthogonal part
+            //  recalculated from the last solution
+            label nNonOrthCorr_;
+
             //- Initial residual below which the passes stop
             scalar innerTolerance_;
 
@@ -491,6 +497,11 @@ public:
             label nCorrTe() const
             {
                 return nCorrTe_;
+            }
+
+            label nNonOrthCorr() const
+            {
+                return nNonOrthCorr_;
             }
 
             scalar innerTolerance() const

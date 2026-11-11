@@ -11,13 +11,15 @@
         volScalarField epsSource = eps + runTime.deltaTValue()*eCharge*mspm().potentialImpSource();
 
 
-        fvScalarMatrix phiPlasmaEqn
-        (
-            fvm::laplacian(epsSource, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().potentialExpSource())
-        );
+        for (label nonOrth = 0; nonOrth <= mspm().nNonOrthCorr(); nonOrth++)
+        {
+            fvScalarMatrix phiPlasmaEqn
+            (
+                fvm::laplacian(epsSource, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().potentialExpSource())
+            );
 
-
-        phiPlasmaEqn.solve();
+            phiPlasmaEqn.solve();
+        }
 
 
         E = -fvc::grad(Phi);
@@ -25,16 +27,19 @@
     }
     else if (poissonEquationSolver == "explicit")
     {
-        fvScalarMatrix phiPlasmaEqn
-        (
-            fvm::laplacian(eps, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().netCharge())
-        );
-
-        phiPlasmaEqn.relax();
-
         Phi.storePrevIter();
 
-        phiPlasmaEqn.solve();
+        for (label nonOrth = 0; nonOrth <= mspm().nNonOrthCorr(); nonOrth++)
+        {
+            fvScalarMatrix phiPlasmaEqn
+            (
+                fvm::laplacian(eps, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().netCharge())
+            );
+
+            phiPlasmaEqn.relax();
+
+            phiPlasmaEqn.solve();
+        }
 
         relaxFinal(Phi);
 
@@ -43,13 +48,19 @@
     }
     else if (poissonEquationSolver == "linearized")
     {
-        fvScalarMatrix phiPlasmaEqn
-        (
-            fvm::laplacian(eps, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().netCharge())//+ runTime.deltaTValue()*fvc::div(F.oldTime()))
-        );
+        for (label nonOrth = 0; nonOrth <= mspm().nNonOrthCorr(); nonOrth++)
+        {
+            fvScalarMatrix phiPlasmaEqn
+            (
+                fvm::laplacian(eps, Phi, "laplacian(eps,Phi)") == -eCharge*(mspm().netCharge())//+ runTime.deltaTValue()*fvc::div(F.oldTime()))
+            );
 
-        phiPlasmaEqn.solve();
+            phiPlasmaEqn.solve();
 
-        E = -fvc::reconstruct(phiPlasmaEqn.flux())/eps;
+            if (nonOrth == mspm().nNonOrthCorr())
+            {
+                E = -fvc::reconstruct(phiPlasmaEqn.flux())/eps;
+            }
+        }
     }
 }

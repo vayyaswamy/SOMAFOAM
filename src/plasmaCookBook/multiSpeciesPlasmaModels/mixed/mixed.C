@@ -636,18 +636,30 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                         )
                         {
 
-                            tmp<fvScalarMatrix> NEqn
+                            // Density about which the chemistry source is
+                            // linearised, kept through the non-orthogonal
+                            // correctors
+                            const volScalarField NiLin("NiLin", Ni);
+
+                            for
                             (
-                                fvm::ddt(Ni)
-                                + this->driftDiffusionTerms(i, F_[i], D_[i], Ni)
-                                + gasConvection(Ni, "div(phiGas,Ni)")
-                                - chemistry.RR(i)*plasmaConstants::A/W(i)
-                                + chemistry.dRRDi(i)*Ni
-                                - fvm::Sp(chemistry.dRRDi(i),Ni)
-                            );
+                                label nonOrth = 0;
+                                nonOrth <= nNonOrthCorr_;
+                                nonOrth++
+                            )
+                            {
+                                tmp<fvScalarMatrix> NEqn
+                                (
+                                    fvm::ddt(Ni)
+                                  + this->driftDiffusionTerms(i, F_[i], D_[i], Ni)
+                                  + gasConvection(Ni, "div(phiGas,Ni)")
+                                  - chemistry.RR(i)*plasmaConstants::A/W(i)
+                                  + chemistry.dRRDi(i)*NiLin
+                                  - fvm::Sp(chemistry.dRRDi(i),Ni)
+                                );
 
-
-                            solverPerf = NEqn->solve(mesh_.solutionDict().solver("Ni"));
+                                solverPerf = NEqn->solve(mesh_.solutionDict().solver("Ni"));
+                            }
 
                             initialResidual =
                                 this->passChange(N_[i].internalField(), NPass);
@@ -795,21 +807,29 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                          && (icorr++ < nPass)
                         )
                         {
-                            tmp<fvScalarMatrix> NnEqn
+                            const volScalarField NiLin("NiLin", Ni);
+
+                            for
                             (
-                                fvm::ddt(Ni)
-                              - fvm::laplacian(D_[i],Ni, "laplacian(D,Nin)")
-                              + gasConvection(Ni, "div(phiGas,Nin)")
-                              - chemistry.RR(i)*plasmaConstants::A/W(i)
-                              + chemistry.dRRDi(i)*Ni
-                              - fvm::Sp(chemistry.dRRDi(i),Ni)
-                            );
+                                label nonOrth = 0;
+                                nonOrth <= nNonOrthCorr_;
+                                nonOrth++
+                            )
+                            {
+                                tmp<fvScalarMatrix> NnEqn
+                                (
+                                    fvm::ddt(Ni)
+                                  - fvm::laplacian(D_[i],Ni, "laplacian(D,Nin)")
+                                  + gasConvection(Ni, "div(phiGas,Nin)")
+                                  - chemistry.RR(i)*plasmaConstants::A/W(i)
+                                  + chemistry.dRRDi(i)*NiLin
+                                  - fvm::Sp(chemistry.dRRDi(i),Ni)
+                                );
 
+                                solverPerf = NnEqn->solve(mesh_.solutionDict().solver("Nin"));
 
-                            solverPerf = NnEqn->solve(mesh_.solutionDict().solver("Nin"));
-
-
-                            this->limitField(N_[i], densityFloor_);
+                                this->limitField(N_[i], densityFloor_);
+                            }
 
                             initialResidual =
                                 this->passChange(N_[i].internalField(), NPass);

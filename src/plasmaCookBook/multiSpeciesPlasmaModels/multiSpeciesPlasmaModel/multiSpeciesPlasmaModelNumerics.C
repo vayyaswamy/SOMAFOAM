@@ -35,6 +35,10 @@ Description
         chargedSpecies      4;      // maximum passes per time step
         neutralSpecies      2;
         electronTemperature 6;
+        nonOrthogonalCorrectors 0;  // solutions per pass beyond the first,
+                                    // each with the non-orthogonal part
+                                    // of the Laplacians and face fluxes
+                                    // from the last solution
         tolerance           1e-5;   // initial residual that ends the passes
         reportUnconverged   yes;
         speciesChemistry    perSpecies; // reaction rates of the species
@@ -263,6 +267,7 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         dict.readIfPresent("chargedSpecies", nCorrCharged_);
         dict.readIfPresent("neutralSpecies", nCorrNeutral_);
         dict.readIfPresent("electronTemperature", nCorrTe_);
+        dict.readIfPresent("nonOrthogonalCorrectors", nNonOrthCorr_);
         dict.readIfPresent("tolerance", innerTolerance_);
         dict.readIfPresent("reportUnconverged", reportUnconverged_);
         const word speciesChemistry
@@ -288,6 +293,7 @@ void Foam::multiSpeciesPlasmaModel::readNumericalControls()
         Info<< "Inner iterations: charged species " << nCorrCharged_
             << ", neutral species " << nCorrNeutral_
             << ", electron temperature " << nCorrTe_
+            << ", non-orthogonal correctors " << nNonOrthCorr_
             << ", tolerance " << innerTolerance_
             << ", species chemistry "
             << (chemistryPerPass_ ? "perPass" : chemistryPerStep_ ? "perStep" : "perSpecies") << endl;
