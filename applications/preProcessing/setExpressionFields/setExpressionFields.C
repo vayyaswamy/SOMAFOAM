@@ -10,8 +10,8 @@ Application
 
 Description
     Sets the internal values of scalar fields from formulas of the cell
-    centre coordinates, for spatially varying initial conditions. The
-    formulas are given in system/setExpressionFieldsDict:
+    centre coordinates, or as Gaussians, for spatially varying initial
+    conditions. They are given in system/setExpressionFieldsDict:
 
     \verbatim
     variables               // optional: constants and helper formulas
@@ -31,6 +31,26 @@ Description
         Te          "10000 + 5000*x/2e-3";
     }
     \endverbatim
+
+    A field may instead be a Gaussian about a given centre with its own
+    standard deviation in each direction; a deviation of 0 leaves the field
+    uniform in that direction:
+
+    \verbatim
+    fields
+    {
+        electron
+        {
+            type        gaussian;
+            background  1e14;           // [field units]
+            peak        2e16;           // added to the background at centre
+            centre      (5e-3 1e-2 0);  // [m]
+            sigma       (1e-3 3e-3 0);  // standard deviations in x, y, z [m]
+        }
+    }
+    \endverbatim
+
+    which is background + peak*exp(-sum_i (x_i - centre_i)^2/(2 sigma_i^2)).
 
     x, y and z are the coordinates of the cell centres in metres. The usual
     operators and functions are available (+ - * / ^, sqr, sqrt, exp, log,
@@ -116,11 +136,54 @@ int main(int argc, char *argv[])
             mesh
         );
 
-        eqns.readEquation(fieldsDict, fieldName);
-
         scalarField values(mesh.nCells(), 0.0);
 
-        eqns.evaluateScalarField(values, fieldName);
+        if (fieldsDict.isDict(fieldName))
+        {
+            const dictionary& fd = fieldsDict.subDict(fieldName);
+
+            const word type(fd.lookup("type"));
+
+            if (type != "gaussian")
+            {
+                FatalIOErrorIn("setExpressionFields", fd)
+                    << "Unknown type " << type << " of field " << fieldName
+                    << "; expected gaussian or a formula"
+                    << exit(FatalIOError);
+            }
+
+            const scalar background(readScalar(fd.lookup("background")));
+            const scalar peak(readScalar(fd.lookup("peak")));
+            const vector centre(fd.lookup("centre"));
+            const vector sigma(fd.lookup("sigma"));
+
+            scalarField arg(mesh.nCells(), 0.0);
+
+            for (direction d = 0; d < vector::nComponents; d++)
+            {
+                if (sigma[d] < 0)
+                {
+                    FatalIOErrorIn("setExpressionFields", fd)
+                        << "Negative sigma " << sigma << " of field "
+                        << fieldName << exit(FatalIOError);
+                }
+
+                if (sigma[d] > 0)
+                {
+                    arg +=
+                        sqr(mesh.C().internalField().component(d) - centre[d])
+                       /(2*sqr(sigma[d]));
+                }
+            }
+
+            values = background + peak*exp(-arg);
+        }
+        else
+        {
+            eqns.readEquation(fieldsDict, fieldName);
+
+            eqns.evaluateScalarField(values, fieldName);
+        }
 
         field.internalField() = values;
 
