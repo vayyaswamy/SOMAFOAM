@@ -184,6 +184,9 @@ int main(int argc, char *argv[])
             {
                 #include "prolongApply.H"
 
+                // The reaction rates are held per cell of the old mesh
+                mspm().setChemistryOutdated();
+
                 // The interface face is never split, but the plasma cell
                 // behind it can be: the dielectric interpolation weights and
                 // distances, which use the cell centres across the
@@ -681,6 +684,9 @@ int main(int argc, char *argv[])
             if (mesh.update())
             {
                 #include "prolongApply.H"
+
+                // The reaction rates are held per cell of the old mesh
+                mspm().setChemistryOutdated();
 
                 Info<< "Mesh changed: "
                     << returnReduce(mesh.nCells(), sumOp<label>())

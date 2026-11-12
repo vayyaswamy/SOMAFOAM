@@ -520,6 +520,14 @@ public:
                 chemistryCurrent_ = true;
             }
 
+            //- Mark the rates as outdated, e.g. after the mesh has changed:
+            //  the rates are held per cell and are calculated again at the
+            //  next correct
+            void setChemistryOutdated()
+            {
+                chemistryCurrent_ = false;
+            }
+
         // Flux scheme
 
             //- Does species i use Scharfetter-Gummel fluxes?
