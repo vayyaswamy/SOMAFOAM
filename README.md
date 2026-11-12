@@ -58,6 +58,7 @@ Options are set in the case dictionaries; the examples show them in use.
 | Interpolation of tabulated rates: `rateInterpolation logarithmic;` (default, ln k linear in Te) or `linear` (k linear in Te) in `constant/chemistryProperties` | `src/thermophysicalModels/specie/reaction/reactionRate/TabularReactionRate` |
 | Faster time steps: reaction rates of the species equations `speciesChemistry perSpecies;` (default), `perPass` or `perStep` (rates of the start of the step), and `electronTemperature 1;` (one pass), in `innerIterations` of `constant/plasmaProperties`. With `perStep`, one pass, `Gauss linear` convection and `runTimeModifiable no;`, a 1D argon CCP takes as long per step as a single-pass time-marching solver | `src/plasmaCookBook/multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModelNumerics.C` |
 | Non-orthogonal correctors for the potential, species and electron energy equations, `nonOrthogonalCorrectors 2;` in `innerIterations` of `constant/plasmaProperties` (default 0) | `src/plasmaCookBook/multiSpeciesPlasmaModels/multiSpeciesPlasmaModel/multiSpeciesPlasmaModelNumerics.C` |
+| Terms of the electron energy equation (storage, heating, chemistry, convection, conduction, residual) in W/m3 at the write times, `writeEnergyBudget yes;` in `system/controlDict` (efullImplicit) | `src/plasmaCookBook/plasmaEnergyModels/eTemperature/efullImplicit/efullImplicit.C` |
 | Python plotting scripts | `postprocessing/README.md` |
 
 Contributors:

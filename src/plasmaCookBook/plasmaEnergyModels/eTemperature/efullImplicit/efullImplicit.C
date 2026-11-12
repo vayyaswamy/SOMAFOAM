@@ -229,6 +229,53 @@ Foam::scalar Foam::efullImplicit::correct
 
     mspm().updateTemperature();
 
+    // Terms of the energy equation at the solution, as gains [W/m3], with
+    // "writeEnergyBudget yes;" in controlDict at the write times. The
+    // residual is the imbalance: what the limits on Te and the
+    // linearisation of the reaction source left
+    if
+    (
+        mesh().time().outputTime()
+     && mesh().time().controlDict().lookupOrDefault<Switch>
+        (
+            "writeEnergyBudget", false
+        )
+    )
+    {
+        const volScalarField& Ne = mspm().N(eIndex_);
+
+        const volScalarField eConductivity
+        (
+            mspm().electronConductivity(chemistry)
+        );
+
+        volScalarField eStorage
+        (
+            "eStorage",
+            rDeltaT*1.5*plasmaConstants::boltzC*Ne*TeC - oldEnergy
+        );
+        volScalarField eHeating("eHeating", -plasmaConstants::eCharge*jDotE);
+        volScalarField eChem("eChem", -mspm().electronTempSource(chemistry));
+        volScalarField eConvection("eConvection", -fvc::div(eeFluxF, TeC));
+        volScalarField eConduction
+        (
+            "eConduction",
+            fvc::laplacian(eConductivity, TeC, "laplacian(eC,Te)")
+        );
+        volScalarField eResidual
+        (
+            "eResidual",
+            eStorage - eHeating - eChem - eConvection - eConduction
+        );
+
+        eStorage.write();
+        eHeating.write();
+        eChem.write();
+        eConvection.write();
+        eConduction.write();
+        eResidual.write();
+    }
+
     mspm().updateChemistryCollFreq(chemistry);
 
     mspm().setChemistryCurrent();
