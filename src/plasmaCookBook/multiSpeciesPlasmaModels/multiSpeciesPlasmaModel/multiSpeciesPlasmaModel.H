@@ -623,6 +623,10 @@ public:
                 const scalar initialResidual
             ) const;
 
+            //- Relative change in the last pass of the latest inner loop of
+            //  name, as given to reportInnerIterations; -1 if none yet
+            scalar lastInnerChange(const word& name) const;
+
         virtual bool read() = 0;
 };
 

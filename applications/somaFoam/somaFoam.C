@@ -663,6 +663,9 @@ int main(int argc, char *argv[])
     {
         #include "refreshProcessorPatches.H"
 
+        // Step controls of the converged outer loop (plasmaConvergedStep.H)
+        #include "createStepControls.H"
+
         solverTimers::start = solverTimers::now();
 
         while (runTime.run())
@@ -694,28 +697,30 @@ int main(int argc, char *argv[])
             }
 
 
-            while (pimple.loop())
+            // Outer iterations: with chargedSpeciesTolerance in PIMPLE the
+            // converged outer loop with step rejection (plasmaConvergedStep.H,
+            // as in the plasmaDielectric branch), otherwise the PIMPLE loop
+            const dictionary& pimpleDict =
+                mesh.solutionDict().subDict("PIMPLE");
+
+            const scalar chargedSpeciesTolerance =
+                pimpleDict.lookupOrDefault<scalar>("chargedSpeciesTolerance", 0);
+
+            // Set when the outer loop has solved the electron energy
+            // equation, with the step factor of its last solve
+            bool TeSolvedInOuterLoop = false;
+            scalar CofactorTe = 0;
+
+            if (chargedSpeciesTolerance > 0)
             {
-                solverTimers::outer++;
-
-                double tTimer = solverTimers::now();
-
-                while (pimple.correct())
+                #include "plasmaConvergedStep.H"
+            }
+            else
+            {
+                while (pimple.loop())
                 {
-                    #include "solvePoisson.H"
+                    #include "plasmaOuterIteration.H"
                 }
-
-                solverTimers::poisson += solverTimers::now() - tTimer;
-                tTimer = solverTimers::now();
-
-                #include "plasmaEqn.H"
-
-                solverTimers::species += solverTimers::now() - tTimer;
-                tTimer = solverTimers::now();
-
-                #include "surfaceCharge_new.H"
-
-                solverTimers::surface += solverTimers::now() - tTimer;
             }
 
             // gradTe of plasmaEqn.H holds: the species do not change Te
@@ -727,11 +732,16 @@ int main(int argc, char *argv[])
             scalar Cofactor1 = variableDeltaT ? mspm().divFe() : 0;
 
         // With a prescribed Te (zeroD) the electron energy equation is not
-        // solved
+        // solved; with electronTemperatureInOuterLoop it was solved in the
+        // outer loop
         const double tTimerE = solverTimers::now();
 
-        scalar Cofactor2 =
-            mspm().fixesTe() ? 0 : pem.ecorrect(chemistry, E);
+        scalar Cofactor2 = CofactorTe;
+
+        if (!TeSolvedInOuterLoop)
+        {
+            Cofactor2 = mspm().fixesTe() ? 0 : pem.ecorrect(chemistry, E);
+        }
 
         solverTimers::energy += solverTimers::now() - tTimerE;
 
@@ -761,6 +771,33 @@ int main(int argc, char *argv[])
             }
 
             deltaTNew = min(deltaTNew,deltaTMax);
+
+            // Limits of the converged outer loop (plasmaConvergedStep.H):
+            // the step after a rejection, the ionization number and the
+            // step while the discharge conducts
+            deltaTNew = min(deltaTNew, deltaTRejectionCap);
+
+            if (maxIonizationNumber > 0 && nuIonizationMax > 0)
+            {
+                deltaTNew = min(deltaTNew, maxIonizationNumber/nuIonizationMax);
+            }
+
+            if (deltaTMaxDischarge < GREAT)
+            {
+                const surfaceScalarField Ic(mspm().netChargeFaceFlux());
+
+                scalar maxIc = gMax(mag(Ic.internalField()));
+
+                forAll(Ic.boundaryField(), patchi)
+                {
+                    maxIc = max(maxIc, gMax(mag(Ic.boundaryField()[patchi])));
+                }
+
+                if (maxIc > dischargeCurrent)
+                {
+                    deltaTNew = min(deltaTNew, deltaTMaxDischarge);
+                }
+            }
 
             deltaTNew = max(deltaTNew,deltaTMin);
 

@@ -905,6 +905,27 @@ Foam::scalar Foam::multiSpeciesPlasmaModel::passChange
 }
 
 
+namespace Foam
+{
+    // Relative change in the last pass of the latest inner loop of each
+    // field (reportInnerIterations), for the outer-loop convergence test of
+    // somaFoam. Held here, not as a member, so that the class layout stays
+    // that of the binaries built against it.
+    static HashTable<scalar> lastInnerChanges_;
+}
+
+
+Foam::scalar Foam::multiSpeciesPlasmaModel::lastInnerChange
+(
+    const word& name
+) const
+{
+    HashTable<scalar>::const_iterator iter = lastInnerChanges_.find(name);
+
+    return iter == lastInnerChanges_.end() ? -1 : iter();
+}
+
+
 void Foam::multiSpeciesPlasmaModel::reportInnerIterations
 (
     const word& name,
@@ -912,6 +933,8 @@ void Foam::multiSpeciesPlasmaModel::reportInnerIterations
     const scalar initialResidual
 ) const
 {
+    lastInnerChanges_.set(name, initialResidual);
+
     if (reportUnconverged_ && initialResidual >= innerTolerance_)
     {
         Info<< "Inner iterations of " << name << " not converged after "
