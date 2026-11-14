@@ -230,7 +230,9 @@
         dimensionedVector("zero", dimensionSet(0, 0, 0, 1, 0), vector::zero)
     );
 
- volScalarField surfC
+ // Surface charge of the dielectricSideWall patches (surfaceCharge_new.H),
+    // written so that a restart continues with the wall charge
+volScalarField surfC
     (
         IOobject
         (
@@ -238,7 +240,7 @@
             runTime.timeName(),
             mesh,
             IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh,
         dimensionedScalar("zero", dimensionSet(0, 0, 0, 1, 0), 0.0)
