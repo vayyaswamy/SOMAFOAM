@@ -28,7 +28,10 @@ Description
 
     with sigma_m the total momentum-transfer cross section of the mixture
     and u the energy loss of each inelastic process. It is discretised on a
-    uniform energy grid with the exponential (Scharfetter-Gummel) flux and
+    uniform energy grid with the exponential (Scharfetter-Gummel) flux; the
+    electrons that a cell loses in an inelastic collision are shared
+    between the two cells that the cell shifted down by u overlaps, so that
+    the energy lost is u also for losses smaller than a cell. The system is
     solved directly; the upper end of the grid is adapted to the
     distribution. Ionisation is treated as an energy loss (the electron
     that is released is not added) and attachment only gives a rate
@@ -116,6 +119,8 @@ Description
 #include "OSspecific.H"
 #include "mathematicalConstants.H"
 #include "vector.H"
+
+#include <cmath>
 
 using namespace Foam;
 
@@ -453,7 +458,12 @@ void solveDistribution
         A[f][f] += aHigh;
     }
 
-    // Inelastic collisions: out of cell j, into the cell at eps_j - u
+    // Inelastic collisions. The electrons of cell j, [j, j + 1] dEps, lose
+    // u and land in [j dEps - u, (j + 1) dEps - u]. They are shared between
+    // the two cells that this interval overlaps, in proportion to the
+    // overlap, so that each collision removes u on average, also when u is
+    // smaller than a cell. Electrons that would land below zero energy go
+    // to the first cell.
     forAll(processes, i)
     {
         const process& p = processes[i];
@@ -476,12 +486,24 @@ void solveDistribution
 
             const scalar rate = gamma*p.fraction*eps*p(eps)*dEps;
 
-            const label target = min(max(label((eps - u)/dEps), 0), n - 1);
+            // Lower end of the interval in cell widths, its cell and the
+            // share of that cell
+            const scalar a = j - u/dEps;
+            label low = label(std::floor(a));
+            scalar wLow = (low + 1) - a;
 
-            if (target != j)
+            if (low < 0)
             {
-                A[j][j] += rate;
-                A[target][j] -= rate;
+                low = 0;
+                wLow = 1;
+            }
+
+            A[j][j] += rate;
+            A[low][j] -= wLow*rate;
+
+            if (wLow < 1)
+            {
+                A[low + 1][j] -= (1 - wLow)*rate;
             }
         }
     }

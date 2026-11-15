@@ -50,7 +50,7 @@ The main entries of `system/boltzmannDict`:
 | `gases` | `((target fraction) ...)`, e.g. `((N2 0.79) (O2 0.21))` |
 | `gasTemperature` | gas temperature [K] |
 | `reducedField` | `{ min; max; n; }` logarithmic [Td], or a list `(1 10 100)` |
-| `nEnergyCells` | energy grid (400–800); the upper end adapts to the distribution |
+| `nEnergyCells` | energy grid; the upper end adapts to the distribution. Check that the results do not change when it is doubled (1600 for CF4/O2 with the Hayashi and Phelps sets) |
 | `method` | `twoTerm` (fast) or `monteCarlo` (with `nElectrons`, `sampleTimes`, ...) |
 | `nThreads` | reduced fields solved in parallel |
 | `tables` | optional: write somaFoam tables under given names (see the header) |
