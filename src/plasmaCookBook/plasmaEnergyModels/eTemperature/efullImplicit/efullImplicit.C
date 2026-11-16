@@ -164,6 +164,13 @@ Foam::scalar Foam::efullImplicit::correct
                                     + eeChemSource
                                     - eeSource_SuSp*TeC;
 
+        // Cycle-averaged inductive heating (W/m^3) registered by somaFoam
+        // for dischargeType ICP; absent for CCP
+        if (TeC.mesh().foundObject<volScalarField>("Pind"))
+        {
+            eeSource_Su -= TeC.mesh().lookupObject<volScalarField>("Pind");
+        }
+
 
         // Electron energy carried to the walls in a global model (zeroD
         // with zeroDWall), W/m^3

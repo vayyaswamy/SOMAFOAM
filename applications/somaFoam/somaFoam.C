@@ -30,6 +30,8 @@ Description
 #include "magLongDelta.H"
 #include "staticFvMesh.H"
 #include "plasmaPotential.H"
+#include "fvBlockMatrix.H"
+#include "volVectorNFields.H"
 #include "currentTimeStepControl.H"
 #include "OFstream.H"
 #include "stepSnapshot.H"
@@ -48,6 +50,7 @@ int main(int argc, char *argv[])
 
 
     #include "createFields.H"
+    #include "createInductiveFields.H"
 
     // Wall-clock time of the parts of a step (solverTimers.H)
     const Switch timingReport
@@ -175,6 +178,9 @@ int main(int argc, char *argv[])
 
             Info<< "Simulation Time = " << runTime.timeName() << "s" << tab << "CPU Time = "
                     << runTime.elapsedCpuTime() << "s" << endl;
+
+            // Inductive field and heating of the ICP option; no action for CCP
+            #include "solveInductive.H"
 
             // Adaptive 1D refinement of the plasma mesh, with the plasma side
             // of the interface detached (as for the plasma equations)
@@ -696,6 +702,10 @@ int main(int argc, char *argv[])
                     << " cells" << endl;
             }
 
+
+            // Inductive field and heating of the ICP option (electroMagnetics
+            // dischargeType ICP); no action for CCP
+            #include "solveInductive.H"
 
             // Outer iterations: with chargedSpeciesTolerance in PIMPLE the
             // converged outer loop with step rejection (plasmaConvergedStep.H,
