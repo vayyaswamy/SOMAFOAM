@@ -92,11 +92,16 @@ SourceFiles
 #include "fvm.H"
 #include "Tuple2.H"
 #include "multiSpeciesPlasmaModel.H"
+#include "scalarSquareMatrix.H"
+#include "psiChemistryModel.H"
+#include "ODEChemistryModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+
+template<class ThermoType> class zeroD;
 
 /*---------------------------------------------------------------------------*\
                              Class zeroD Declaration
@@ -165,6 +170,29 @@ protected:
             //- Electron energy carried to the walls [W/m3]
             autoPtr<volScalarField> electronWallEnergyLoss_;
 
+        // Coupled step
+
+            bool coupled_;
+
+            //- Print the charge balance of each step
+            bool debugCharge_;
+
+            scalar relTol_;
+
+            scalar absTol_;
+
+            //- Step of the ODE solver carried to the next time step
+            mutable scalar hEst_;
+
+            //- Chemistry and cell of the system being integrated
+            mutable const ODEChemistryModel<psiChemistryModel, ThermoType>*
+                chem_;
+
+            mutable label cell_;
+
+            //- Reaction kinds: 1 electron-impact inelastic, 2 elastic, 0 other
+            mutable labelList eKind_;
+
 
     // Protected member functions
 
@@ -180,6 +208,70 @@ protected:
         //- Losses to the walls over a step of length dt, applied to the
         //  densities and mass fractions of the species
         void wallLosses(const scalar dt);
+
+        //- Loss frequencies [1/s] of the wall ions and wall neutrals for
+        //  the densities n of one cell
+        void wallFrequencies
+        (
+            const scalarField& n,
+            const scalar Te,
+            const scalar Tg,
+            const scalar Ng,
+            scalarList& kIon,
+            scalarList& kNeutral
+        ) const;
+
+        //- Changes dN of the densities from the particles lost at the walls
+        //  (lostIon, lostNeutral: amounts or rates); returns the electrons
+        //  lost
+        scalar wallTransfer
+        (
+            const scalarList& lostIon,
+            const scalarList& lostNeutral,
+            const scalar ne,
+            scalarField& dN
+        ) const;
+
+        //- Integrate the coupled system of every cell over the step
+        void coupledStep(psiChemistryModel& chemistry, const scalar dt);
+
+        //- One adaptive Rosenbrock step of the coupled system from x with
+        //  the trial step hTry; returns the step taken in hDid and the next
+        //  step in hNext
+        void rosenbrockStep
+        (
+            scalar& x,
+            scalarField& y,
+            const scalarField& dydx,
+            const scalarField& yScale,
+            const scalar hTry,
+            scalar& hDid,
+            scalar& hNext
+        ) const;
+
+public:
+
+        //- Right-hand side of the coupled system of cell cell_
+        void coupledDerivatives
+        (
+            const scalar t,
+            const scalarField& y,
+            scalarField& dydt
+        ) const;
+
+        //- Finite-difference Jacobian of the coupled system
+        void coupledJacobian
+        (
+            const scalar t,
+            const scalarField& y,
+            scalarField& dfdt,
+            scalarSquareMatrix& dfdy
+        ) const;
+
+protected:
+
+        //- Te [K] of the coupled state y at time t, within TeMin and TeMax
+        scalar coupledTe(const scalar t, const scalarField& y) const;
 
 public:
 
@@ -219,7 +311,7 @@ public:
 
         virtual bool fixesTe() const
         {
-            return driveMode_ == "electronTemperature";
+            return driveMode_ == "electronTemperature" || coupled_;
         }
 
         //- Read dictionary
