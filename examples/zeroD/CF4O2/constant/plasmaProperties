@@ -1,0 +1,268 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      plasmaProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Zero-dimensional (global) model on one cell whose faces are all empty: the
+// species change by the chemistry alone. Needs plasmaChemistryModel temporal
+// (constant/chemistryProperties) and poissonEquationSolver none
+// (constant/electroMagnetics)
+// Zero-dimensional CF4/O2 model on one cell (see MECHANISM.md). Needs
+// plasmaChemistryModel temporal and poissonEquationSolver none. Transport is
+// not used in 0D: ions and neutrals have zero mobility and diffusion.
+plasmaModel  zeroD<constGasThermoPhysics>;
+activeSpecies 13;
+backgroundGas CF4;
+multiTimeStep false;
+fluxScheme      fvSchemes;
+
+electron
+{
+    diffusionModel eTemp;
+    mobilityModel eTemp;
+    charge -1;
+    speciesSolution true;
+    collisionFrequency muBased;
+    transportModel driftDiffusion;
+}
+CF3p1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+CF2p1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+CFp1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+Fp1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+O2p1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+Op1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+COp1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+CO2p1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+Cp1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge 1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+Fn1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge -1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+On1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge -1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+O2n1
+{
+    diffusionModel constant;
+    D 0;
+    mobilityModel constant;
+    mu 0;
+    charge -1;
+    speciesSolution true;
+    transportModel driftDiffusion;
+}
+CF3
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+CF2
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+CF
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+F
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+F2
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+O2
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+O2a
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+O
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+O3
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+CO
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+CO2
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+FO
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+COF
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+COF2
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+C
+{
+    diffusionModel constant;
+    D 0;
+    speciesSolution true;
+}
+CF4
+{
+    speciesSolution false;
+}
+
+energyModel
+{
+    electron efullImplicit;
+    ion gasTemp;
+    gas none;
+}
+
+zeroDDrive
+{
+    mode    reducedField;
+    table   ((0 150) (3e-06 150) (3.01e-06 1) (2e-05 1));
+}
+
+// ************************************************************************* //

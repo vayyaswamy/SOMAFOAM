@@ -1,0 +1,733 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      reactions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// CF4/O2 mechanism written by build_cf4o2_mechanism.py for p = 133.322 Pa
+// and Tg = 300 K; sources in MECHANISM.md
+
+species
+(
+    electron
+    CF3p1
+    CF2p1
+    CFp1
+    Fp1
+    O2p1
+    Op1
+    COp1
+    CO2p1
+    Cp1
+    Fn1
+    On1
+    O2n1
+    CF3
+    CF2
+    CF
+    F
+    F2
+    O2
+    O2a
+    O
+    O3
+    CO
+    CO2
+    FO
+    COF
+    COF2
+    C
+    CF4
+);
+
+reactions
+(
+    // k1: LXCat Hayashi CF4 neutral dissociation (12.85 eV) times the CF3 fraction of Christophorou et al. (1996), Table 21 (replaces Kimura k1)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + CF3 + F
+    ("$FOAM_CASE/constant/rate_k1")
+    (2.0587969747e-18)
+
+    // k2: LXCat Hayashi CF4 neutral dissociation (12.85 eV) times the CF2 fraction of Christophorou et al. (1996), Table 21 (replaces Kimura k2)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + CF2 + F + F
+    ("$FOAM_CASE/constant/rate_k2")
+    (2.0587969747e-18)
+
+    // k3: LXCat Hayashi CF4 neutral dissociation (12.85 eV) times the CF1 fraction of Christophorou et al. (1996), Table 21 (replaces Kimura k3)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + CF + F + F + F
+    ("$FOAM_CASE/constant/rate_k3")
+    (2.0587969747e-18)
+
+    // k8: LXCat Hayashi CF4 total ionization times the CF3+ fraction of Christophorou et al. (1996), Table 15 (replaces Kimura k8)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + electron + CF3p1 + F
+    ("$FOAM_CASE/constant/rate_k8")
+    (2.5923217938e-18)
+
+    // k9: LXCat Hayashi CF4 total ionization times the CF2+ fraction of Christophorou et al. (1996), Table 15 (replaces Kimura k9)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + electron + CF2p1 + F + F
+    ("$FOAM_CASE/constant/rate_k9")
+    (2.5923217938e-18)
+
+    // k10: LXCat Hayashi CF4 total ionization times the CF+ fraction of Christophorou et al. (1996), Table 15 (replaces Kimura k10)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + electron + CFp1 + F + F + F
+    ("$FOAM_CASE/constant/rate_k10")
+    (2.5923217938e-18)
+
+    // CXi: LXCat Hayashi CF4 total ionization times the C+ fraction of Christophorou et al. (1996), Table 15
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + electron + Cp1 + F + F + F + F
+    ("$FOAM_CASE/constant/rate_CXi")
+    (2.5923217938e-18)
+
+    // FXi: LXCat Hayashi CF4 total ionization times the F+ fraction of Christophorou et al. (1996), Table 15
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + electron + Fp1 + CF3
+    ("$FOAM_CASE/constant/rate_FXi")
+    (2.5923217938e-18)
+
+    // k15: LXCat Hayashi CF4 total attachment (F- and CF3-) as F- + CF3 (replaces Kimura k15)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = Fn1 + CF3
+    ("$FOAM_CASE/constant/rate_k15")
+    (0.0000000000e+00)
+
+    // k30: LXCat Phelps O2 O2 -> O2^+ (replaces Kimura k30)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + electron + O2p1
+    ("$FOAM_CASE/constant/rate_k30")
+    (1.9322250206e-18)
+
+    // k31: LXCat Phelps O2 O2 -> O^-+O (replaces Kimura k31)
+    electronImpactInelasticTabularReaction
+    electron + O2 = O + On1
+    ("$FOAM_CASE/constant/rate_k31")
+    (0.0000000000e+00)
+
+    // k35: LXCat Phelps O2 O2 -> O2(6.0eV) (replaces Kimura k35)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O + O
+    ("$FOAM_CASE/constant/rate_k35")
+    (9.6130598040e-19)
+
+    // k36: LXCat Phelps O2 O2 -> O2(8.4eV) (replaces Kimura k36)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O + O
+    ("$FOAM_CASE/constant/rate_k36")
+    (1.3458283726e-18)
+
+    // k41: LXCat Phelps O2 O2 -> O2(a1) (replaces Kimura k41)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2a
+    ("$FOAM_CASE/constant/rate_k41")
+    (1.5653265714e-19)
+
+    // k44: LXCat Phelps O2 O2(a1) by detailed balance (replaces Kimura k44)
+    electronImpactInelasticTabularReaction
+    electron + O2a = electron + O2
+    ("$FOAM_CASE/constant/rate_k44")
+    (-1.5653265714e-19)
+
+    // k4: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CF3 = electron + CF2 + F
+    (3.1143537044e+17 -0.96 130550.8289)
+    (1.8024487132e-18)
+
+    // k5: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CF2 = electron + CF + F
+    (2.4477507585e+14 -0.38 166524.835)
+    (2.2991234698e-18)
+
+    // k12: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CF3 = electron + electron + CF3p1
+    (4.8177126080e+12 0 141575.1211)
+    (1.9546554935e-18)
+
+    // k13: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CF2 = electron + electron + CF2p1
+    (1.5055351900e+13 0 141575.1211)
+    (1.9546554935e-18)
+
+    // k14: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CF = electron + electron + CFp1
+    (1.5055351900e+13 0 177549.1273)
+    (2.4513302500e-18)
+
+    // k16a: Kimura and Noto (2006), Table I
+    electronImpactInelasticArrheniusReaction
+    electron + CF2p1 = CF2
+    (3.6132844560e+13 0 0)
+    (0.0000000000e+00)
+
+    // k16b: Kimura and Noto (2006), Table I
+    electronImpactInelasticArrheniusReaction
+    electron + CF3p1 = CF3
+    (3.6132844560e+13 0 0)
+    (0.0000000000e+00)
+
+    // k19: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CF3 = electron + electron + CF2p1 + F
+    (1.3248709672e+13 0 215844.0371)
+    (2.9800485392e-18)
+
+    // k20: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CF2 = electron + electron + CFp1 + F
+    (1.4031587971e+13 0 197276.8081)
+    (2.7237002778e-18)
+
+    // k21: Kimura and Noto (2006), Table I
+    electronImpactInelasticArrheniusReaction
+    electron + CF3 = CF2 + Fn1
+    (5.5392116732e+12 -0.4329 2088.813262)
+    (0.0000000000e+00)
+
+    // k22: Kimura and Noto (2006), Table I
+    electronImpactInelasticArrheniusReaction
+    electron + CF2 = CF + Fn1
+    (5.5392116732e+12 -0.4329 22396.71997)
+    (0.0000000000e+00)
+
+    // k23: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + F = electron + electron + Fp1
+    (7.8287829880e+12 0 191474.549)
+    (2.6435914461e-18)
+
+    // k25: Kimura and Noto (2006), Table I
+    electronImpactInelasticArrheniusReaction
+    electron + F2 = Fn1 + F
+    (8.3216609262e+17 -1.35 1740.677718)
+    (0.0000000000e+00)
+
+    // k26: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + F2 = electron + F + F
+    (7.1061260968e+12 0 66958.06956)
+    (9.2445591782e-19)
+
+    // k29: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + O = electron + electron + Op1
+    (7.7402401268e+09 0.7 157821.4465)
+    (2.1789602222e-18)
+
+    // k34: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + On1 = electron + electron + O
+    (1.2044281520e+14 0 63824.84967)
+    (8.8119714870e-19)
+
+    // k39: Kimura and Noto (2006), Table I
+    electronImpactInelasticArrheniusReaction
+    electron + O2p1 = O + O
+    (3.6339701622e+16 -1 0)
+    (0.0000000000e+00)
+
+    // k42: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + O2a = electron + electron + O2p1
+    (4.0247526009e+03 2 134612.4102)
+    (1.8585248954e-18)
+
+    // k43: Kimura and Noto (2006), Table I
+    electronImpactInelasticArrheniusReaction
+    electron + O2a = On1 + O
+    (1.3730480933e+11 0 26574.3465)
+    (0.0000000000e+00)
+
+    // k45: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + O2a = electron + O + O
+    (1.8782178804e+04 2 53380.78336)
+    (7.3700125164e-19)
+
+    // k59: Kimura and Noto (2006), Table I (k59 = k4); dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + COF2 = electron + COF + F
+    (3.1143537044e+17 -0.96 130550.8289)
+    (1.8024487132e-18)
+
+    // k60: Kimura and Noto (2006), Table I (constant)
+    electronImpactInelasticArrheniusReaction
+    electron + CO2 = electron + CO + O
+    (5.1188196460e+11 0 0)
+    (0.0000000000e+00)
+
+    // k61: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CO = electron + C + O
+    (1.1261403221e+13 0 161186.7567)
+    (2.2254233446e-18)
+
+    // k62: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CO2 = electron + electron + CO2p1
+    (3.0291368023e+13 0 188689.4647)
+    (2.6051392069e-18)
+
+    // k63: Kimura and Noto (2006), Table I; dE activation energy of the fit
+    electronImpactInelasticArrheniusReaction
+    electron + CO = electron + electron + COp1
+    (2.9689153947e+13 0 194491.7237)
+    (2.6852480386e-18)
+
+    // elCF4: Boltzmann equation, LXCat Hayashi CF4
+    electronImpactElasticTabularReaction
+    electron + CF4 = electron + CF4
+    ("$FOAM_CASE/constant/rate_1")
+
+    // elO2: Boltzmann equation, LXCat Phelps O2, effective minus inelastic
+    electronImpactElasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_O2_elastic")
+
+    // V24: Boltzmann equation, LXCat Hayashi CF4, CF4 -> CF4(V24)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + CF4
+    ("$FOAM_CASE/constant/rate_2")
+    (8.3313184968e-21)
+
+    // V13: Boltzmann equation, LXCat Hayashi CF4, CF4 -> CF4(V13)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + CF4
+    ("$FOAM_CASE/constant/rate_3")
+    (1.7463725311e-20)
+
+    // 7.86eV: Boltzmann equation, LXCat Hayashi CF4, CF4 -> CF4*(7.86eV)
+    electronImpactInelasticTabularReaction
+    electron + CF4 = electron + CF4
+    ("$FOAM_CASE/constant/rate_4")
+    (1.2593108343e-18)
+
+    // rot: Boltzmann equation, LXCat Phelps O2, O2 -> O2(rot)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_10")
+    (3.2043532680e-21)
+
+    // v1: Boltzmann equation, LXCat Phelps O2, O2 -> O2(v1)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_11")
+    (3.0441356046e-20)
+
+    // v1res: Boltzmann equation, LXCat Phelps O2, O2 -> O2(v1res)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_12")
+    (3.0441356046e-20)
+
+    // v2: Boltzmann equation, LXCat Phelps O2, O2 -> O2(v2)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_13")
+    (6.0882712092e-20)
+
+    // v2res: Boltzmann equation, LXCat Phelps O2, O2 -> O2(v2res)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_14")
+    (6.0882712092e-20)
+
+    // v3: Boltzmann equation, LXCat Phelps O2, O2 -> O2(v3)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_15")
+    (9.1324068138e-20)
+
+    // v4: Boltzmann equation, LXCat Phelps O2, O2 -> O2(v4)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_16")
+    (1.2016324755e-19)
+
+    // b1: Boltzmann equation, LXCat Phelps O2, O2 -> O2(b1)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_18")
+    (2.6067413835e-19)
+
+    // 4.5eV: Boltzmann equation, LXCat Phelps O2, O2 -> O2(4.5eV)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_19")
+    (7.2097948530e-19)
+
+    // 9.97eV: Boltzmann equation, LXCat Phelps O2, O2 -> O2(9.97eV)
+    electronImpactInelasticTabularReaction
+    electron + O2 = electron + O2
+    ("$FOAM_CASE/constant/rate_22")
+    (1.5973701041e-18)
+
+    // k6: Plumb and Ryan (1986), Tables I-II, at the operating pressure (replaces k6)
+    irreversibleArrheniusReaction
+    CF3 + F = CF4
+    (9.0294493140e+09 0 0)
+
+    // k7: Plumb and Ryan (1986), Tables I-II, at the operating pressure (replaces k7)
+    irreversibleArrheniusReaction
+    CF2 + F = CF3
+    (4.7138072558e+08 0 0)
+
+    // k11: Plumb and Ryan (1986), Tables I-II, at the operating pressure (replaces k11)
+    irreversibleArrheniusReaction
+    CF + F = CF2
+    (5.9947865076e+06 0 0)
+
+    // k17: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    CF3 + Fn1 = CF4 + electron
+    (3.0110703800e+11 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    CF3p1 + Fn1 = CF3 + F
+    (2.4088563040e+14 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    CF2p1 + Fn1 = CF2 + F
+    (2.4088563040e+14 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    CFp1 + Fn1 = CF + F
+    (2.4088563040e+14 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    Fp1 + Fn1 = F + F
+    (2.4088563040e+14 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    O2p1 + Fn1 = O2 + F
+    (2.4088563040e+14 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    Op1 + Fn1 = O + F
+    (2.4088563040e+14 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    COp1 + Fn1 = CO + F
+    (2.4088563040e+14 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    CO2p1 + Fn1 = CO2 + F
+    (2.4088563040e+14 0 0)
+
+    // k18: Kimura and Noto (2006), Table I (X+ + F-)
+    irreversibleArrheniusReaction
+    Cp1 + Fn1 = C + F
+    (2.4088563040e+14 0 0)
+
+    // k24: Kimura and Noto (2006), Table I (three-body, times M)
+    irreversibleArrheniusReaction
+    F + F = F2
+    (1.3123112554e+10 0 0)
+
+    // k27: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    Fp1 + CF4 = CF3p1 + F2
+    (6.0221407600e+11 0 0)
+
+    // k28: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    Fp1 + CF3 = CF3p1 + F
+    (6.0221407600e+11 0 0)
+
+    // k32: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    On1 + Op1 = O + O
+    (1.6259780052e+14 0 0)
+
+    // k33: Kimura and Noto (2006), Table I (X+ + O-)
+    irreversibleArrheniusReaction
+    CF3p1 + On1 = CF3 + O
+    (9.0332111400e+13 0 0)
+
+    // k33: Kimura and Noto (2006), Table I (X+ + O-)
+    irreversibleArrheniusReaction
+    CF2p1 + On1 = CF2 + O
+    (9.0332111400e+13 0 0)
+
+    // k33: Kimura and Noto (2006), Table I (X+ + O-)
+    irreversibleArrheniusReaction
+    CFp1 + On1 = CF + O
+    (9.0332111400e+13 0 0)
+
+    // k33: Kimura and Noto (2006), Table I (X+ + O-)
+    irreversibleArrheniusReaction
+    Fp1 + On1 = F + O
+    (9.0332111400e+13 0 0)
+
+    // k33: Kimura and Noto (2006), Table I (X+ + O-)
+    irreversibleArrheniusReaction
+    O2p1 + On1 = O2 + O
+    (9.0332111400e+13 0 0)
+
+    // k33: Kimura and Noto (2006), Table I (X+ + O-)
+    irreversibleArrheniusReaction
+    COp1 + On1 = CO + O
+    (9.0332111400e+13 0 0)
+
+    // k33: Kimura and Noto (2006), Table I (X+ + O-)
+    irreversibleArrheniusReaction
+    CO2p1 + On1 = CO2 + O
+    (9.0332111400e+13 0 0)
+
+    // k33: Kimura and Noto (2006), Table I (X+ + O-)
+    irreversibleArrheniusReaction
+    Cp1 + On1 = C + O
+    (9.0332111400e+13 0 0)
+
+    // k40: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    On1 + O = O2 + electron
+    (1.8066422280e+11 0 0)
+
+    // k46: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    On1 + O2a = O2n1 + O
+    (6.0221407600e+09 0 0)
+
+    // k47: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    On1 + O2a = O3 + electron
+    (1.2044281520e+10 0 0)
+
+    // k48: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    O + CF3 = COF2 + F
+    (1.8668636356e+10 0 0)
+
+    // k49: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    O + CF2 = COF + F
+    (8.4309970640e+09 0 0)
+
+    // k50: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    O + CF = CO + F
+    (1.2044281520e+10 0 0)
+
+    // k51: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    O + COF = CO2 + F
+    (5.6005909068e+10 0 0)
+
+    // k52: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    O + FO = O2 + F
+    (3.0110703800e+10 0 0)
+
+    // k53: Kimura and Noto (2006), Table I (three-body, times M)
+    irreversibleArrheniusReaction
+    F + O = FO
+    (1.9384213521e+10 0 0)
+
+    // k54: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    CF2 + COF = CF3 + CO
+    (1.8066422280e+08 0 0)
+
+    // k55: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    CF2 + COF = COF2 + CF
+    (1.8066422280e+08 0 0)
+
+    // k56: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    CF3 + COF = CF4 + CO
+    (6.0221407600e+09 0 0)
+
+    // k57: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    CF3 + COF = COF2 + CF2
+    (6.0221407600e+09 0 0)
+
+    // k58: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    COF + COF = COF2 + CO
+    (6.0221407600e+09 0 0)
+
+    // k64: Kimura and Noto (2006), Table I
+    irreversibleArrheniusReaction
+    Op1 + CF4 = CF3p1 + FO
+    (8.4309970640e+11 0 0)
+
+    // PR29: Plumb and Ryan (1986), Table I, reaction 29
+    irreversibleArrheniusReaction
+    CF2 + O = CO + F + F
+    (2.4088563040e+07 0 0)
+
+    // PR31: Plumb and Ryan (1986), Tables I-II, at the operating pressure, reaction 31
+    irreversibleArrheniusReaction
+    COF + F = COF2
+    (8.7149279848e+08 0 0)
+
+    // PR38: Plumb and Ryan (1986), Tables I-II, at the operating pressure, reaction 38
+    irreversibleArrheniusReaction
+    F + CO = COF
+    (1.5475393460e+06 0 0)
+
+    // IUPAC: Atkinson et al. (2004), O + O2 + M, M = O2, times M
+    irreversibleArrheniusReaction
+    O + O2 = O3
+    (1.1630528113e+04 0 0)
+
+    // T64: Toneli et al. (2015), reaction 64
+    irreversibleArrheniusReaction
+    O2 + O2a = O2 + O2
+    (1.3818998810e+01 0.8 0)
+
+    // T73: Toneli et al. (2015), reaction 73
+    irreversibleArrheniusReaction
+    O2a + O3 = O + O2 + O2
+    (3.6193065968e+10 0 2853)
+
+    // T77: Toneli et al. (2015), reaction 77
+    irreversibleArrheniusReaction
+    O2a + O2a = O2 + O2
+    (1.9122865239e-03 0.5 0)
+
+    // T82: Toneli et al. (2015), reaction 82
+    irreversibleArrheniusReaction
+    O + O3 = O2 + O2
+    (1.0900074776e+10 0 2300)
+
+    // T84: Toneli et al. (2015), reaction 84
+    irreversibleArrheniusReaction
+    O + O3 = O2 + O2a
+    (6.0221407600e+09 0 2300)
+
+    // T86: Toneli et al. (2015), reaction 86
+    irreversibleArrheniusReaction
+    O + O2a = O + O2
+    (7.8287829880e+04 0 0)
+
+    // T100: Toneli et al. (2015), reaction 100
+    irreversibleArrheniusReaction
+    O2n1 + O2 = electron + O2 + O2
+    (9.3875883900e+09 0.5 5590)
+
+    // T101: Toneli et al. (2015), reaction 101
+    irreversibleArrheniusReaction
+    O2n1 + O2a = electron + O2 + O2
+    (1.2044281520e+11 0 0)
+
+    // T103: Toneli et al. (2015), reaction 103
+    irreversibleArrheniusReaction
+    O2n1 + O = O2 + On1
+    (1.0568857034e+11 0 0)
+
+    // T104: Toneli et al. (2015), reaction 104
+    irreversibleArrheniusReaction
+    O2n1 + O = electron + O3
+    (1.2917491930e+11 0 0)
+
+    // T105: Toneli et al. (2015), reaction 105
+    irreversibleArrheniusReaction
+    O2n1 + O2p1 = O2 + O2
+    (6.9537691778e+11 0.5 0)
+
+    // T106: Toneli et al. (2015), reaction 106
+    irreversibleArrheniusReaction
+    O2n1 + O2p1 = O + O + O2
+    (6.9537691778e+11 0.5 0)
+
+    // T107: Toneli et al. (2015), reaction 107
+    irreversibleArrheniusReaction
+    O2n1 + Op1 = O + O2
+    (6.9537691778e+11 0.5 0)
+
+    // T105+106: Toneli et al. (2015), reaction 105 + 106, applied to X+ + O2-
+    irreversibleArrheniusReaction
+    CF3p1 + O2n1 = CF3 + O2
+    (1.3907538356e+12 0.5 0)
+
+    // T105+106: Toneli et al. (2015), reaction 105 + 106, applied to X+ + O2-
+    irreversibleArrheniusReaction
+    CF2p1 + O2n1 = CF2 + O2
+    (1.3907538356e+12 0.5 0)
+
+    // T105+106: Toneli et al. (2015), reaction 105 + 106, applied to X+ + O2-
+    irreversibleArrheniusReaction
+    CFp1 + O2n1 = CF + O2
+    (1.3907538356e+12 0.5 0)
+
+    // T105+106: Toneli et al. (2015), reaction 105 + 106, applied to X+ + O2-
+    irreversibleArrheniusReaction
+    Fp1 + O2n1 = F + O2
+    (1.3907538356e+12 0.5 0)
+
+    // T105+106: Toneli et al. (2015), reaction 105 + 106, applied to X+ + O2-
+    irreversibleArrheniusReaction
+    COp1 + O2n1 = CO + O2
+    (1.3907538356e+12 0.5 0)
+
+    // T105+106: Toneli et al. (2015), reaction 105 + 106, applied to X+ + O2-
+    irreversibleArrheniusReaction
+    CO2p1 + O2n1 = CO2 + O2
+    (1.3907538356e+12 0.5 0)
+
+    // T105+106: Toneli et al. (2015), reaction 105 + 106, applied to X+ + O2-
+    irreversibleArrheniusReaction
+    Cp1 + O2n1 = C + O2
+    (1.3907538356e+12 0.5 0)
+
+    // T109: Toneli et al. (2015), reaction 109
+    irreversibleArrheniusReaction
+    On1 + O3 = electron + O2 + O2
+    (1.0465422613e+10 0.5 0)
+
+    // T110: Toneli et al. (2015), reaction 110
+    irreversibleArrheniusReaction
+    On1 + O3 = O2 + O2n1
+    (1.8066422280e+11 0 0)
+
+    // T121: Toneli et al. (2015), reaction 121
+    irreversibleArrheniusReaction
+    O2 + Op1 = O + O2p1
+    (2.0861307533e+11 -0.5 0)
+
+    // T122: Toneli et al. (2015), reaction 122
+    irreversibleArrheniusReaction
+    O3 + Op1 = O2 + O2p1
+    (6.0221407600e+10 0 0)
+
+    // T123: Toneli et al. (2015), reaction 123
+    irreversibleArrheniusReaction
+    O2a + Op1 = O + O2p1
+    (1.2044281520e+10 0 0)
+
+    // T126: Toneli et al. (2015), reaction 126 (radiative)
+    irreversibleArrheniusReaction
+    O2a = O2
+    (2.2560000000e-04 0 0)
+
+);

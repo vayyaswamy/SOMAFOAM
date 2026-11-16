@@ -1,0 +1,98 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+libs (
+      "libfoam.so"
+      "liblduSolvers.so"
+      "libplasmaCookBook.so"
+     );
+
+application     somaFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+endTime	2e-05;
+
+stopAt          endTime;
+
+deltaT	1e-09;
+
+MaxCo           10.0;
+
+deltaTMax	1e-09;
+
+deltaTMin	1e-09;
+
+writeControl    runTime;
+
+writeInterval	2e-05;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  15;
+
+writeCompression uncompressed;
+
+timeFormat      general;
+
+timePrecision   8;
+
+runTimeModifiable yes;
+
+restartCapable on;
+
+OptimisationSwitches
+{
+    commsType       nonBlocking;
+}
+
+DebugSwitches
+{
+    dimensionSet    0;
+	solution  0;
+    lduMatrix 0;
+    blockLduMatrix 0;
+}
+
+Tolerances
+{
+    // Primitive mesh checking limits
+    primitiveMeshClosedThreshold     1e-8;
+    // Geometric matching tolerances
+    patchFaceMatchTol   1e-8;
+    // Intersection tolerance
+    intersectionPlanarTol      0.2;
+    intersectionMissTol        1e-10;
+    GGIAreaErrorTol                 1e-8;
+}
+
+
+functions
+{
+    cellProbe
+    {
+        type            probes;
+        functionObjectLibs ("libsampling.so");
+        outputControl   timeStep;
+        outputInterval  1;
+        probeLocations  ((0.5e-3 0.5e-3 0.5e-3));
+        fields          (N_electron N_CF3p1 N_CF2p1 N_CFp1 N_Fp1 N_O2p1 N_Op1 N_COp1 N_CO2p1 N_Cp1 N_Fn1 N_On1 N_O2n1 N_CF3 N_CF2 N_CF N_F N_F2 N_O2 N_O2a N_O N_O3 N_CO N_CO2 N_FO N_COF N_COF2 N_C N_CF4 Te);
+    }
+}

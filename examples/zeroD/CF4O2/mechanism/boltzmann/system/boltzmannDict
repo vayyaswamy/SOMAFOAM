@@ -1,0 +1,33 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      boltzmannDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// LXCat: Hayashi database (CF4) and Phelps database (O2), retrieved
+// 15 Nov 2026. Feed gas of the CF4/O2 mechanism, 80 % CF4 and 20 % O2.
+file            "constant/crossSections/CF4_Hayashi_O2_Phelps.txt";
+
+gases           ((CF4 0.8) (O2 0.2));
+gasTemperature  300;                        // [K]
+
+reducedField    { min 1; max 3000; n 141; } // [Td], logarithmic
+
+nEnergyCells    1600;
+outputDir       "constant/boltzmann";
+
+method          twoTerm;
+nThreads        8;
+
+// ************************************************************************* //
