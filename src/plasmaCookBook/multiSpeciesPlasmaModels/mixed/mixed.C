@@ -549,9 +549,16 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                     else
                     {
 
+                        // timeAcceleration > 1 in the species dictionary scales the time derivative of
+                        // a slow neutral species by 1/timeAcceleration; the steady state is unchanged
+                        const dimensionedScalar accInv
+                        (
+                            "accInv", dimless,
+                            1.0/IOdictionary::subDict(species()[i]).lookupOrDefault<scalar>("timeAcceleration", 1.0)
+                        );
                         tmp<fvScalarMatrix> NnEqn
                         (
-                            fvm::ddt(Ni)
+                            accInv*fvm::ddt(Ni)
                             - fvm::laplacian(D_[i],Ni, "laplacian(D,Nin)")
                             + fvm::SuSp((-Sy_[i]*plasmaConstants::A/W(i)/Ni), Ni)
                         );
@@ -816,9 +823,16 @@ inline Foam::scalar Foam::mixed<ThermoType>::correct
                                 nonOrth++
                             )
                             {
+                                // timeAcceleration > 1 in the species dictionary scales the time derivative of
+                                // a slow neutral species by 1/timeAcceleration; the steady state is unchanged
+                                const dimensionedScalar accInv
+                                (
+                                    "accInv", dimless,
+                                    1.0/IOdictionary::subDict(species()[i]).lookupOrDefault<scalar>("timeAcceleration", 1.0)
+                                );
                                 tmp<fvScalarMatrix> NnEqn
                                 (
-                                    fvm::ddt(Ni)
+                                    accInv*fvm::ddt(Ni)
                                   - fvm::laplacian(D_[i],Ni, "laplacian(D,Nin)")
                                   + gasConvection(Ni, "div(phiGas,Nin)")
                                   - chemistry.RR(i)*plasmaConstants::A/W(i)
