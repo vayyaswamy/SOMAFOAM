@@ -165,6 +165,20 @@ Foam::scalar Foam::efullImplicit::correct
                                     - eeSource_SuSp*TeC;
 
 
+        // Electron energy carried to the walls in a global model (zeroD
+        // with zeroDWall), W/m^3
+        if
+        (
+            TeC.mesh().foundObject<volScalarField>("electronWallEnergyLoss")
+        )
+        {
+            eeSource_Su +=
+                TeC.mesh().lookupObject<volScalarField>
+                (
+                    "electronWallEnergyLoss"
+                );
+        }
+
        const volScalarField& Ne = mspm().N(eIndex_);
 
         const volScalarField eConductivity
