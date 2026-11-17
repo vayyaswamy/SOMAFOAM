@@ -52,7 +52,10 @@ if (prolongCentres.valid())
         }
     }
 
-    if (nFamilies > 0)
+    // All processors enter together: correctBoundaryConditions below
+    // exchanges processor-patch values, also on processors where no cell
+    // was refined
+    if (returnReduce(nFamilies, sumOp<label>()) > 0)
     {
         forAll(prolongGradLogN, i)
         {

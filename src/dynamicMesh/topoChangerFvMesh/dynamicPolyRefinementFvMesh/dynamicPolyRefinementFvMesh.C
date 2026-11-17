@@ -364,7 +364,13 @@ bool Foam::dynamicPolyRefinementFvMesh::update()
                 << "since no cells were selected." << endl;
         }
 
-        return topoChangeMap->morphing();
+        // The same answer on all processors: a processor whose cells did not
+        // change still has to take part in the collective operations that
+        // the solver performs after a change of the mesh
+        bool morphing = topoChangeMap->morphing();
+        reduce(morphing, orOp<bool>());
+
+        return morphing;
     }
     else
     {
