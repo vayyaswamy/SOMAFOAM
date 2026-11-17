@@ -92,8 +92,27 @@ void Foam::polyMesh::calcDirections() const
     {
         globalEmptyDirVec /= mag(globalEmptyDirVec);
 
-        // Check if all processors see the same 2-D from empty patches
-        if (mag(globalEmptyDirVec - emptyDirVec) > SMALL)
+        // Check if all processors see the same 2-D from empty patches.
+        // Compare the empty directions with the threshold used below for
+        // solutionD, not the normalised vectors to SMALL: faces of an empty
+        // patch split by mesh refinement have round-off in-plane area
+        // components, so the vectors of different processors differ by more
+        // than SMALL although the empty direction is the same.
+        bool differentDirections = false;
+
+        for (direction cmpt = 0; cmpt < vector::nComponents; cmpt++)
+        {
+            if
+            (
+                (emptyDirVec[cmpt] > 1e-6)
+             != (globalEmptyDirVec[cmpt] > 1e-6)
+            )
+            {
+                differentDirections = true;
+            }
+        }
+
+        if (differentDirections)
         {
             FatalErrorIn
             (
