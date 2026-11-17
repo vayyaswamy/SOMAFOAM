@@ -26,7 +26,7 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 
 | Paper case | Directory | Reference |
 |---|---|---|
-| Manufactured solution, order of accuracy | `verification/manufacturedSolution2D` (planned) | exact |
+| Manufactured solution, order of accuracy | `verification/manufacturedSolution2D` | manufactured solution; second order on a uniform mesh, first order on a distorted one |
 | Moving ionization front, adaptive refinement | `verification/ionizationFront1D` (planned) | traveling wave |
 | Gas flow: advection-diffusion, channel start-up, transient Poiseuille profile | `flow/advectionDiffusion`, `flow/channelStartup`, `flow/channelStartupProfile` | analytic |
 | Flowing afterglow | `flow/flowingAfterglow` (planned) | eigenfunction series |

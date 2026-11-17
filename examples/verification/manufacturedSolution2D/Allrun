@@ -1,0 +1,33 @@
+#!/bin/sh
+# Manufactured solution in 2D (paper case V1): the potential, the ion density
+# and the electron energy density on four meshes, uniform and distorted, with
+# the Scharfetter-Gummel flux and with the fvSchemes discretisation, and the
+# observed order of the errors (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+AMPLITUDE=0.06          # distortion of the mesh, see distortMesh.py
+
+for mesh in uniform distorted
+do
+    for scheme in scharfetterGummel fvSchemes
+    do
+        for n in 16 32 64 128
+        do
+            dir=runs/${mesh}_${scheme}_$n
+            rm -rf $dir
+            mkdir -p runs
+            cp -r base $dir
+            sed -i "s/NCELLS/$n/g" $dir/constant/polyMesh/blockMeshDict
+            sed -i "s/^fluxScheme .*/fluxScheme      $scheme;/" $dir/system/mmsDict
+            blockMesh -case $dir > $dir/log.blockMesh 2>&1 || exit 1
+            if [ $mesh = distorted ]
+            then
+                python3 distortMesh.py $dir $AMPLITUDE || exit 1
+            fi
+            checkMesh -case $dir > $dir/log.checkMesh 2>&1
+            mmsPlasma2D -case $dir > $dir/log.mmsPlasma2D 2>&1 || exit 1
+        done
+    done
+done
+
+python3 verify.py runs --plot runs/mmsOrder.pdf

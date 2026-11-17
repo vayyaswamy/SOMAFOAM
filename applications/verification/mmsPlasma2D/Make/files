@@ -1,0 +1,3 @@
+mmsPlasma2D.C
+
+EXE = $(FOAM_APPBIN)/mmsPlasma2D

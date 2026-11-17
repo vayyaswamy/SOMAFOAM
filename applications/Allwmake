@@ -5,6 +5,7 @@ set -x
 
 wmake plasmaMultiRegionFoam
 wmake somaFoam
+wmake verification/mmsPlasma2D
 wmake all mesh
 wmake all miscellaneous
 wmake all parallelProcessing
