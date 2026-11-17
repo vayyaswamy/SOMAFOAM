@@ -19,6 +19,7 @@ mu = 2.09e-5 Pa s and Pr = 2/3.
 |---|---|---|
 | `advectionDiffusion` | steady flow (`rhoSimpleFoam` equations) and the transport of a species by the gas: metastables in a uniform flow U = 1 m/s from the inlet (N = 1e16 m^-3) to the outlet (N = 1e10 m^-3), D = 4.7e-3 m2/s, Peclet number 4.25 | N = N0 + (NL - N0)(exp(Pe x/L) - 1)/(exp(Pe) - 1); error 6e-5 |
 | `channelStartup` | transient momentum (`rhoPimpleFoam` equations): gas at rest accelerated by a uniform force f = 0.418 N/m3 along the walls (`bodyForce`), periodic along the flow | away from the walls U = f t/rho, 1.955e-5 m/s at 0.1 microseconds; error 5e-6 |
+| `channelStartupProfile` | the same flow run to 4 ms with a time step of 1 microsecond, so that the viscous layers grow across the gap | full profile of the impulsively started plane Poiseuille flow, u = f x(L-x)/(2 mu) minus its Fourier series in odd modes decaying as exp(-n^2 pi^2 nu t/L^2), at 1, 2, 3 and 4 ms; error below 1e-2 of fL^2/(8 mu) |
 
 Run `./Allrun` in a case directory: it makes the mesh, runs `somaFoam` and
 compares the result with the analytic solution (`verify.py`), printing the

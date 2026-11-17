@@ -1,6 +1,6 @@
 """Compare a gas-flow verification case (examples/flow) with its analytic solution.
 
-    python3 verify.py <channelStartup|advectionDiffusion> <case directory>
+    python3 verify.py <channelStartup|channelStartupProfile|advectionDiffusion> <case directory>
 """
 import math, os, re, sys
 
@@ -50,6 +50,25 @@ if case == "channelStartup":
     exact = [f * float(os.path.basename(t)) / rho] * NX
     ok = report("U_y, uniformly accelerated gas (core)", [x[i] for i in core], [U[i][1] for i in core],
                 [exact[i] for i in core], exact[0], 1e-3)
+elif case == "channelStartupProfile":
+    # Impulsively started plane Poiseuille flow between no-slip walls at x = 0 and L,
+    # driven by a uniform force f from rest:
+    # u = f/(2 mu) x (L - x) - sum_{n odd} 4 f L^2/(mu pi^3 n^3) sin(n pi x/L) exp(-n^2 pi^2 nu t/L^2)
+    f, mu = 0.418, 2.09e-5
+    nu = mu / rho
+    umax = f * L * L / (8 * mu)
+    times = sorted([d for d in os.listdir(d) if re.fullmatch(r"[0-9.eE+-]+", d) and float(d) > 0], key=float)
+    ok = True
+    for tt in times:
+        tv = float(tt)
+        U = internal(os.path.join(d, tt, "U"), vector=True)[:NX]
+        ex = []
+        for xi in x:
+            s = sum(4 * f * L * L / (mu * math.pi**3 * n**3) * math.sin(n * math.pi * xi / L)
+                    * math.exp(-(n * math.pi)**2 * nu * tv / L**2) for n in range(1, 400, 2))
+            ex.append(f / (2 * mu) * xi * (L - xi) - s)
+        ok &= report(f"U_y at t = {tv*1e3:g} ms, transient Poiseuille flow", x, [u[1] for u in U], ex, umax, 1e-2)
+    print("PASS" if ok else "FAIL")
 elif case == "heatingStartup":
     Q, cp = 1e4, 520.3
     cv = cp - R / W

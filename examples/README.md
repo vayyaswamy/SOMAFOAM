@@ -28,7 +28,7 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 |---|---|---|
 | Manufactured solution, order of accuracy | `verification/manufacturedSolution2D` (planned) | exact |
 | Moving ionization front, adaptive refinement | `verification/ionizationFront1D` (planned) | traveling wave |
-| Gas flow: advection-diffusion, channel start-up | `flow/advectionDiffusion`, `flow/channelStartup` | analytic |
+| Gas flow: advection-diffusion, channel start-up, transient Poiseuille profile | `flow/advectionDiffusion`, `flow/channelStartup`, `flow/channelStartupProfile` | analytic |
 | Flowing afterglow | `flow/flowingAfterglow` (planned) | eigenfunction series |
 | Inductive field in a uniform plasma | `icp/skinEffectCylinder`, `icp/skinEffectSlab` (planned) | Bessel and skin-depth solutions |
 | Serial and parallel adaptive runs | `plasma/2DAdaptiveMeshArgon` | identical results |
