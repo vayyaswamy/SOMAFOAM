@@ -37,3 +37,7 @@ log.wmake*
 *.orig_*
 *.noAccel
 *.fixedInterval
+
+# Run directories and logs of scripts/somafoam
+/runs/
+/logs/

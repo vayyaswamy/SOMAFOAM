@@ -12,6 +12,7 @@ returned a non-zero code or timed out).
     python3 test/runExamples.py flow icp        # examples whose path contains flow or icp
     python3 test/runExamples.py --short         # SOMAFOAM_TEST_SHORT=1 for Allrun
     python3 test/runExamples.py --jobs 4 --timeout 3600 --keep
+    python3 test/runExamples.py --scratch /scratch/$USER/tests   # where the cases run
 
 The source environment (etc/bashrc) must be loaded. The summary is printed and
 written to test/results.json.
@@ -73,6 +74,8 @@ def main():
     ap.add_argument("--jobs", type=int, default=1)
     ap.add_argument("--timeout", type=float, default=7200.0, help="seconds per case")
     ap.add_argument("--keep", action="store_true", help="keep the scratch directory")
+    ap.add_argument("--scratch", default=os.environ.get("SOMAFOAM_SCRATCH"),
+                    help="parent directory of the test runs (default $SOMAFOAM_SCRATCH or /tmp)")
     args = ap.parse_args()
 
     cases = [c for c in find_cases() if not args.patterns or any(p in c for p in args.patterns)]
@@ -81,7 +84,9 @@ def main():
     if not shutil.which("somaFoam"):
         print("somaFoam not found: load etc/bashrc first"); return 2
 
-    scratch = tempfile.mkdtemp(prefix="somafoam_tests_")
+    if args.scratch:
+        os.makedirs(args.scratch, exist_ok=True)
+    scratch = tempfile.mkdtemp(prefix="somafoam_tests_", dir=args.scratch)
     with ThreadPoolExecutor(max_workers=args.jobs) as ex:
         results = list(ex.map(lambda c: run_case(c, args, scratch), cases))
 

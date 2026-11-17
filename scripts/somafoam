@@ -1,0 +1,432 @@
+#!/usr/bin/env python3
+"""somafoam: build SOMAFOAM, run its examples and tests, and submit them to SLURM.
+
+    somafoam build [-j N]                 build everything (log in logs/)
+    somafoam list                         list the examples and which are tests
+    somafoam run CASE [options]           copy an example to a run directory and run it
+    somafoam test [PATTERN ...] [opts]    run the tests (examples with an Allrun) and report PASS/FAIL
+    somafoam clean DIR                    remove the results of a run, keep its inputs
+    somafoam submit build|run|test ...    the same commands as a SLURM batch job
+    somafoam env                          show the environment that the commands use
+
+CASE is a directory under examples/ (for example plasma/2DAdaptiveMeshArgon) or any
+case directory. The environment (etc/bashrc and the site file in scripts/sites/) is
+loaded by the command itself, so nothing has to be sourced first. See
+doc/USER_GUIDE.md for the full description.
+"""
+import argparse, datetime, glob, os, re, shlex, shutil, socket, subprocess, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+EXAMPLES = os.path.join(ROOT, "examples")
+SITES = os.path.join(ROOT, "scripts", "sites")
+LOGS = os.path.join(ROOT, "logs")
+
+
+# --------------------------------------------------------------------------- environment
+
+def site_name():
+    """Site from SOMAFOAM_SITE, or detected from the host or SLURM cluster name."""
+    s = os.environ.get("SOMAFOAM_SITE")
+    if s:
+        return s
+    cluster = os.environ.get("SLURM_CLUSTER_NAME", "")
+    for name in (cluster, socket.getfqdn(), socket.gethostname()):
+        for f in sorted(glob.glob(os.path.join(SITES, "*.sh"))):
+            n = os.path.basename(f)[:-3]
+            if n != "default" and n in name.lower():
+                return n
+    if shutil.which("scontrol"):
+        try:
+            out = subprocess.run(["scontrol", "show", "config"], capture_output=True,
+                                 text=True, timeout=20).stdout
+            m = re.search(r"ClusterName\s*=\s*(\S+)", out)
+            if m and os.path.isfile(os.path.join(SITES, m.group(1) + ".sh")):
+                return m.group(1)
+        except Exception:
+            pass
+    return "default"
+
+
+def site_file():
+    f = os.path.join(SITES, site_name() + ".sh")
+    return f if os.path.isfile(f) else os.path.join(SITES, "default.sh")
+
+
+def site_value(key, default):
+    """Read KEY=value from the site file (used for SLURM defaults)."""
+    try:
+        for line in open(site_file()):
+            m = re.match(r"\s*(?:export\s+)?%s=['\"]?([^'\"\s#]*)" % key, line)
+            if m:
+                return m.group(1)
+    except OSError:
+        pass
+    return default
+
+
+def env_prefix(with_foam=True):
+    """Shell commands that load the site modules and the SOMAFOAM environment."""
+    p = "source %s >/dev/null 2>&1; " % shlex.quote(site_file())
+    if with_foam:
+        p += "source %s >/dev/null 2>&1; " % shlex.quote(os.path.join(ROOT, "etc", "bashrc"))
+    return p
+
+
+def sh(cmd, cwd, log=None, with_foam=True, echo=True):
+    """Run a shell command inside the environment, optionally logging to a file."""
+    full = env_prefix(with_foam) + cmd
+    if echo:
+        print("  $ " + cmd + (("   > " + os.path.relpath(log, cwd)) if log else ""), flush=True)
+    if log:
+        with open(log, "w") as f:
+            r = subprocess.run(["bash", "-c", full], cwd=cwd, stdout=f, stderr=subprocess.STDOUT)
+    else:
+        r = subprocess.run(["bash", "-c", full], cwd=cwd)
+    return r.returncode
+
+
+def tail(path, n=15):
+    try:
+        lines = open(path, errors="replace").read().splitlines()
+        return "\n".join("    " + l for l in lines[-n:])
+    except OSError:
+        return ""
+
+
+# --------------------------------------------------------------------------- cases
+
+def find_examples():
+    out = []
+    for d, dirs, files in os.walk(EXAMPLES):
+        dirs[:] = [x for x in dirs if not (x.startswith("processor") or x in ("0", "constant", "system", "reference", "mechanism", "gmsh"))]
+        if os.path.isfile(os.path.join(d, "system", "controlDict")):
+            out.append(os.path.relpath(d, EXAMPLES))
+    return sorted(out)
+
+
+def resolve_case(name):
+    for p in (name, os.path.join(EXAMPLES, name)):
+        if os.path.isfile(os.path.join(p, "system", "controlDict")):
+            return os.path.abspath(p)
+    hits = [c for c in find_examples() if name.lower() in c.lower()]
+    if len(hits) == 1:
+        return os.path.join(EXAMPLES, hits[0])
+    if hits:
+        sys.exit("'%s' matches several examples:\n  %s" % (name, "\n  ".join(hits)))
+    sys.exit("no case '%s' (see: somafoam list)" % name)
+
+
+def application(case):
+    s = open(os.path.join(case, "system", "controlDict")).read()
+    m = re.search(r"^\s*application\s+(\w+)\s*;", s, re.M)
+    return m.group(1) if m else "somaFoam"
+
+
+def dielectric_regions(case):
+    return sorted(os.path.basename(d) for d in glob.glob(os.path.join(case, "constant", "dielectric_*"))
+                  if os.path.isdir(d))
+
+
+def first_line(path):
+    try:
+        for l in open(path):
+            l = l.strip().lstrip("#").strip()
+            if l:
+                return l
+    except OSError:
+        pass
+    return ""
+
+
+def describe(case):
+    rel = os.path.relpath(case, EXAMPLES)
+    test = os.path.isfile(os.path.join(case, "Allrun"))
+    title = first_line(os.path.join(case, "README.md"))
+    return rel, ("test" if test else "example"), application(case), title
+
+
+def plan_steps(case, np_):
+    """The commands that run a case without an Allrun, in order."""
+    steps = []
+    has_mesh = os.path.isfile(os.path.join(case, "constant", "polyMesh", "faces")) or \
+        os.path.isfile(os.path.join(case, "constant", "polyMesh", "faces.gz"))
+    regions = dielectric_regions(case)
+    if os.path.isfile(os.path.join(case, "Allmesh")):
+        steps.append(("Allmesh", "bash ./Allmesh"))
+    elif os.path.isfile(os.path.join(case, "prepareCase")):
+        steps.append(("prepareCase", "bash ./prepareCase %d" % len(regions)))
+    elif not has_mesh and os.path.isfile(os.path.join(case, "system", "blockMeshDict")):
+        steps.append(("blockMesh", "blockMesh"))
+    if os.path.isfile(os.path.join(case, "system", "setExpressionFieldsDict")):
+        steps.append(("setExpressionFields", "setExpressionFields"))
+    app = application(case)
+    if np_ > 1:
+        steps.append(("decomposePar", "decomposePar -force"))
+        for r in regions:
+            steps.append(("decomposePar." + r, "decomposePar -force -region " + r))
+        steps.append((app, "mpirun -np %d %s -parallel" % (np_, app)))
+    else:
+        steps.append((app, app))
+    return steps
+
+
+def set_end_time(case, t):
+    p = os.path.join(case, "system", "controlDict")
+    s = open(p).read()
+    s, n = re.subn(r"^(\s*endTime\s+)[^;]+;", r"\g<1>%s;" % t, s, flags=re.M)
+    if not n:
+        sys.exit("no endTime entry in " + p)
+    open(p, "w").write(s)
+
+
+def set_decomposition(case, np_):
+    p = os.path.join(case, "system", "decomposeParDict")
+    if not os.path.isfile(p):
+        sys.exit("parallel run needs system/decomposeParDict in " + case)
+    s = open(p).read()
+    s = re.sub(r"^(\s*numberOfSubdomains\s+)\d+\s*;", r"\g<1>%d;" % np_, s, flags=re.M)
+    if re.search(r"^\s*method\s+simple\s*;", s, re.M):
+        s = re.sub(r"^(\s*method\s+)simple\s*;", r"\g<1>scotch;", s, flags=re.M)
+    open(p, "w").write(s)
+
+
+# --------------------------------------------------------------------------- commands
+
+def cmd_build(a):
+    os.makedirs(LOGS, exist_ok=True)
+    log = os.path.join(LOGS, "build-%s.log" % datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    jobs = a.jobs or int(os.environ.get("SLURM_CPUS_PER_TASK", 0)) or os.cpu_count() or 1
+    print("Building SOMAFOAM in %s with %d processes (site %s)" % (ROOT, jobs, site_name()))
+    print("Log: %s" % log)
+    rc = sh("export WM_NCOMPPROCS=%d; ./install.sh" % jobs, ROOT, log=log, with_foam=False)
+    # check the main products rather than trusting the return code of the scripts
+    check = env_prefix() + 'ls "$FOAM_APPBIN/somaFoam" "$FOAM_LIBBIN/libplasmaCookBook.so" "$FOAM_APPBIN/blockMesh"'
+    ok = subprocess.run(["bash", "-c", check], cwd=ROOT, capture_output=True).returncode == 0
+    errors = [l for l in open(log, errors="replace") if re.search(r"(^|\s)(error|Error):", l)]
+    if ok:
+        print("Build finished: somaFoam, blockMesh and libplasmaCookBook are installed.")
+        if errors:
+            print("%d lines of the log contain 'error:'; check them with  grep -n 'error:' %s" % (len(errors), log))
+        return 0
+    print("Build FAILED (install.sh returned %d). First errors:" % rc)
+    print("".join("    " + l for l in errors[:15]) or tail(log))
+    return 1
+
+
+def cmd_list(a):
+    rows = [describe(os.path.join(EXAMPLES, c)) for c in find_examples()]
+    w = max(len(r[0]) for r in rows)
+    print("%-*s  %-7s  %-20s  %s" % (w, "case", "kind", "solver", "description"))
+    for r in rows:
+        print("%-*s  %-7s  %-20s  %s" % (w, r[0], r[1], r[2], r[3][:70]))
+    print("\ntest = has an Allrun that compares with a reference and prints PASS or FAIL.")
+    print("Run one with  somafoam run CASE ; all tests with  somafoam test")
+    return 0
+
+
+def run_dir_for(case, a):
+    base = a.dir or os.environ.get("SOMAFOAM_RUN_DIR") or os.path.join(os.getcwd(), "runs")
+    name = os.path.relpath(case, EXAMPLES).replace(os.sep, "_") if case.startswith(EXAMPLES) else os.path.basename(case)
+    return os.path.join(os.path.abspath(base), name + (("_" + a.tag) if a.tag else ""))
+
+
+def cmd_run(a):
+    src = resolve_case(a.case)
+    dst = src if a.in_place else run_dir_for(src, a)
+    np_ = a.np
+    if not a.in_place:
+        if os.path.exists(dst):
+            if not a.force:
+                sys.exit("%s exists; use --force to replace it or --tag NAME for a second copy" % dst)
+            shutil.rmtree(dst)
+        if not a.dry_run:
+            shutil.copytree(src, dst, symlinks=True,
+                            ignore=shutil.ignore_patterns("processor*", "log.*", "__pycache__"))
+            # examples may call shared scripts one level up (examples/flow/verify.py)
+            pdst = os.path.dirname(dst)
+            if src.startswith(EXAMPLES):
+                for f in os.listdir(os.path.dirname(src)):
+                    p = os.path.join(os.path.dirname(src), f)
+                    if os.path.isfile(p) and f.endswith(".py") and not os.path.exists(os.path.join(pdst, f)):
+                        shutil.copy2(p, pdst)
+    allrun = os.path.isfile(os.path.join(src, "Allrun")) and not a.steps and np_ <= 1
+    steps = [("Allrun", "bash ./Allrun")] if allrun else plan_steps(src, np_)
+    print("Case     %s" % (os.path.relpath(src, ROOT) if src.startswith(ROOT) else src))
+    print("Run dir  %s" % dst)
+    if a.end_time:
+        print("endTime  %s (changed in the run copy)" % a.end_time)
+    if a.dry_run:
+        print("Steps:")
+        for _, c in steps:
+            print("  " + c)
+        return 0
+    if a.end_time:
+        set_end_time(dst, a.end_time)
+    if np_ > 1:
+        set_decomposition(dst, np_)
+        for r in dielectric_regions(dst):
+            rp = os.path.join(dst, "system", r, "decomposeParDict")
+            if os.path.isfile(rp):
+                shutil.copy2(os.path.join(dst, "system", "decomposeParDict"), rp)
+    if allrun and a.short:
+        os.environ["SOMAFOAM_TEST_SHORT"] = "1"
+    for name, c in steps:
+        log = os.path.join(dst, "log." + name.split()[0])
+        rc = sh(c, dst, log=log)
+        if rc != 0:
+            print("\nStep '%s' failed (code %d). End of %s:\n%s" % (c, rc, log, tail(log)))
+            return 1
+        if name == "Allrun":
+            verdict = [l.strip() for l in open(log, errors="replace") if l.strip() in ("PASS", "FAIL")]
+            print(tail(log, 12))
+            if verdict:
+                print("\nResult: %s" % ("FAIL" if "FAIL" in verdict else "PASS"))
+                return 1 if "FAIL" in verdict else 0
+    print("\nFinished. Results and logs are in %s" % dst)
+    return 0
+
+
+def cmd_test(a):
+    args = [shlex.quote(p) for p in a.patterns]
+    for flag in ("list", "short", "keep"):
+        if getattr(a, flag):
+            args.append("--" + flag)
+    args += ["--jobs", str(a.jobs), "--timeout", str(a.timeout)]
+    scratch = a.scratch or os.environ.get("SOMAFOAM_SCRATCH")
+    if scratch:
+        args += ["--scratch", shlex.quote(os.path.abspath(scratch))]
+    return 1 if sh("python3 test/runExamples.py " + " ".join(args), ROOT, echo=False) else 0
+
+
+def cmd_clean(a):
+    d = os.path.abspath(a.dir)
+    if not os.path.isfile(os.path.join(d, "system", "controlDict")):
+        sys.exit("%s is not a case directory" % d)
+    if d.startswith(EXAMPLES) and not a.force:
+        sys.exit("%s is inside examples/; examples are cleaned with --force only" % d)
+    removed = []
+    for e in os.listdir(d):
+        p = os.path.join(d, e)
+        is_time = re.fullmatch(r"[0-9.]+(e-?[0-9]+)?", e) and e != "0" and os.path.isdir(p)
+        if is_time or e.startswith("processor") or e.startswith("log.") or e in ("postProcessing", "electrodes", "cellProbe", "probes"):
+            removed.append(e)
+            shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
+    print("removed %d entries from %s" % (len(removed), d))
+    return 0
+
+
+def cmd_env(a):
+    print("SOMAFOAM root  %s" % ROOT)
+    print("site           %s  (%s)" % (site_name(), os.path.relpath(site_file(), ROOT)))
+    print("run dir        %s" % (os.environ.get("SOMAFOAM_RUN_DIR") or os.path.join(os.getcwd(), "runs")))
+    print("test scratch   %s" % (os.environ.get("SOMAFOAM_SCRATCH") or "system temporary directory"))
+    print("SLURM defaults partition=%s time=%s" % (site_value("SLURM_PARTITION", "?"), site_value("SLURM_TIME", "?")))
+    sh('echo "somaFoam       $(command -v somaFoam || echo not built)"; '
+       'echo "mpirun         $(command -v mpirun || echo not found)"; echo "python3        $(python3 --version 2>&1)"',
+       ROOT, echo=False)
+    return 0
+
+
+def cmd_submit(a, rest):
+    if a.what not in ("build", "run", "test"):
+        sys.exit("submit build|run|test [arguments of that command]")
+    part = a.partition or site_value("SLURM_PARTITION", "")
+    time_ = a.time or site_value("SLURM_TIME", "06:00:00")
+    cpus = a.cpus or int(site_value("SLURM_CPUS", "16"))
+    np_ = 1
+    if a.what == "run" and "--np" in rest:
+        np_ = int(rest[rest.index("--np") + 1])
+    os.makedirs(LOGS, exist_ok=True)
+    cmd = [os.path.join(ROOT, "scripts", "somafoam"), a.what] + rest
+    if a.what == "build" and "-j" not in rest:
+        cmd += ["-j", str(cpus)]
+    job = "sf-" + a.what + ("-" + os.path.basename(rest[0].rstrip("/")) if a.what == "run" and rest else "")
+    lines = ["#!/bin/bash",
+             "#SBATCH --job-name=%s" % job[:40],
+             "#SBATCH --nodes=1",
+             "#SBATCH --ntasks=%d" % max(np_, 1),
+             "#SBATCH --cpus-per-task=%d" % (cpus if np_ <= 1 else 1),
+             "#SBATCH --time=%s" % time_,
+             "#SBATCH --output=%s/%%x-%%j.out" % LOGS]
+    if part:
+        lines.append("#SBATCH --partition=%s" % part)
+    for x in a.sbatch or []:
+        lines.append("#SBATCH " + x)
+    lines += ["", "cd %s" % shlex.quote(os.getcwd()),
+              "echo \"start $(date)  host $(hostname)\"",
+              " ".join(shlex.quote(c) for c in cmd),
+              "rc=$?", "echo \"end $(date)  exit $rc\"", "exit $rc", ""]
+    script = "\n".join(lines)
+    path = os.path.join(LOGS, "%s-%s.slurm" % (job, datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
+    open(path, "w").write(script)
+    if a.print_only:
+        print(script)
+        return 0
+    r = subprocess.run(["sbatch", path], capture_output=True, text=True)
+    print((r.stdout + r.stderr).strip())
+    if r.returncode == 0:
+        print("job script %s\noutput     %s/%s-<jobid>.out   (squeue -u $USER to follow)" % (path, LOGS, job[:40]))
+    return r.returncode
+
+
+# --------------------------------------------------------------------------- main
+
+def main():
+    ap = argparse.ArgumentParser(prog="somafoam", description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd")
+
+    p = sub.add_parser("build", help="build wmake, the libraries and the applications")
+    p.add_argument("-j", "--jobs", type=int, help="parallel compile processes (default: all cores)")
+
+    sub.add_parser("list", help="list the examples")
+
+    p = sub.add_parser("run", help="copy an example to a run directory and run it")
+    p.add_argument("case")
+    p.add_argument("--dir", help="parent of the run directory (default $SOMAFOAM_RUN_DIR or ./runs)")
+    p.add_argument("--tag", help="suffix for the run directory, to keep several runs of one case")
+    p.add_argument("--np", type=int, default=1, help="run in parallel on N processes")
+    p.add_argument("--end-time", help="override endTime in the copy (quick checks)")
+    p.add_argument("--short", action="store_true", help="SOMAFOAM_TEST_SHORT=1 for an Allrun")
+    p.add_argument("--steps", action="store_true", help="ignore Allrun and run the standard steps")
+    p.add_argument("--in-place", action="store_true", help="run in the case directory itself")
+    p.add_argument("--force", action="store_true", help="replace an existing run directory")
+    p.add_argument("--dry-run", action="store_true", help="show the steps without running them")
+
+    p = sub.add_parser("test", help="run the tests and report PASS/FAIL")
+    p.add_argument("patterns", nargs="*")
+    p.add_argument("--list", action="store_true")
+    p.add_argument("--short", action="store_true")
+    p.add_argument("--keep", action="store_true", help="keep the run directories of the tests")
+    p.add_argument("--jobs", type=int, default=1)
+    p.add_argument("--timeout", type=float, default=7200.0)
+    p.add_argument("--scratch", help="where the tests run (default $SOMAFOAM_SCRATCH or /tmp)")
+
+    p = sub.add_parser("clean", help="remove results from a run directory")
+    p.add_argument("dir")
+    p.add_argument("--force", action="store_true")
+
+    sub.add_parser("env", help="show the environment")
+
+    p = sub.add_parser("submit", help="submit build, run or test as a SLURM job")
+    p.add_argument("what")
+    p.add_argument("--partition")
+    p.add_argument("--time")
+    p.add_argument("--cpus", type=int)
+    p.add_argument("--sbatch", action="append", help="extra #SBATCH line, e.g. --sbatch=--mem=64G")
+    p.add_argument("--print", dest="print_only", action="store_true", help="show the job script, do not submit")
+
+    a, rest = ap.parse_known_args()
+    if a.cmd == "submit":
+        return cmd_submit(a, rest)
+    if rest:
+        ap.error("unrecognized arguments: " + " ".join(rest))
+    if not a.cmd:
+        ap.print_help()
+        return 0
+    return {"build": cmd_build, "list": cmd_list, "run": cmd_run, "test": cmd_test,
+            "clean": cmd_clean, "env": cmd_env}[a.cmd](a)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

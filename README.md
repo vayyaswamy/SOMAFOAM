@@ -10,28 +10,27 @@ Date:   Thu Apr 12 14:05:28 2018 +0100
 There were certain changes made to the foam-extend base depending on our needs.
 The code compiles on newer gcc versions (including 10.2.1)
 
-## Building
+## Building and running
 
-The repository contains sources only; compiled libraries and applications are
-machine-specific (compiler, glibc) and are built locally.
-
-Requirements: gcc/g++, make, flex and OpenMPI (with development headers).
-Tested on Debian 11 (gcc 10.2.1, OpenMPI 4.1.0).
+The repository contains sources only; libraries and applications are built on
+each machine. Requirements: gcc/g++, make, flex, Python 3 and OpenMPI with its
+development headers.
 
 ```
 git clone https://github.com/vayyaswamy/SOMAFOAM
 cd SOMAFOAM
-./install.sh            # builds wmake, all libraries and applications
+scripts/somafoam build                   # build everything (log in logs/)
+scripts/somafoam test                    # run the test cases, PASS/FAIL for each
+scripts/somafoam list                    # list the examples
+scripts/somafoam run zeroD/ArgonGlobal   # copy an example to ./runs and run it
+scripts/somafoam submit run plasma/2DAdaptiveMeshArgon --np 8   # same, as a SLURM job
 ```
 
-The libraries go to `lib/linux64GccDPOpt` and the applications to
-`bin/linux64GccDPOpt`. Before running, load the environment in each new shell:
-
-```
-source <path-to>/SOMAFOAM/etc/bashrc
-```
-
-Run the cases in `examples/plasma` with `somaFoam`.
+`scripts/somafoam` loads the environment itself. To use the applications
+directly, `source etc/bashrc` first. The **[user guide](doc/USER_GUIDE.md)**
+explains building, running, testing, clusters and post-processing; the
+reference manual [`doc/manual/somafoam_manual.pdf`](doc/manual/somafoam_manual.pdf)
+describes the equations, schemes and dictionary entries.
 
 ## Features
 
