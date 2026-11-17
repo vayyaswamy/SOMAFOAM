@@ -30,3 +30,18 @@ within 2 % of the peak in electron density (0.4 % RMS).
 
 To try two levels, set `maxRefinementLevel 2;` (the cell count can then reach
 36000) and consider `lowerRefineLevel 0.2; unrefineLevel 0.07;`.
+
+## Serial and parallel runs (test, paper case V8)
+
+`Allrun` runs the first 12 ns in serial and on 4 processes, in the
+directories `serial` and `parallel`, with the linear solvers converged to
+1e-13, and `compareParallel.py` compares the electrode current at every step.
+On the fixed mesh the two runs agreed to 4e-10 of the largest current. Parallel
+refinement keeps the 2:1 balance across processor boundaries and selected
+7419 cells at the first refinement against 7416 in serial, after which the
+currents agreed to 6e-5; the test passes below 1e-4. It took 18 s on Pinnacles.
+
+```
+somafoam test 2DAdaptiveMeshArgon                    # the test
+somafoam run plasma/2DAdaptiveMeshArgon --steps      # the full 0.1 us example
+```

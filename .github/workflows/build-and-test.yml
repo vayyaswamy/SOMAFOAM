@@ -1,0 +1,45 @@
+# Build SOMAFOAM on Ubuntu and run the short tests.
+# The full build takes 2-3 hours on the 4 cores of a GitHub runner, so it runs
+# on pushes to main and release branches, on pull requests and by hand.
+name: build-and-test
+
+on:
+  push:
+    branches: [main, "release-*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04          # gcc 11, OpenMPI 4.1
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install compilers, MPI and Python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential flex bison zlib1g-dev \
+               libopenmpi-dev openmpi-bin python3-numpy python3-matplotlib
+
+      - name: Build
+        run: scripts/somafoam build -j 4
+
+      - name: Upload the build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: logs/build-*.log
+
+      - name: Run the flow tests
+        env:
+          OMPI_MCA_rmaps_base_oversubscribe: "1"
+        run: scripts/somafoam test flow --short
+
+      - name: Upload the test summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test/results.json

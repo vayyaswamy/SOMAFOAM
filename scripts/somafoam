@@ -348,8 +348,9 @@ def cmd_submit(a, rest):
     lines = ["#!/bin/bash",
              "#SBATCH --job-name=%s" % job[:40],
              "#SBATCH --nodes=1",
-             "#SBATCH --ntasks=%d" % max(np_, 1),
-             "#SBATCH --cpus-per-task=%d" % (cpus if np_ <= 1 else 1),
+             # tests may start MPI runs, which need one task per process
+             "#SBATCH --ntasks=%d" % (cpus if a.what == "test" else max(np_, 1)),
+             "#SBATCH --cpus-per-task=%d" % (cpus if np_ <= 1 and a.what != "test" else 1),
              "#SBATCH --time=%s" % time_,
              "#SBATCH --output=%s/%%x-%%j.out" % LOGS]
     if part:

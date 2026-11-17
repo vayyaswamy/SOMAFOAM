@@ -1,0 +1,27 @@
+#!/bin/sh
+# Paper case V8: the same run in serial and on 4 processes, through two
+# changes of the adaptive mesh (12 ns), compared by compareParallel.py.
+# The linear solvers are converged to 1e-13 so that the runs differ by
+# round-off on a fixed mesh; the remaining difference comes from parallel
+# refinement, which can select a few more cells.
+cd ${0%/*} || exit 1
+
+endTime=1.2e-8
+for r in serial parallel
+do
+    rm -rf $r && mkdir $r && cp -r 0 constant system $r/
+    sed -i "s/^endTime .*/endTime         $endTime;/" $r/system/controlDict
+    sed -i "/^solvers/,/^}/s/^\(\s*\)relTol\s*0\(\.0\)\?;/\1tolerance 1e-13;\n\1relTol 0;\n\1maxIter 2000;/" \
+        $r/system/fvSolution
+done
+
+( cd serial \
+  && setExpressionFields > log.setExpressionFields 2>&1 \
+  && somaFoam > log.somaFoam 2>&1 ) || exit 1
+
+( cd parallel \
+  && setExpressionFields > log.setExpressionFields 2>&1 \
+  && decomposePar > log.decomposePar 2>&1 \
+  && mpirun -np 4 somaFoam -parallel > log.somaFoam 2>&1 ) || exit 1
+
+python3 compareParallel.py serial parallel --tol 1e-4

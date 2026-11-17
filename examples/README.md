@@ -31,7 +31,7 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 | Gas flow: advection-diffusion, channel start-up, transient Poiseuille profile | `flow/advectionDiffusion`, `flow/channelStartup`, `flow/channelStartupProfile` | analytic |
 | Flowing afterglow | `flow/flowingAfterglow` (planned) | eigenfunction series |
 | Inductive field in a uniform plasma | `icp/skinEffectCylinder`, `icp/skinEffectSlab` (planned) | Bessel and skin-depth solutions |
-| Serial and parallel adaptive runs | `plasma/2DAdaptiveMeshArgon` | identical results |
+| Serial and parallel adaptive runs | `plasma/2DAdaptiveMeshArgon` | serial run; round-off on a fixed mesh, 1e-4 in current with refinement |
 | Argon global model, steady and pulsed | `zeroD/ArgonGlobal`, `zeroD/ArgonPulsed` (planned) | published global models |
 | CF4/O2 chemistry | `zeroD/CF4O2` | Cantera |
 | Electron transport tables | `electronBoltzmann/Argon` | BOLSIG+ |
