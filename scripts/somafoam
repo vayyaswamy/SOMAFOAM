@@ -148,14 +148,16 @@ def describe(case):
 def plan_steps(case, np_):
     """The commands that run a case without an Allrun, in order."""
     steps = []
-    has_mesh = os.path.isfile(os.path.join(case, "constant", "polyMesh", "faces")) or \
-        os.path.isfile(os.path.join(case, "constant", "polyMesh", "faces.gz"))
+    pm = os.path.join(case, "constant", "polyMesh")
+    has_mesh = os.path.isfile(os.path.join(pm, "points")) or os.path.isfile(os.path.join(pm, "points.gz"))
+    has_dict = os.path.isfile(os.path.join(case, "system", "blockMeshDict")) or \
+        os.path.isfile(os.path.join(pm, "blockMeshDict"))
     regions = dielectric_regions(case)
     if os.path.isfile(os.path.join(case, "Allmesh")):
         steps.append(("Allmesh", "bash ./Allmesh"))
     elif os.path.isfile(os.path.join(case, "prepareCase")):
         steps.append(("prepareCase", "bash ./prepareCase %d" % len(regions)))
-    elif not has_mesh and os.path.isfile(os.path.join(case, "system", "blockMeshDict")):
+    elif not has_mesh and has_dict:
         steps.append(("blockMesh", "blockMesh"))
     if os.path.isfile(os.path.join(case, "system", "setExpressionFieldsDict")):
         steps.append(("setExpressionFields", "setExpressionFields"))
@@ -283,6 +285,8 @@ def cmd_run(a):
                 print("\nResult: %s" % ("FAIL" if "FAIL" in verdict else "PASS"))
                 return 1 if "FAIL" in verdict else 0
     print("\nFinished. Results and logs are in %s" % dst)
+    if np_ > 1:
+        print("The results are in processor*/; combine them with  reconstructPar  in that directory.")
     return 0
 
 
@@ -320,7 +324,7 @@ def cmd_env(a):
     print("site           %s  (%s)" % (site_name(), os.path.relpath(site_file(), ROOT)))
     print("run dir        %s" % (os.environ.get("SOMAFOAM_RUN_DIR") or os.path.join(os.getcwd(), "runs")))
     print("test scratch   %s" % (os.environ.get("SOMAFOAM_SCRATCH") or "system temporary directory"))
-    print("SLURM defaults partition=%s time=%s" % (site_value("SLURM_PARTITION", "?"), site_value("SLURM_TIME", "?")))
+    print("SLURM defaults partition=%s time=%s" % (site_value("SLURM_PARTITION", "?"), site_value("SLURM_TIME", "?")), flush=True)
     sh('echo "somaFoam       $(command -v somaFoam || echo not built)"; '
        'echo "mpirun         $(command -v mpirun || echo not found)"; echo "python3        $(python3 --version 2>&1)"',
        ROOT, echo=False)
