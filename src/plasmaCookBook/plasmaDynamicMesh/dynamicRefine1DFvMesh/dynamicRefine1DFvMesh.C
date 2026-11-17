@@ -959,6 +959,17 @@ Foam::dynamicRefine1DFvMesh::~dynamicRefine1DFvMesh()
 
 bool Foam::dynamicRefine1DFvMesh::update()
 {
+    // The cells are split and merged without the processor patches, so the
+    // refinement is serial only; a parallel run would leave the processor
+    // faces inconsistent or hang in the collective operations of the solver
+    if (Pstream::parRun())
+    {
+        FatalErrorIn("dynamicRefine1DFvMesh::update()")
+            << "dynamicRefine1DFvMesh runs in serial only. Run the 1D case "
+            << "without -parallel, or use dynamicPolyRefinementFvMesh in 2D "
+            << "and 3D." << exit(FatalError);
+    }
+
     // Re-read the dictionary so the controls can be changed during the run
     const dictionary refineDict
     (
