@@ -1,0 +1,11 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+# Mesh from the gmsh file needle.msh.gz (format 2.2), 316125 cells, with the
+# patches electrode, ground and symmetry and the front and back faces
+# otherfaces, which are made empty for the two-dimensional solution.
+gunzip -c needle.msh.gz > needle.msh
+gmshToFoam needle.msh > log.gmshToFoam 2>&1 || exit 1
+rm -f needle.msh
+sed -i "/otherfaces/,/}/s/type\( *\)patch;/type\1empty;/" constant/polyMesh/boundary
+grep -A2 otherfaces constant/polyMesh/boundary | grep -q empty || { echo "otherfaces is not empty"; exit 1; }

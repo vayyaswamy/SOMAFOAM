@@ -41,3 +41,11 @@ log.wmake*
 # Run directories and logs of scripts/somafoam
 /runs/
 /logs/
+
+# Mesh of 2DCurvedElectrodeReactor, made by its Allmesh from needle.msh.gz
+/examples/plasma/2DCurvedElectrodeReactor/needle.msh
+/examples/plasma/2DCurvedElectrodeReactor/constant/polyMesh/*
+!/examples/plasma/2DCurvedElectrodeReactor/constant/polyMesh/blockMeshDict
+
+# Version stamp written by wmake
+/.build
