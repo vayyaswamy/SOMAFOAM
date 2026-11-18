@@ -30,6 +30,7 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 | Moving ionization front, adaptive refinement | `verification/ionizationFront1D` (planned) | traveling wave |
 | Electron energy relaxation and energy budget | `verification/electronEnergyRelaxation0D` | exact relaxation; 1.6e-3 of the rise, first order in the step, budget to 1e-13 |
 | Electron avalanche in a uniform field | `verification/townsendAvalanche1D` | Gaussian solution; growth and drift to 2e-4, numerical diffusion v^2 dt/2 |
+| Coaxial capacitor with a dielectric layer, curved interface | `verification/coaxialDielectric2D` | logarithmic solution; second order, 2.9e-4 of the voltage |
 | Ambipolar decay of an afterglow | `verification/ambipolarDecay1D` | ambipolar diffusion; error falls with the Debye length and the cell size, 1.1 % on the finest run |
 | External circuit, RC charging of an empty gap | `verification/externalCircuitRC` | backward Euler and exact RC solutions; 2e-5 of the source |
 | Gas flow: advection-diffusion, channel start-up, transient Poiseuille profile | `flow/advectionDiffusion`, `flow/channelStartup`, `flow/channelStartupProfile` | analytic |
