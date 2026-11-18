@@ -41,15 +41,16 @@ def internal(path):
 x = [(i + 0.5) * L / NX for i in range(NX)]
 print(f"D_a = {Da:.5f} m2/s, tau_a = {tau:.4e} s")
 results = []
-for name in sorted(os.listdir(runs), key=lambda d: float(d.split("_")[1])):
+for name in sorted(os.listdir(runs), key=lambda d: (int(d.split("_")[3]), float(d.split("_")[1]))):
     run = os.path.join(runs, name)
-    n0 = float(name.split("_")[1])
+    n0, nx = float(name.split("_")[1]), int(name.split("_")[3])
+    x = [(i + 0.5) * L / nx for i in range(nx)]
     times = sorted((d for d in os.listdir(run) if re.fullmatch(r"[0-9.eE+-]+", d)), key=float)
     data = []
     for t in times:
         ne = internal(os.path.join(run, t, "electron"))
         ni = internal(os.path.join(run, t, "Arp1"))
-        data.append((float(t), sum(ne) * L / NX, sum(ni) * L / NX, ne, ni))
+        data.append((float(t), sum(ne) * L / nx, sum(ni) * L / nx, ne, ni))
     half = [d for d in data if d[0] >= data[-1][0] / 2]
     rate = math.log(half[0][2] / half[-1][2]) / (half[-1][0] - half[0][0])
     errRate = rate * tau - 1
@@ -59,33 +60,38 @@ for name in sorted(os.listdir(runs), key=lambda d: float(d.split("_")[1])):
     # Debye length at the mean density of the second half
     nmean = 0.5 * (max(half[0][4]) + max(half[-1][4]))
     lamD = math.sqrt(8.8541878e-12 * KB_E * Te / (nmean * 1.602176634e-19))
-    results.append((n0, lamD, errRate, errProfile, data))
-    print(f"n0 = {n0:.0e}: Debye length {lamD:.2e} m ({lamD/L:.1e} of L), decay rate {rate:.5e} 1/s, "
+    results.append((n0, lamD, errRate, errProfile, data, nx))
+    print(f"n0 = {n0:.0e}, {nx:4d} cells: Debye length {lamD:.2e} m ({lamD/L:.1e} of L), decay rate {rate:.5e} 1/s, "
           f"relative error {errRate:+.3e}, profile error {errProfile:.2e}")
 
-errs = [abs(r[2]) for r in results]
-ok = errs[-1] < 3e-2 and all(a > b for a, b in zip(errs, errs[1:]))
-if len(results) > 1:
-    p = math.log(errs[0] / errs[-1]) / math.log(results[0][1] / results[-1][1])
-    print(f"order of the decay-rate error in the Debye length: {p:.2f}")
+dens = [r for r in results if r[5] == 200]
+mesh = [r for r in results if r[0] == max(q[0] for q in results)]
+ed = [abs(r[2]) for r in dens]
+em = [abs(r[2]) for r in mesh]
+ok = all(a > b for a, b in zip(ed, ed[1:])) and all(a > b for a, b in zip(em, em[1:])) and em[-1] < 1e-2
+if len(mesh) > 1:
+    p = math.log(em[0] / em[-1]) / math.log(mesh[-1][5] / mesh[0][5])
+    print(f"order of the decay-rate error in the cell size at n0 = {mesh[0][0]:.0e}: {p:.2f}")
 
 if plot:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(7, 2.8))
-    data = results[-1][4]
+    data = mesh[-1][4]
     a1.semilogy([d[0] / tau for d in data], [d[2] / data[0][2] for d in data], "o", ms=3, mfc="none", label="ions")
     a1.semilogy([d[0] / tau for d in data], [d[1] / data[0][1] for d in data], "x", ms=3, label="electrons")
     a1.semilogy([d[0] / tau for d in data], [math.exp(-d[0] / tau) for d in data], "k-", lw=0.8, label="exp($-t/\\tau_a$)")
     a1.set_xlabel("$t/\\tau_a$")
     a1.set_ylabel("inventory / initial")
-    a1.set_title(f"(a) $n_0$ = {results[-1][0]:.0e} m$^{{-3}}$", fontsize=9)
+    a1.set_title(f"(a) $n_0$ = {mesh[-1][0]:.0e} m$^{{-3}}$, {mesh[-1][5]} cells", fontsize=9)
     a1.legend(frameon=False)
-    a2.loglog([r[1] / L for r in results], [abs(r[2]) for r in results], "o-", ms=4)
-    a2.set_xlabel("$\\lambda_\\mathrm{D}/L$")
+    a2.loglog([max(r[1], L / r[5]) / L for r in dens], ed, "o-", ms=4, label="200 cells, $n_0$ = 1e17 to 1e19")
+    a2.loglog([L / r[5] / L for r in mesh], em, "s--", ms=4, label="$n_0$ = 1e19, 200 to 800 cells")
+    a2.set_xlabel("max($\\lambda_\\mathrm{D}$, $\\Delta x$)/L")
     a2.set_ylabel("relative error of the decay rate")
-    a2.set_title("(b) error against the Debye length", fontsize=9)
+    a2.set_title("(b) error of the decay rate", fontsize=9)
+    a2.legend(frameon=False, fontsize=7)
     fig.tight_layout()
     fig.savefig(plot)
     print("wrote", plot)
