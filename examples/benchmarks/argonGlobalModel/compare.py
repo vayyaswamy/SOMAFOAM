@@ -107,6 +107,15 @@ if plot:
     a2.set_xlabel("pressure (mTorr)")
     a2.set_ylabel("$k_\\mathrm{B}T_\\mathrm{e}/e$ (V)")
     a2.set_title("(b) 300 W", fontsize=8)
+    from matplotlib.ticker import NullFormatter, NullLocator
+    for ax in (a1, a2):
+        ax.xaxis.set_minor_locator(NullLocator())
+        ax.xaxis.set_minor_formatter(NullFormatter())
+    a1.yaxis.set_minor_formatter(NullFormatter())
+    a1.set_xticks([100, 300, 1000])
+    a1.set_xticklabels(["100", "300", "1000"])
+    a2.set_xticks([3, 10, 30])
+    a2.set_xticklabels(["3", "10", "30"])
     fig.tight_layout()
     fig.savefig(plot)
     print("wrote", plot)
