@@ -27,7 +27,7 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 | Paper case | Directory | Reference |
 |---|---|---|
 | Manufactured solution, order of accuracy | `verification/manufacturedSolution2D` | manufactured solution; second order on a uniform mesh, first order on a distorted one |
-| Moving ionization front, adaptive refinement | `verification/ionizationFront1D` (planned) | traveling wave |
+| Adaptive refinement following a moving pulse | `verification/adaptiveFront1D` | Gaussian solution; 630 adaptive cells as accurate as 1000 uniform |
 | Electron energy relaxation and energy budget | `verification/electronEnergyRelaxation0D` | exact relaxation; 1.6e-3 of the rise, first order in the step, budget to 1e-13 |
 | Electron avalanche in a uniform field | `verification/townsendAvalanche1D` | Gaussian solution; growth and drift to 2e-4, numerical diffusion v^2 dt/2 |
 | Coaxial capacitor with a dielectric layer, curved interface | `verification/coaxialDielectric2D` | logarithmic solution; second order, 2.9e-4 of the voltage |
