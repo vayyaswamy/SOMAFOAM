@@ -21,7 +21,7 @@ uniform outside it, and B1 follows from the zero flux inside the wall
 
 `./Allrun` runs 160, 320 and 640 radial cells on a wedge of 0.25 degrees, on
 which the edges of the plasma and of the winding are faces, and 640 cells on
-wedges of 1 and 5 degrees. The whole run took about 2 min on one core.
+wedges of 1 and 5 degrees. The whole run took 8 s on one core.
 
 Results of 2026-11-17 on Pinnacles:
 
