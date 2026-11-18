@@ -17,7 +17,7 @@ do
     python3 makeCase.py $dir $nt $nd $ng || exit 1
     ( cd $dir && ./prepareCase 1 > log.prepareCase 2>&1 \
       && writeCellCentres -time 0 > log.writeCellCentres 2>&1 \
-      && writeCellCentres -time 0 -region dielectric_1 >> log.writeCellCentres 2>&1 \
+      && sh ../../dielectricCentres >> log.writeCellCentres 2>&1 \
       && somaFoam > log.somaFoam 2>&1 ) || exit 1
 done
 

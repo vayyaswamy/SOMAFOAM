@@ -1,0 +1,12 @@
+#!/bin/sh
+# Cell centres of the dielectric region, written to 0/dielectric_1: the
+# writeCellCentres of foam-extend has no -region option, so it runs on a
+# temporary case whose mesh is that of the region. Run in a case directory.
+rm -rf dcase
+mkdir -p dcase/constant dcase/system dcase/0
+ln -s ../../constant/dielectric_1/polyMesh dcase/constant/polyMesh
+cp system/controlDict dcase/system/
+cp system/dielectric_1/fvSchemes system/dielectric_1/fvSolution dcase/system/
+writeCellCentres -case dcase -time 0 || exit 1
+mv dcase/0/ccx dcase/0/ccy dcase/0/ccz 0/dielectric_1/
+rm -rf dcase
