@@ -4,9 +4,10 @@
 # exact Bessel solution, on three meshes (verify.py).
 cd ${0%/*} || exit 1    # run from this directory
 
-# radial cells and wedge angle [deg]; the 5 degree run shows the error of a
+# radial cells and wedge angle [deg]; with these numbers of cells the edges of
+# the plasma and of the winding are faces. The 5 degree run shows the error of a
 # flat-faced wedge, of the order of the square of the angle
-set -- 200 1  400 1  800 1  800 5
+set -- 160 1  320 1  640 1  640 5
 while [ $# -ge 2 ]
 do
     nr=$1; ang=$2; shift 2
