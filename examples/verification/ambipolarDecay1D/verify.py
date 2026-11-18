@@ -41,7 +41,7 @@ def internal(path):
 x = [(i + 0.5) * L / NX for i in range(NX)]
 print(f"D_a = {Da:.5f} m2/s, tau_a = {tau:.4e} s")
 results = []
-for name in sorted(os.listdir(runs), key=lambda d: (int(d.split("_")[3]), float(d.split("_")[1]))):
+for name in sorted((d for d in os.listdir(runs) if re.fullmatch(r"n0_[0-9.e+]+_nx_[0-9]+", d)), key=lambda d: (int(d.split("_")[3]), float(d.split("_")[1]))):
     run = os.path.join(runs, name)
     n0, nx = float(name.split("_")[1]), int(name.split("_")[3])
     x = [(i + 0.5) * L / nx for i in range(nx)]
