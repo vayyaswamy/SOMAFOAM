@@ -1,8 +1,8 @@
 """Write the wedge mesh and the solenoid of the icpSkinEffect case.
 
-    python3 makeCase.py <case> <radial cells>
+    python3 makeCase.py <case> <radial cells> [wedge angle, degrees, default 1]
 
-Axisymmetric wedge of 5 degrees about the z axis, from r = 1e-5 m (axis
+Axisymmetric wedge (1 degree by default) about the z axis, from r = 1e-5 m (axis
 patch, A = 0) to the conducting wall at r = 0.1 m in two blocks that meet at
 the edge of the plasma, r = 0.05 m, and 50 mm long with
 zero-gradient ends, so that the solenoid of 20 contiguous square turns of
@@ -13,7 +13,8 @@ import os
 import sys
 
 case, nr = sys.argv[1], int(sys.argv[2])
-r0, rw, H, nz, ang = 1e-5, 0.1, 0.05, 20, 5.0
+ang = float(sys.argv[3]) if len(sys.argv) > 3 else 1.0
+r0, rw, H, nz = 1e-5, 0.1, 0.05, 20
 rc, w, nturn = 0.07, 2.5e-3, 20
 c, s = math.cos(math.radians(ang / 2)), math.sin(math.radians(ang / 2))
 

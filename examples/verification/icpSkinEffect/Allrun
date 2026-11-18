@@ -4,13 +4,17 @@
 # exact Bessel solution, on three meshes (verify.py).
 cd ${0%/*} || exit 1    # run from this directory
 
-for nr in 200 400 800
+# radial cells and wedge angle [deg]; the 5 degree run shows the error of a
+# flat-faced wedge, of the order of the square of the angle
+set -- 200 1  400 1  800 1  800 5
+while [ $# -ge 2 ]
 do
-    dir=runs/nr_$nr
+    nr=$1; ang=$2; shift 2
+    dir=runs/nr_${nr}_wedge_$ang
     rm -rf $dir
     mkdir -p runs
     cp -r base $dir
-    python3 makeCase.py $dir $nr || exit 1
+    python3 makeCase.py $dir $nr $ang || exit 1
     ( cd $dir && blockMesh > log.blockMesh 2>&1 && icpFieldTest > log.icpFieldTest 2>&1 ) || exit 1
 done
 

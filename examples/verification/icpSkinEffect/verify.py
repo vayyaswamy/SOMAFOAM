@@ -74,8 +74,9 @@ def cells(path):
 runs = sys.argv[1]
 plot = sys.argv[sys.argv.index("--plot") + 1] if "--plot" in sys.argv else None
 results = []
-for d in sorted(glob.glob(os.path.join(runs, "nr_*")), key=lambda p: int(p.split("_")[-1])):
-    nr = int(d.split("_")[-1])
+allruns = []
+for d in sorted(glob.glob(os.path.join(runs, "nr_*_wedge_*")), key=lambda p: (float(p.split("_")[-1]), int(p.split("_")[-3]))):
+    nr, ang = int(d.split("_")[-3]), float(d.split("_")[-1])
     AR, AI = cells(os.path.join(d, "1", "AR")), cells(os.path.join(d, "1", "AI"))
     nz = len(AR) // nr
     r0 = 1e-5
@@ -97,9 +98,9 @@ for d in sorted(glob.glob(os.path.join(runs, "nr_*")), key=lambda p: int(p.split
     zdev = max(zs) / scale
     log = open(os.path.join(d, "log.icpFieldTest")).read()
     P = float(re.search(r"power per \(1 A\)\^2 in the wedge (\S+) W", log).group(1))
-    results.append((nr, err, zdev, P, rcell, num, ex))
-    print(f"{nr:4d} radial cells: max |A - A_exact|/max|A_exact| = {err:.3e}, "
-          f"variation along z {zdev:.1e}, power per A^2 (full circle) {P*360/5:.6e} W")
+    allruns.append((nr, err, zdev, P * 360 / ang, rcell, num, ex, ang))
+    print(f"{nr:4d} radial cells, wedge {ang:g} deg: max |A - A_exact|/max|A_exact| = {err:.3e}, "
+          f"variation along z {zdev:.1e}, power per A^2 (full circle) {P*360/ang:.6e} W")
 
 # Power per square ampere of the exact solution, 1/2 Re(sigma) w^2 int |A|^2 2 pi r dr
 nint = 20000
@@ -111,21 +112,25 @@ Pex *= 0.05                          # length of the solenoid section [m]
 print(f"exact power per A^2 in 50 mm of length {Pex:.6e} W; skin depth "
       f"{1/abs(kappa.real):.4e} m, |kappa Rp| = {abs(kappa*Rp):.3f}")
 
+results = [r for r in allruns if r[7] == min(q[7] for q in allruns)]
 ok = len(results) >= 2
 for (n1, e1, *_), (n2, e2, *_) in zip(results, results[1:]):
     p = math.log(e1 / e2) / math.log(n2 / n1)
     print(f"order between {n1} and {n2} cells: {p:.2f}")
+for r in allruns:
+    if r[7] != results[-1][7]:
+        print(f"wedge {r[7]:g} deg, {r[0]} cells: error of A {r[1]:.2e}, of the power {abs(r[3]/Pex - 1):.2e}")
     ok &= p > 1.8
 for r in results:
-    print(f"{r[0]:4d} cells: power error {abs(r[3]*72/Pex - 1):.2e}")
-ok &= results[-1][1] < 1e-3 and abs(results[-1][3] * 72 / Pex - 1) < 1e-3
+    print(f"{r[0]:4d} cells: power error {abs(r[3]/Pex - 1):.2e}")
+ok &= results[-1][1] < 1e-3 and abs(results[-1][3] / Pex - 1) < 1e-3
 
 if plot:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(7, 2.8))
-    nr, err, zdev, P, rc, num, ex = results[-1]
+    nr, err, zdev, P, rc, num, ex, ang = results[-1]
     rr = [i * Rw / 400 + 1e-6 for i in range(401)]
     exf = [Aexact(r) for r in rr]
     a1.plot([r * 100 for r in rr], [e.real * 1e6 for e in exf], "k-", lw=0.8, label="exact")
@@ -139,7 +144,7 @@ if plot:
     a1.legend(frameon=False, fontsize=7)
     a1.set_title("(a) vector potential, plasma and coil shaded", fontsize=8)
     a2.loglog([r[0] for r in results], [r[1] for r in results], "o-", ms=4, label="max error of A")
-    a2.loglog([r[0] for r in results], [abs(r[3] * 72 / Pex - 1) for r in results], "s--", ms=4, label="error of the power")
+    a2.loglog([r[0] for r in results], [abs(r[3] / Pex - 1) for r in results], "s--", ms=4, label="error of the power")
     x0 = results[0][0]
     a2.loglog([r[0] for r in results], [results[0][1] * (x0 / r[0])**2 for r in results], "k:", label="$N^{-2}$")
     a2.set_xlabel("radial cells")
