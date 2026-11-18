@@ -1,0 +1,16 @@
+#!/bin/sh
+# Ambipolar decay of a plasma between two absorbing walls (paper case V9):
+# electrons at a fixed 1 eV and ions at the gas temperature, constant
+# mobilities and no reactions, starting in the fundamental diffusion mode;
+# the decay rate and the profile against the ambipolar solution (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+rm -rf run
+cp -r base run
+cd run
+blockMesh > log.blockMesh 2>&1 || exit 1
+setExpressionFields > log.setExpressionFields 2>&1 || exit 1
+somaFoam > log.somaFoam 2>&1 || exit 1
+cd ..
+
+python3 verify.py run
