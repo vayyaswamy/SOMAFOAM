@@ -3,17 +3,19 @@
     python3 test/regression.py store   <run directory> <reference directory> FIELD... [--regions R...]
     python3 test/regression.py compare <run directory> <reference directory> [--rtol 1e-6]
 
-store copies the internal values of the given fields at the latest time of
-the run (and of the same fields in the listed regions) to the reference
-directory. compare reads every field in the reference directory and its
-regions, and prints for each the largest difference relative to the
-largest value of the reference, and PASS when all are below rtol. The
+store writes the internal values of the given fields at the latest time of
+the run (and of the same fields in the listed regions) to
+reference/fields.json, at most 2000 values per field taken at an even
+stride over the cells, so that the references of large meshes stay small.
+compare reads the same values from the run and prints for each field the
+largest difference relative to the largest value of the reference, and PASS
+when all are below rtol. The
 regression tests of the examples use it after a run of a fixed number of
 steps (see the Allrun of plasma/1TorrArgonPlasma/defaultSchemes).
 """
+import json
 import os
 import re
-import shutil
 import sys
 
 
@@ -37,34 +39,40 @@ def values(path):
     return [float(x) for x in m.group(1).strip("()").split()]
 
 
+def sample(v):
+    stride = max(1, -(-len(v) // 2000))
+    return stride, v[::stride]
+
+
 def store(run, ref, fields, regions):
     t = latest(run)
+    out = {"time": os.path.basename(t), "fields": {}}
     for region in [""] + regions:
-        os.makedirs(os.path.join(ref, region), exist_ok=True)
         for f in fields:
-            src = os.path.join(t, region, f)
-            if os.path.exists(src):
-                shutil.copy(src, os.path.join(ref, region, f))
-                print("stored", os.path.join(region, f), "from", os.path.basename(t))
-    open(os.path.join(ref, "TIME"), "w").write(os.path.basename(t) + "\n")
+            path = os.path.join(t, region, f)
+            if os.path.exists(path):
+                v = values(path)
+                stride, vs = sample(v)
+                out["fields"][os.path.join(region, f)] = {"cells": len(v), "stride": stride, "values": vs}
+                print("stored", os.path.join(region, f), len(vs), "of", len(v), "values from", out["time"])
+    os.makedirs(ref, exist_ok=True)
+    json.dump(out, open(os.path.join(ref, "fields.json"), "w"), indent=0)
 
 
 def compare(run, ref, rtol):
     t = latest(run)
-    want = open(os.path.join(ref, "TIME")).read().split()[0]
-    ok = abs(float(os.path.basename(t)) / float(want) - 1) < 1e-9
-    print(f"run time {os.path.basename(t)}, reference time {want}{'' if ok else ' (differ)'}")
-    for root, _, files in os.walk(ref):
-        for f in sorted(files):
-            if f == "TIME":
-                continue
-            rel = os.path.relpath(os.path.join(root, f), ref)
-            a, b = values(os.path.join(t, rel)), values(os.path.join(ref, rel))
-            scale = max(abs(x) for x in b) or 1.0
-            err = max(abs(x - y) for x, y in zip(a, b)) / scale if len(a) == len(b) else float("inf")
-            good = err < rtol
-            ok &= good
-            print(f"  {rel:24s} max difference {err:.2e} of max |ref| {scale:.4g}  {'ok' if good else 'DIFFERS'}")
+    data = json.load(open(os.path.join(ref, "fields.json")))
+    ok = abs(float(os.path.basename(t)) / float(data["time"]) - 1) < 1e-9
+    print(f"run time {os.path.basename(t)}, reference time {data['time']}{'' if ok else ' (differ)'}")
+    for rel, d in sorted(data["fields"].items()):
+        v = values(os.path.join(t, rel))
+        b = d["values"]
+        a = v[::d["stride"]] if len(v) == d["cells"] else []
+        scale = max(abs(x) for x in b) or 1.0
+        err = max(abs(x - y) for x, y in zip(a, b)) / scale if len(a) == len(b) else float("inf")
+        good = err < rtol
+        ok &= good
+        print(f"  {rel:24s} max difference {err:.2e} of max |ref| {scale:.4g}  {'ok' if good else 'DIFFERS'}")
     print("PASS" if ok else "FAIL")
     return ok
 
