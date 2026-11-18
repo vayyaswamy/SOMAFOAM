@@ -208,7 +208,11 @@ The `/data` file system has a quota of 500 GB with a hard limit of 512 GB per us
 `/scratch` is large but purged. Runs and tests therefore go to the BeeGFS project storage,
 `/mnt/borgstore/$USER/somafoam_runs` and `/mnt/borgstore/$USER/somafoam_tests`, which the
 site file `scripts/sites/pinnacles.sh` sets as the defaults, and the source tree and build
-can live there as well. Each login node has its own `/tmp`, so a file
+can live there as well. The solver writes its log and the electrode data at every step,
+and on BeeGFS these small writes made a one-dimensional RF run five to ten times slower
+than its CPU time; long runs should therefore run on the local disk of the compute node
+(`/tmp`) and be copied back at the end, as `examples/benchmarks/turnerCCP/Allrun` does
+with `SOMAFOAM_LOCAL_DIR`. Each login node has its own `/tmp`, so a file
 written to `/tmp` in one session may not be visible in the next. In a large source tree
 `git status -uno` is much faster than `git status`, which scans every untracked file.
 
