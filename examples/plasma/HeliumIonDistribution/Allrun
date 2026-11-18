@@ -3,6 +3,13 @@
 # See doc/manual/ion_distribution_workflow.pdf
 cd ${0%/*} || exit 1
 
+# Short test (SOMAFOAM_TEST_SHORT=1): 50 periods instead of 6000, which checks
+# that the chain runs but does not reach the periodic state
+if [ -n "$SOMAFOAM_TEST_SHORT" ]
+then
+    sed -i "s/^endTime .*/endTime         3.6873156342e-06;    \/\/ 50 periods (short test)/" system/controlDict
+fi
+
 blockMesh > log.blockMesh 2>&1 || exit 1
 setExpressionFields > log.setExpressionFields 2>&1 || exit 1
 
