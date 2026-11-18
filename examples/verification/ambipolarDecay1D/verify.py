@@ -99,6 +99,12 @@ if plot:
     a3.loglog([1 / r[5] for r in mesh], em, "s-", ms=4)
     a3.set_xlabel("$\\Delta x/L$")
     a3.set_title("(c) $n_0$ = 1e19, 200 to 800 cells", fontsize=8)
+    from matplotlib.ticker import NullFormatter, LogLocator, LogFormatterSciNotation
+    for ax in (a2, a3):
+        ax.xaxis.set_minor_formatter(NullFormatter())
+        ax.yaxis.set_minor_formatter(NullFormatter())
+        ax.yaxis.set_major_locator(LogLocator(subs=(1.0, 2.0, 5.0)))
+        ax.yaxis.set_major_formatter(LogFormatterSciNotation(labelOnlyBase=False))
     fig.tight_layout()
     fig.savefig(plot)
     print("wrote", plot)
