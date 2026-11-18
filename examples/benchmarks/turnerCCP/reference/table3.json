@@ -1,0 +1,8 @@
+{
+  "source": "Turner et al., Phys. Plasmas 20, 013507 (2013), table III (arXiv:1211.5246): time-averaged mid-plane ion density and electron temperature, line-integrated power to electrons and ions, and ion current at either electrode, of the particle-in-cell codes",
+  "ni_1e15_m3": [0.140, 0.828, 1.81, 2.57],
+  "Te_eV": [9.36, 4.69, 3.95, 3.65],
+  "Se_W_m2": [34.3, 51.6, 85.2, 193],
+  "Si_W_m2": [90.6, 43.3, 32.0, 27.1],
+  "Ji_A_m2": [0.219, 0.215, 0.195, 0.186]
+}
