@@ -1,0 +1,24 @@
+#!/bin/sh
+# One-dimensional adaptive refinement following a moving pulse (paper case
+# V2): the electron avalanche of townsendAvalanche1D on a uniform mesh of 125
+# cells, on one of 1000 cells, and on 125 cells with three levels of
+# refinement around the pulse, against the exact Gaussian solution
+# (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+# name, base cells, mesh dictionary
+set -- uniform125 125 static  uniform1000 1000 static  adaptive125 125 amr
+while [ $# -ge 3 ]
+do
+    name=$1; n=$2; mesh=$3; shift 3
+    dir=runs/$name
+    rm -rf $dir
+    mkdir -p runs
+    cp -r base $dir
+    sed -i "s/NCELLS/$n/" $dir/constant/polyMesh/blockMeshDict
+    cp $dir/constant/dynamicMeshDict.$mesh $dir/constant/dynamicMeshDict
+    ( cd $dir && blockMesh > log.blockMesh 2>&1 && setExpressionFields > log.setExpressionFields 2>&1 \
+      && somaFoam > log.somaFoam 2>&1 && writeCellCentres > log.writeCellCentres 2>&1 ) || exit 1
+done
+
+python3 verify.py runs

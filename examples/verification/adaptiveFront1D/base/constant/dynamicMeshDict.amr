@@ -1,0 +1,34 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      dynamicMeshDict;
+}
+
+// Refinement around the electron pulse: three levels on the base mesh of
+// 125 cells give the cell size of the uniform mesh of 1000 cells
+dynamicFvMesh   dynamicRefine1DFvMesh;
+
+dynamicRefine1DFvMeshCoeffs
+{
+    direction           (1 0 0);
+    refineInterval      10;
+    indicators
+    (
+        { type relativeGradient; field N_electron; floor 1e8; }
+    );
+    lowerRefineLevel    0.02;
+    upperRefineLevel    1e30;
+    unrefineLevel       0.005;
+    nBufferLayers       2;
+    maxRefinement       3;
+    maxCells            2000;
+}
