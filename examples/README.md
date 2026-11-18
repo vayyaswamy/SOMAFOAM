@@ -28,6 +28,8 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 |---|---|---|
 | Manufactured solution, order of accuracy | `verification/manufacturedSolution2D` | manufactured solution; second order on a uniform mesh, first order on a distorted one |
 | Moving ionization front, adaptive refinement | `verification/ionizationFront1D` (planned) | traveling wave |
+| Ambipolar decay of an afterglow | `verification/ambipolarDecay1D` | ambipolar diffusion; error falls with the Debye length and the cell size, 1.1 % on the finest run |
+| External circuit, RC charging of an empty gap | `verification/externalCircuitRC` | backward Euler and exact RC solutions; 2e-5 of the source |
 | Gas flow: advection-diffusion, channel start-up, transient Poiseuille profile | `flow/advectionDiffusion`, `flow/channelStartup`, `flow/channelStartupProfile` | analytic |
 | Flowing afterglow | `flow/flowingAfterglow` (planned) | eigenfunction series |
 | Inductive field in a uniform plasma | `icp/skinEffectCylinder`, `icp/skinEffectSlab` (planned) | Bessel and skin-depth solutions |
