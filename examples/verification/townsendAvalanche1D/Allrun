@@ -1,0 +1,13 @@
+#!/bin/sh
+# Electron avalanche in a uniform field (paper case V12): a Gaussian pulse of
+# electrons with constant mobility, diffusion and ionization frequency, at a
+# density far below that at which its space charge would change the field;
+# its growth, drift and spreading against the exact solution (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+rm -rf run
+cp -r base run
+( cd run && blockMesh > log.blockMesh 2>&1 && setExpressionFields > log.setExpressionFields 2>&1 \
+  && somaFoam > log.somaFoam 2>&1 ) || exit 1
+
+python3 verify.py run

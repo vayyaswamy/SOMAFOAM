@@ -1,0 +1,30 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      setExpressionFieldsDict;
+}
+
+// Gaussian pulse of electrons and ions, far below the density at which the
+// space charge would change the field
+variables
+{
+    n0          1e10;       // [1/m3]
+    x0          7e-3;       // [m]
+    s0          2e-4;       // [m]
+    pulse       "1e4 + n0*exp(-sqr(x - x0)/(2*sqr(s0)))";
+}
+
+fields
+{
+    electron    "pulse";
+    Arp1        "pulse";
+}
