@@ -1,12 +1,9 @@
 # Build SOMAFOAM on Ubuntu and run the short tests.
-# The full build takes 2-3 hours on the 4 cores of a GitHub runner, so it runs
-# on pushes to main and release branches, on pull requests and by hand.
+# Manual start only (Actions tab, "Run workflow"): the code is built and
+# tested on the cluster, and nothing is compiled on GitHub automatically.
 name: build-and-test
 
 on:
-  push:
-    branches: [main, "release-*"]
-  pull_request:
   workflow_dispatch:
 
 jobs:
