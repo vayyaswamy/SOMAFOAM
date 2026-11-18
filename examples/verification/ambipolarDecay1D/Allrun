@@ -1,16 +1,20 @@
 #!/bin/sh
 # Ambipolar decay of a plasma between two absorbing walls (paper case V9):
 # electrons at a fixed 1 eV and ions at the gas temperature, constant
-# mobilities and no reactions, starting in the fundamental diffusion mode;
-# the decay rate and the profile against the ambipolar solution (verify.py).
+# mobilities and no reactions, starting in the fundamental diffusion mode at
+# three peak densities; the decay rate and the profile against the ambipolar
+# solution, whose error must fall with the Debye length (verify.py).
 cd ${0%/*} || exit 1    # run from this directory
 
-rm -rf run
-cp -r base run
-cd run
-blockMesh > log.blockMesh 2>&1 || exit 1
-setExpressionFields > log.setExpressionFields 2>&1 || exit 1
-somaFoam > log.somaFoam 2>&1 || exit 1
-cd ..
+for n0 in 1e17 1e18 1e19
+do
+    dir=runs/n0_$n0
+    rm -rf $dir
+    mkdir -p runs
+    cp -r base $dir
+    sed -i "s/^\(\s*n0\s*\)[0-9.e+-]*;/\1$n0;/" $dir/system/setExpressionFieldsDict
+    ( cd $dir && blockMesh > log.blockMesh 2>&1 && setExpressionFields > log.setExpressionFields 2>&1 \
+      && somaFoam > log.somaFoam 2>&1 ) || exit 1
+done
 
-python3 verify.py run
+python3 verify.py runs
