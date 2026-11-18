@@ -9,6 +9,7 @@ r = c = 5 mm. The cuts at x = 0 and y = 0 are symmetry planes. The meshes of
 the two regions match on the interface.
 """
 import math
+import os
 import re
 import sys
 
@@ -18,6 +19,8 @@ V0 = 10.0
 s45 = math.sqrt(0.5)
 
 head = open(f"{case}/system/controlDict").read().split("FoamFile")[0]
+for d in ("constant/polyMesh", "constant/dielectric_1/polyMesh"):
+    os.makedirs(f"{case}/{d}", exist_ok=True)
 
 
 def foamfile(cls, obj):
