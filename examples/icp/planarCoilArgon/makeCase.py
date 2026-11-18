@@ -33,6 +33,9 @@ ap.add_argument("--meta-wall", default="quench", choices=["quench", "zeroGradien
 ap.add_argument("--meta-accel", type=float, default=1.0, help="time acceleration of the metastable equation")
 ap.add_argument("--end-time", type=float, default=2e-4)
 ap.add_argument("--dt-max", default="1e-10", help="largest time step [s]")
+ap.add_argument("--maxco", default="10.0", help="Courant number of the electron drift for the adaptive step")
+ap.add_argument("--converged", action="store_true",
+                help="converged outer loop with step rejection and the electron energy in the loop")
 ap.add_argument("--write-interval", type=float, default=5e-6)
 A = ap.parse_args()
 k = A.refine
@@ -232,11 +235,18 @@ if A.rates == "maxwellian":
 p = os.path.join(out, "system/controlDict"); t = open(p).read()
 dtmax = A.dt_max  # 1e-10 s, the step of the 1 Torr template, by default
 for key, val in [("endTime", "%g" % A.end_time), ("deltaT", "1e-10"), ("deltaTMax", dtmax), ("deltaTMin", "1e-12"),
-                 ("writeInterval", "%g" % A.write_interval), ("MaxCo", "10.0")]:
+                 ("writeInterval", "%g" % A.write_interval), ("MaxCo", A.maxco)]:
     t = re.sub(r"\n%s\s+[^;]*;" % key, "\n%s    %s;" % (key, val), t)
 t = re.sub(r"patches\s+\(electrode ground\);", "patches             (wall);", t)
 open(p, "w").write(t)
 
+# converged outer loop with step rejection (plasmaConvergedStep.H)
+if A.converged:
+    p = os.path.join(out, "system/fvSolution"); t = open(p).read()
+    t = re.sub(r"(PIMPLE\s*\{)", r"\1\n    chargedSpeciesTolerance 1e-3;\n    electronTemperatureInOuterLoop yes;\n"
+               r"    TeInnerTolerance 1e-3;\n    stepRejection yes;\n    deltaTIncreaseAfterRejection 1.2;", t, count=1)
+    t = re.sub(r"nOuterCorrectors\s+\d+;", "nOuterCorrectors 20;", t, count=1)
+    open(p, "w").write(t)
 # mesh script
 steps = []
 if diel:
