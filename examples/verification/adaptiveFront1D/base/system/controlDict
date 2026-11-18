@@ -18,7 +18,9 @@ libs (
       "libfoam.so"
       "liblduSolvers.so"
       "libplasmaCookBook.so"
-     );
+      "libtopoChangerFvMesh.so"
+      "libplasmaDynamicMesh.so"
+);
 
 application     somaFoam;
 
