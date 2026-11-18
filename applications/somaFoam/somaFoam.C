@@ -32,6 +32,7 @@ Description
 #include "plasmaPotential.H"
 #include "fvBlockMatrix.H"
 #include "volVectorNFields.H"
+#include "inductiveField.H"
 #include "currentTimeStepControl.H"
 #include "OFstream.H"
 #include "stepSnapshot.H"

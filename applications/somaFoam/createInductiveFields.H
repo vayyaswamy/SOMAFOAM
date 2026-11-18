@@ -30,6 +30,9 @@ scalarField icpSigRLast, icpSigILast;
 bool icpPending = true;
 bool icpVerify = false;
 scalar icpVn0 = 0, icpVnu = 0, icpVR = 0, icpVL = 0;
+// verification profile: n0 J0(2.405 r/R) sin(pi z/L) (besselSine) or n0 for
+// r < R and z < L (uniform)
+bool icpVUniform = false;
 label icpEIndex = -1;
 
 if (isICP)
@@ -45,8 +48,8 @@ if (isICP)
     // iterative module coupling of hybrid plasma equipment models
     icpRamp = icpDict.lookupOrDefault<scalar>("powerRampTime", 0.0);
     icpRelax = icpDict.lookupOrDefault<scalar>("powerRelaxation", 1.0);
-    const scalarList coilR(icpDict.lookup("coilR"));
-    const scalar coilZ = readScalar(icpDict.lookup("coilZ"));
+    // turns of the coil: coilTurns ((r z) ...), or coilR (r ...) at coilZ
+    const List<vector2> coilTurns(inductiveField::coilTurns(icpDict));
     const scalar coilW = readScalar(icpDict.lookup("coilW"));
     icpEIndex = composition.species()["electron"];
 
@@ -78,35 +81,11 @@ if (isICP)
         IOobject::NO_READ, IOobject::AUTO_WRITE), mesh,
         dimensionedScalar("zero", dimensionSet(1, -1, -3, 0, 0), 0.0)));
 
-    // coil current density for 1 A per turn: each square conductor of side coilW is
-    // distributed over the cells by the exact overlap of its (r, z) cross-section with
-    // the (r, z) extent of each cell, so every turn carries 1 A on any mesh
+    // coil current density for 1 A per turn, by the exact overlap of each
+    // square conductor with the cells (inductiveField.H)
     const vectorField& Cem = emMesh.C().internalField();
-    const pointField& pts = emMesh.points();
-    const labelListList& cPts = emMesh.cellPoints();
-    JcoilEM.setSize(Cem.size(), 0.0);
-    scalar coilCurrentCheck = 0;
-    forAll(Cem, i)
-    {
-        scalar r0 = GREAT, r1 = -GREAT, z0 = GREAT, z1 = -GREAT;
-        forAll(cPts[i], k)
-        {
-            const point& p = pts[cPts[i][k]];
-            const scalar r = Foam::sqrt(sqr(p.x()) + sqr(p.y()));
-            r0 = min(r0, r); r1 = max(r1, r); z0 = min(z0, p.z()); z1 = max(z1, p.z());
-        }
-        forAll(coilR, c)
-        {
-            const scalar lr = max(0.0, min(r1, coilR[c] + coilW/2) - max(r0, coilR[c] - coilW/2));
-            const scalar lz = max(0.0, min(z1, coilZ + coilW/2) - max(z0, coilZ - coilW/2));
-            if (lr*lz > 0)
-            {
-                JcoilEM[i] += lr*lz/sqr(coilW)/((r1 - r0)*(z1 - z0));
-                coilCurrentCheck += lr*lz/sqr(coilW);
-            }
-        }
-    }
-    coilCurrentCheck = returnReduce(coilCurrentCheck, sumOp<scalar>());
+    const scalar coilCurrentCheck =
+        inductiveField::coilCurrentDensity(emMesh, coilTurns, coilW, JcoilEM);
 
     if (icpDict.found("verification"))
     {
@@ -116,10 +95,12 @@ if (isICP)
         icpVnu = readScalar(vd.lookup("nuM"));
         icpVR = readScalar(vd.lookup("R"));
         icpVL = readScalar(vd.lookup("L"));
+        icpVUniform =
+            (vd.lookupOrDefault<word>("profile", "besselSine") == "uniform");
     }
 
     Info<< "ICP: em mesh " << returnReduce(Cem.size(), sumOp<label>())
         << " cells, coil cells " << returnReduce(label(sum(pos(JcoilEM - SMALL))), sumOp<label>())
-        << ", total coil current " << coilCurrentCheck << " A for " << coilR.size()
-        << " turns (expected " << coilR.size() << " A)" << endl;
+        << ", total coil current " << coilCurrentCheck << " A for " << coilTurns.size()
+        << " turns (expected " << coilTurns.size() << " A)" << endl;
 }

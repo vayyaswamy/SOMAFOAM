@@ -1,0 +1,17 @@
+#!/bin/sh
+# Inductive field of a uniform plasma cylinder in a long solenoid (paper case
+# V5): the vector potential of the ICP field solve of somaFoam against the
+# exact Bessel solution, on three meshes (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+for nr in 200 400 800
+do
+    dir=runs/nr_$nr
+    rm -rf $dir
+    mkdir -p runs
+    cp -r base $dir
+    python3 makeCase.py $dir $nr || exit 1
+    ( cd $dir && blockMesh > log.blockMesh 2>&1 && icpFieldTest > log.icpFieldTest 2>&1 ) || exit 1
+done
+
+python3 verify.py runs

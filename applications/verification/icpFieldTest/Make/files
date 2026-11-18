@@ -1,0 +1,3 @@
+icpFieldTest.C
+
+EXE = $(FOAM_APPBIN)/icpFieldTest

@@ -57,10 +57,14 @@ if (isICP && (icpPending || icpVerify || runTime.timeIndex() % icpInterval == 0)
             const scalar r = Foam::sqrt(sqr(Cem[k].x()) + sqr(Cem[k].y())), z = Cem[k].z();
             if (r < icpVR && z < icpVL)
             {
-                const scalar x = 2.405*r/icpVR;
-                scalar j0 = 0, term = 1;
-                for (label m = 0; m < 20; m++) { j0 += term; term *= -sqr(x/2)/sqr(scalar(m + 1)); }
-                const scalar n = max(icpVn0*j0*Foam::sin(mathematicalConstant::pi*z/icpVL), 0.0);
+                scalar n = icpVn0;
+                if (!icpVUniform)
+                {
+                    const scalar x = 2.405*r/icpVR;
+                    scalar j0 = 0, term = 1;
+                    for (label m = 0; m < 20; m++) { j0 += term; term *= -sqr(x/2)/sqr(scalar(m + 1)); }
+                    n = max(icpVn0*j0*Foam::sin(mathematicalConstant::pi*z/icpVL), 0.0);
+                }
                 const scalar s0 = n*qe*qe/meM/(sqr(icpVnu) + sqr(w));
                 sigR.internalField()[k] = w*mu0*s0*icpVnu;
                 sigI.internalField()[k] = -w*mu0*s0*w;
@@ -139,35 +143,10 @@ if (isICP && (icpPending || icpVerify || runTime.timeIndex() % icpInterval == 0)
     icpSigILast = sigI.internalField();
     icpLastSolve = stepNow;
     icpNSolves++;
-    volScalarField invR2(IOobject("invR2", runTime.timeName(), emMesh), emMesh,
-        dimensionedScalar("zero", dimless/dimArea, 0.0));
-    {
-        const vectorField& Cem = emMesh.C().internalField();
-        forAll(Cem, i)
-        {
-            invR2.internalField()[i] = 1.0/max(sqr(Cem[i].x()) + sqr(Cem[i].y()), 1e-12);
-        }
-    }
-    volScalarField src(IOobject("src", runTime.timeName(), emMesh), emMesh,
-        dimensionedScalar("zero", AR.dimensions()/dimArea, 0.0));
-    src.internalField() = mu0*JcoilEM;
-
-    // (1/r) d/dr(r dA/dr) + d2A/dz2 - A/r^2 - i w mu0 sigma A = -mu0 J, block-coupled in (AR, AI)
-    fvScalarMatrix eqR(fvm::laplacian(AR) - fvm::Sp(invR2, AR) + fvm::Sp(sigI, AR) + src);
-    fvScalarMatrix eqI(fvm::laplacian(AI) - fvm::Sp(invR2, AI) + fvm::Sp(sigI, AI));
-    fvScalarMatrix cRI(fvm::Sp(sigR, AI));
-    fvScalarMatrix cIR(fvm::Sp(-sigR, AR));
-
-    fvBlockMatrix<vector2> AEqn(A);
-    AEqn.insertEquation(0, eqR);
-    AEqn.insertEquation(1, eqI);
-    AEqn.insertEquationCoupling(0, 1, cRI);
-    AEqn.insertEquationCoupling(1, 0, cIR);
-    BlockSolverPerformance<vector2> perf = AEqn.solve();
-    AEqn.retrieveSolution(0, AR.internalField());
-    AEqn.retrieveSolution(1, AI.internalField());
-    AR.correctBoundaryConditions();
-    AI.correctBoundaryConditions();
+    // (1/r) d/dr(r dA/dr) + d2A/dz2 - A/r^2 - i w mu0 sigma A = -mu0 J, block-coupled
+    // in (AR, AI) (inductiveField.H)
+    BlockSolverPerformance<vector2> perf =
+        inductiveField::solve(emMesh, sigR, sigI, JcoilEM, AR, AI, A);
 
     // power per (1 A)^2 and scaling of the coil current to the prescribed power
     scalarField& P = PindPtr().internalField();
