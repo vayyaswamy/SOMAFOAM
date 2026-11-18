@@ -16,7 +16,7 @@ FoamFile
 // Quasi-neutral plasma in the fundamental diffusion mode of the 2 cm gap
 variables
 {
-    n0          1e16;       // [1/m3]
+    n0          1e17;       // [1/m3]
     L           0.02;       // [m]
     mode        "1e4 + n0*sin(3.14159265358979*x/L)";
 }

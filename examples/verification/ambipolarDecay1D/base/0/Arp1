@@ -23,13 +23,13 @@ boundaryField
 {
     electrode
     {
-        type            fixedValue;
-        value           uniform 1e4;
+        type            driftDiffusionPositiveIonDensity;
+        seec		0.0;
     }
     ground
     {
-        type            fixedValue;
-        value           uniform 1e4;
+        type            driftDiffusionPositiveIonDensity;
+	seec		0.0;
     }
     otherfaces
     {

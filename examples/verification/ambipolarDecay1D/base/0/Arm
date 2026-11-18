@@ -23,13 +23,11 @@ boundaryField
 {
     electrode
     {
-        type            fixedValue;
-        value           uniform 1e4;
+        type            zeroGradient;
     }
     ground
     {
-        type            fixedValue;
-        value           uniform 1e4;
+        type            zeroGradient;
     }
     otherfaces
     {
