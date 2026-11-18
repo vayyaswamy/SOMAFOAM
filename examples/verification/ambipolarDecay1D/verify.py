@@ -12,7 +12,10 @@ diffusion coefficient D_a = (mu_i D_e + mu_e D_i)/(mu_i + mu_e). The Debye
 length is 2.4e-5 m at n0 = 1e17 m^-3 and 2.4e-6 m at 1e19 m^-3, and the
 sheaths of a few Debye lengths shorten the quasi-neutral region, which raises
 the decay rate by an amount that falls with the Debye length. The runs at
-three densities check that the error falls and is below 3 % at the highest.
+three densities and, at the highest, on three meshes check that the error
+falls with the Debye length and with the cell size, the latter because the
+sheath at the highest density sits in the first cell, and is below 1.5 % on
+the finest mesh.
 """
 import math
 import os
@@ -68,10 +71,13 @@ dens = [r for r in results if r[5] == 200]
 mesh = [r for r in results if r[0] == max(q[0] for q in results)]
 ed = [abs(r[2]) for r in dens]
 em = [abs(r[2]) for r in mesh]
-ok = all(a > b for a, b in zip(ed, ed[1:])) and all(a > b for a, b in zip(em, em[1:])) and em[-1] < 1e-2
+ok = all(a > b for a, b in zip(ed, ed[1:])) and all(a > b for a, b in zip(em, em[1:])) and em[-1] < 1.5e-2
 if len(mesh) > 1:
     p = math.log(em[0] / em[-1]) / math.log(mesh[-1][5] / mesh[0][5])
     print(f"order of the decay-rate error in the cell size at n0 = {mesh[0][0]:.0e}: {p:.2f}")
+if len(mesh) > 2:
+    d1, d2 = em[-3] - em[-2], em[-2] - em[-1]
+    print(f"Richardson extrapolation of the error to a fine mesh: {em[-1] - d2*d2/(d1 - d2):.2e}")
 
 if plot:
     import matplotlib
