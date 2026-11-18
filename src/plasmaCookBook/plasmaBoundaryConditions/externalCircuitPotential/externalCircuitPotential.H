@@ -6,13 +6,71 @@ This project is licensed under The 3-Clause BSD License. For further information
 look for license file include with distribution.
 
 Class
-Foam::plasmaPotential
+    Foam::externalCircuitPotential
 
 Description
-    Abstract base class for electric potential boundary conditions.
+    Potential of an electrode connected to a voltage source through a
+    resistor R and a capacitor C in series:
+
+        Vs(t) = V + R I + Q_C/C,      dQ_C/dt = I,
+
+    with V the potential of the electrode and I the current from the source
+    into the electrode. The source is
+
+        directCurrent           Vs = amplitude (1 - exp(-t/rampTime)) + bias
+                                (no ramp with rampTime 0)
+        sinFrequencyModulated   Vs = amplitude sin(2 pi frequency t) + bias
+        cosFrequencyModulated   V  = amplitude cos(2 pi frequency t) + bias,
+                                applied directly, without the circuit
+
+    The current is the change of the charge Q on the electrode plus the
+    conduction current Ic of the charged species from the electrode into the
+    discharge,
+
+        I = dQ/dt + Ic,       Q = sum over the faces of eps dPhi/dn A,
+
+    so it includes the displacement current. The circuit is solved
+    implicitly (backward Euler): with Q linearised about the present
+    iterate, Q = Q* + Cg (V - V*), and Q^n, Q_C^n the values of the last
+    time step,
+
+        V (1 + Reff Cg/dt) = Vs - Q_C^n/C
+                           - Reff [(Q* - Cg V* - Q^n)/dt + Ic],
+
+    Reff = R + dt/C. The iterations of the Poisson equation within a step
+    converge to the implicit solution, which is stable for any R C/dt; with
+    one Poisson solve per step on a vacuum gap it is exactly the backward
+    Euler step of the RC circuit. Cg only sets the convergence of the
+    iterations and needs to be accurate within a factor of two; it is
+    gapCapacitance if given, and otherwise, on a one-dimensional mesh, the
+    capacitance of the plasma mesh between the electrode and the opposite
+    end, A/sum(dx/eps).
+
+    Before 2026-11 the current was taken from the previous step and the
+    capacitor charge was never updated, so the displacement current of the
+    first step was lost, a series capacitor had no effect, and a resolved
+    displacement current would have made the update unstable for
+    R Cg > dt/2.
+
+    Example:
+        electrode
+        {
+            type            externalCircuitPotential;
+            model           directCurrent;
+            amplitude       uniform 400;
+            R               2e5;          // [Ohm]
+            C               1e20;         // [F], optional, default: none
+            rampTime        0;
+            bias            0;
+            // gapCapacitance 1.77e-13;   // [F], optional
+            value           uniform 0;
+        }
+
+    The state (capacitor charge QC, electrode charge Qe, current I) is
+    written with the field and read at a restart.
 
 SourceFiles
-externalCircuitPotential.C
+    externalCircuitPotential.C
 
 \*---------------------------------------------------------------------------*/
 
@@ -28,23 +86,55 @@ namespace Foam
 
 class externalCircuitPotential
 :
-public fixedValueFvPatchScalarField
+    public fixedValueFvPatchScalarField
 {
     // Private data
-    scalarField amplitude_;
-    word modelName_;
-    scalar frequency_;
-    scalar bias_;
-    scalar R_;
-    scalar C_;
 
-    //- Time constant of the ramp of the source voltage (directCurrent)
-    scalar rampTime_;
-    scalarField Phi_;
-    scalar I_;
+        scalarField amplitude_;
+        word modelName_;
+        scalar frequency_;
+        scalar bias_;
+        scalar R_;
+        scalar C_;
+
+        //- Time constant of the ramp of the source voltage (directCurrent)
+        scalar rampTime_;
+
+        //- Capacitance of the gap for the linearisation (<= 0: computed)
+        scalar gapCapacitance_;
+
+        //- Charge of the series capacitor at the start of the step [C]
+        scalar QC_;
+
+        //- Charge on the electrode at the start of the step [C]
+        scalar Qe_;
+
+        //- Current from the source at the last evaluation [A]
+        scalar I_;
+
+        //- Time index of the start-of-step values
+        label timeIndex_;
+
+        //- Has Qe_ been set (from the dictionary or a step)?
+        bool QeSet_;
 
 
-  public:
+    // Private member functions
+
+        //- Charge on the electrode for the present field
+        scalar electrodeCharge() const;
+
+        //- Conduction current from the electrode into the discharge
+        scalar conductionCurrent() const;
+
+        //- Capacitance used to linearise the charge
+        scalar gapCapacitance() const;
+
+        //- Source voltage at time t
+        scalar sourceVoltage(const scalar t) const;
+
+
+public:
 
     //- Runtime type information
     TypeName("externalCircuitPotential");
@@ -52,78 +142,70 @@ public fixedValueFvPatchScalarField
 
     // Constructors
 
-    //- Construct from patch and internal field
-    externalCircuitPotential
-    (
-     const fvPatch&,
-     const DimensionedField<scalar, volMesh>&
-     );
-
-    //- Construct from patch, internal field and dictionary
-    externalCircuitPotential
-    (
-     const fvPatch&,
-     const DimensionedField<scalar, volMesh>&,
-     const dictionary&
-     );
-
-    //- Construct by mapping given
-    //  plasmaPotential onto a new patch
-    externalCircuitPotential
-    (
-     const externalCircuitPotential&,
-     const fvPatch&,
-     const DimensionedField<scalar, volMesh>&,
-     const fvPatchFieldMapper&
-     );
-
-    //- Construct as copy
-    externalCircuitPotential
-    (
-        const externalCircuitPotential&
-    );
-
-    //- Construct and return a clone
-    virtual tmp<fvPatchScalarField> clone() const
-    {
-        return tmp<fvPatchScalarField>
+        externalCircuitPotential
         (
-         new externalCircuitPotential(*this)
+            const fvPatch&,
+            const DimensionedField<scalar, volMesh>&
         );
-    }
 
-    //- Construct as copy setting internal field reference
-    externalCircuitPotential
-    (
-         const externalCircuitPotential&,
-         const DimensionedField<scalar, volMesh>&
-    );
-
-    //- Construct and return a clone setting internal field reference
-    virtual tmp<fvPatchScalarField> clone
-    (
-        const DimensionedField<scalar, volMesh>& iF
-    ) const
-    {
-        return tmp<fvPatchScalarField>
+        externalCircuitPotential
         (
-            new externalCircuitPotential(*this, iF)
+            const fvPatch&,
+            const DimensionedField<scalar, volMesh>&,
+            const dictionary&
         );
-    }
+
+        externalCircuitPotential
+        (
+            const externalCircuitPotential&,
+            const fvPatch&,
+            const DimensionedField<scalar, volMesh>&,
+            const fvPatchFieldMapper&
+        );
+
+        externalCircuitPotential(const externalCircuitPotential&);
+
+        virtual tmp<fvPatchScalarField> clone() const
+        {
+            return tmp<fvPatchScalarField>
+            (
+                new externalCircuitPotential(*this)
+            );
+        }
+
+        externalCircuitPotential
+        (
+            const externalCircuitPotential&,
+            const DimensionedField<scalar, volMesh>&
+        );
+
+        virtual tmp<fvPatchScalarField> clone
+        (
+            const DimensionedField<scalar, volMesh>& iF
+        ) const
+        {
+            return tmp<fvPatchScalarField>
+            (
+                new externalCircuitPotential(*this, iF)
+            );
+        }
 
 
     // Member functions
 
+        //- Current from the source into the electrode [A]
+        scalar current() const
+        {
+            return I_;
+        }
 
-    //- Update the coefficients associated with the patch field
-    virtual void updateCoeffs();
+        virtual void updateCoeffs();
 
-    //- Write
-    virtual void write(Ostream&) const;
-  };
+        virtual void write(Ostream&) const;
+};
 
 
-  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

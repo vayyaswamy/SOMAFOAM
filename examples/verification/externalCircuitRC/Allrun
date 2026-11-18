@@ -1,0 +1,26 @@
+#!/bin/sh
+# External circuit (paper case V11): an empty gap charged through a resistor,
+# and through a resistor and a series capacitor, against the backward Euler
+# solution of the RC circuit and its exact exponential (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+# name  deltaT  C [F]
+set -- \
+    R_dt5e-10   5e-10  1e20 \
+    R_dt1e-8    1e-8   1e20 \
+    RC_dt5e-10  5e-10  1.770837564e-13
+
+mkdir -p runs
+while [ $# -ge 3 ]
+do
+    name=$1; dt=$2; C=$3; shift 3
+    dir=runs/$name
+    rm -rf $dir
+    cp -r base $dir
+    sed -i "s/^deltaT .*/deltaT          $dt;/; s/^deltaTMax.*/deltaTMax       $dt;/; s/^deltaTMin.*/deltaTMin       $dt;/" $dir/system/controlDict
+    sed -i "s/^\(\s*rampTime .*\)$/\1\n        C               $C;/" $dir/0/Phi
+    blockMesh -case $dir > $dir/log.blockMesh 2>&1 || exit 1
+    somaFoam -case $dir > $dir/log.somaFoam 2>&1 || exit 1
+done
+
+python3 verify.py runs

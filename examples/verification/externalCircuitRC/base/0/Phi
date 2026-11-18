@@ -1,0 +1,43 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      Phi;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [ 0 0 0 1 0 0 0 ];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    ground
+    {
+        type            fixedValue;
+        value           uniform 0;
+    }
+    electrode
+    {
+        type            externalCircuitPotential;
+        model           directCurrent;
+        amplitude       uniform 10;
+        frequency       40E6;
+        R		200000.0;
+        rampTime        0;
+        bias            0.0;
+    }
+    otherfaces
+    {
+        type            empty;
+    }
+}
