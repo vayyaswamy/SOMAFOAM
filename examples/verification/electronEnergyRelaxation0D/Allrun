@@ -1,0 +1,19 @@
+#!/bin/sh
+# Electron energy relaxation in a zero-dimensional argon gas (paper cases V13
+# and V7): constant electron mobility, elastic losses only, a reduced field
+# switched on for 20 us and off for 30 us; the electron temperature against
+# the exact exponential relaxation at two time steps, and the closure of the
+# electron energy budget (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+for dt in 1e-8 4e-8
+do
+    dir=runs/dt_$dt
+    rm -rf $dir
+    mkdir -p runs
+    cp -r base $dir
+    sed -i "s/^deltaT\s.*/deltaT          $dt;/; s/^deltaTMax.*/deltaTMax       $dt;/; s/^deltaTMin.*/deltaTMin       $dt;/" $dir/system/controlDict
+    ( cd $dir && blockMesh > log.blockMesh 2>&1 && somaFoam > log.somaFoam 2>&1 ) || exit 1
+done
+
+python3 verify.py runs
