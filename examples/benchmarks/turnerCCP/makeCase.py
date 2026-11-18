@@ -40,6 +40,9 @@ sub(f"{d}/system/setExpressionFieldsDict", r"nWall\s+[0-9.eE+-]+;", f"nWall     
 sub(f"{d}/system/setExpressionFieldsDict", r"nCentre\s+[0-9.eE+-]+;", "nCentre     0;")
 sub(f"{d}/system/controlDict", r"\nendTime\s+[^\n]*", f"\nendTime         {periods / F:.10e};    // {periods} periods")
 sub(f"{d}/system/controlDict", r"\nwriteInterval\s+[^\n]*", "\nwriteInterval   8000;               // 32 periods of 250 steps")
+# Electron tables up to 10 kTd: the sheath fields of the low-pressure cases are
+# far above the 300 Td of the 1 Torr example
+sub(f"{d}/system/boltzmannDict", r"reducedField\s*\{[^}]*\}", "reducedField    { min 0.001; max 10000; n 141; }")
 # ion flux averaged as well, for the ion current at the electrodes
 sub(f"{d}/system/controlDict", r"(\n\s*)N_Hep1(\s*\n\s*\{)", r"\1J_Hep1\2 mean on; prime2Mean off; base time; }\1N_Hep1\2")
 print(f"case {case}: N = {N:.3e} m^-3, p = {N*KB*300:.4g} Pa, V = {V:g} V, n0 = {n0:.3e} m^-3, {periods} periods")

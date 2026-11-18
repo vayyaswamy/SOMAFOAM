@@ -17,8 +17,21 @@ do
     cp -r ../../plasma/HeliumIonDistribution/0 ../../plasma/HeliumIonDistribution/constant \
           ../../plasma/HeliumIonDistribution/system $dir/
     python3 makeCase.py $dir $c ${SOMAFOAM_TEST_SHORT:+64} || exit 1
-    ( cd $dir && blockMesh > log.blockMesh 2>&1 && setExpressionFields > log.setExpressionFields 2>&1 \
-      && somaFoam > log.somaFoam 2>&1 ) || exit 1
+    # The solver writes to its log and the electrode data at every step, which
+    # is slow on a network file system: with SOMAFOAM_LOCAL_DIR (e.g. the local
+    # disk of a compute node) the case runs there and is copied back
+    if [ -n "$SOMAFOAM_LOCAL_DIR" ]
+    then
+        local=$SOMAFOAM_LOCAL_DIR/turnerCCP_case$c
+        rm -rf $local; mkdir -p $SOMAFOAM_LOCAL_DIR; cp -r $dir $local
+        ( cd $local && blockMesh > log.blockMesh 2>&1 && setExpressionFields > log.setExpressionFields 2>&1 \
+          && somaFoam > log.somaFoam 2>&1 ); rc=$?
+        rm -rf $dir; cp -r $local $dir; rm -rf $local
+        [ $rc -eq 0 ] || exit 1
+    else
+        ( cd $dir && blockMesh > log.blockMesh 2>&1 && setExpressionFields > log.setExpressionFields 2>&1 \
+          && somaFoam > log.somaFoam 2>&1 ) || exit 1
+    fi
 done
 
 python3 compare.py runs
