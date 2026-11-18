@@ -13,7 +13,7 @@ off. With `writeEnergyBudget yes` the terms of the energy equation are written
 at the write times, and their residual checks the closure of the budget.
 
 `./Allrun` runs time steps of 10 and 40 ns, and `verify.py` compares Te with
-the exact solution and checks the budget. The run took 8 s on one core.
+the exact solution and checks the budget. The two runs took 80 s on one core.
 
 Results of 2026-11-18 on Pinnacles:
 
