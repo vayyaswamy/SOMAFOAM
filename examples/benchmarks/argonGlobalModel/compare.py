@@ -87,7 +87,7 @@ def probe(run, field):
 runs = sys.argv[1]
 plot = sys.argv[sys.argv.index("--plot") + 1] if "--plot" in sys.argv else None
 res = []
-print(f"{'P (W)':>6} {'p (mTorr)':>9} {'Te (eV)':>22} {'n_e (1e16 m^-3)':>28} {'change over the 2nd ms':>22}")
+print(f"{'P (W)':>6} {'p (mTorr)':>9} {'Te (eV)':>22} {'n_e (1e16 m^-3)':>28} {'change, 2nd half':>22}")
 for run in sorted(glob.glob(os.path.join(runs, "P*_p*"))):
     P, mT = (float(v) for v in re.fullmatch(r"P([0-9.]+)_p([0-9.]+)", os.path.basename(run)).groups())
     N = mT * 1e-3 * 133.3224 / (KB * Tg)

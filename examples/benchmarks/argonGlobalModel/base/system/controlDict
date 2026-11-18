@@ -26,7 +26,7 @@ startFrom       startTime;
 
 startTime       0;
 
-endTime         2e-3;
+endTime         1e-2;
 
 stopAt          endTime;
 
@@ -40,7 +40,7 @@ deltaTMin       1e-6;
 
 writeControl    runTime;
 
-writeInterval   1e-3;
+writeInterval   5e-3;
 
 purgeWrite      0;
 
