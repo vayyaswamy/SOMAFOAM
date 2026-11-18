@@ -39,7 +39,7 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 | Serial and parallel adaptive runs | `plasma/2DAdaptiveMeshArgon` | serial run; round-off on a fixed mesh, 1e-4 in current with refinement |
 | Argon global model, steady and pulsed | `zeroD/ArgonGlobal`, `zeroD/ArgonPulsed` (planned) | published global models |
 | CF4/O2 chemistry | `zeroD/CF4O2` | Cantera |
-| Electron transport tables | `electronBoltzmann/Argon` | BOLSIG+ |
+| Electron transport tables | `verification/boltzmannModelGas` | exact Davydov and Maxwellian distributions of model gases; order 1.5, 5e-4 on 800 cells |
 | Low-pressure CCP benchmark | `plasma/TurnerBenchmark` (planned) | Turner et al. 2013 |
 | Positive streamer in air | `streamer/BagheriCase1` to `Case3` (planned) | Bagheri et al. 2018 |
 | Helium DBD and period multiplication | `dielectricCases/sinusoidal-helium`, `plasmaDielectric/heliumPeriodMultiplication` (planned) | published fluid results |

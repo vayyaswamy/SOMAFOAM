@@ -41,5 +41,5 @@ for (gas, en), v in sorted(res.items()):
         p = math.log(abs(v[-2][1]) / abs(v[-1][1])) / math.log(v[-1][0] / v[-2][0]) if v[-1][1] and v[-2][1] else float("nan")
         line += f"  order {p:.2f}"
     print(line)
-    ok &= max(abs(v[-1][1]), abs(v[-1][2])) < 1e-3
+    ok &= max(abs(v[-1][1]), abs(v[-1][2])) < 1e-3 and (len(v) < 3 or p > 1.3)
 print("PASS" if ok else "FAIL")
