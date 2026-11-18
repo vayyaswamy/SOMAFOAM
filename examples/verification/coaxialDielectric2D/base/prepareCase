@@ -1,0 +1,69 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+nDielecReg=$@
+
+for ((i = 1 ; i <= nDielecReg ; i++))
+do
+	rm -f dielectric_$i.setSet
+	rm -f plasma_$i.setSet
+	rm -rf constant/dielectric_$i/polyMesh/sets
+done
+
+for ((i = 1 ; i <= nDielecReg ; i++))
+do
+	echo -e "faceSet dielectric_${i}_Zone new patchToFace plasma_$i;\nquit;" >> dielectric_$i.setSet
+done
+
+for ((i = 1 ; i <= nDielecReg ; i++))
+do
+	echo -e "faceSet plasma_${i}_Zone new patchToFace dielectric_$i;\nquit;" >> plasma_$i.setSet
+done
+
+for ((i = 1 ; i <= nDielecReg ; i++))
+do
+	blockMesh -region dielectric_$i
+#   	plasmaDictionary -region dielectric_$i 
+	setSet -region dielectric_$i -batch dielectric_$i.setSet -noVTK
+	setsToZones -region dielectric_$i -noFlipMap
+done
+
+rm -rf constant/polyMesh/sets
+
+blockMesh
+
+for ((i = 1 ; i <= nDielecReg ; i++))
+do
+	setSet -batch plasma_$i.setSet -noVTK
+done
+
+setsToZones -noFlipMap
+
+touch $(echo "${PWD##*/}").foam
+
+rm -f decomposeParScript
+
+echo -e "#!/bin/sh \ndecomposePar">>decomposeParScript
+
+for ((i = 1 ; i <= nDielecReg ; i++))
+do
+	echo -e "decomposePar -region dielectric_$i" >> decomposeParScript
+done
+
+chmod +x decomposeParScript
+
+rm -f reconstructParScript
+
+echo -e "#!/bin/sh \nreconstructPar \$@">>reconstructParScript
+
+for ((i = 1 ; i <= nDielecReg ; i++))
+do
+	echo -e "reconstructPar -region dielectric_$i \$@" >> reconstructParScript
+done
+
+chmod +x reconstructParScript
+
+# ----------------------------------------------------------------- end-of-file
+

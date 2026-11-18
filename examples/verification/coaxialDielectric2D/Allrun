@@ -1,0 +1,24 @@
+#!/bin/sh
+# Coaxial capacitor with a dielectric layer (paper case V14): the potential of
+# the coupled Poisson equation of the plasma and dielectric regions across a
+# curved interface against the exact logarithmic solution, on three meshes
+# (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+# cells along the arc, radial cells in the dielectric and in the gas
+set -- 10 5 15  20 10 30  40 20 60
+while [ $# -ge 3 ]
+do
+    nt=$1; nd=$2; ng=$3; shift 3
+    dir=runs/n_$nt
+    rm -rf $dir
+    mkdir -p runs
+    cp -r base $dir
+    python3 makeCase.py $dir $nt $nd $ng || exit 1
+    ( cd $dir && ./prepareCase 1 > log.prepareCase 2>&1 \
+      && writeCellCentres -time 0 > log.writeCellCentres 2>&1 \
+      && writeCellCentres -time 0 -region dielectric_1 >> log.writeCellCentres 2>&1 \
+      && somaFoam > log.somaFoam 2>&1 ) || exit 1
+done
+
+python3 verify.py runs
