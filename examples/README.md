@@ -49,6 +49,10 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 | Surface DBD actuator | `flow/surfaceDBDActuator` (planned) | published power, force, and velocity |
 | Positive streamer against experiment | `streamer/airExperiment` (planned) | published measurements |
 
-The other examples (`plasma/100TorrArgonPlasma`, `plasma/1TorrArgonPlasma`,
-`plasma/2DCurvedElectrodeReactor`, `plasma/ExternalCircuitDC`, `plasmaDielectric/ArgonDBD`)
-show features and are not tests.
+The feature examples (`plasma/100TorrArgonPlasma`, `plasma/1TorrArgonPlasma/defaultSchemes`
+and `scharfetterGummel`, `plasma/2DCurvedElectrodeReactor`, `plasma/ExternalCircuitDC`,
+`plasmaDielectric/ArgonDBD`) are regression tests: their `Allrun` runs the first 50 to 200
+steps in `runs/r` and compares the potential, the electron density and Te with the values
+stored in `reference/fields.json` to a relative 1e-6 (`test/regression.py`); `./Allrun store`
+writes new references after an intended change of the results. The case directories
+themselves are not changed, so the examples run as before with `somafoam run`.
