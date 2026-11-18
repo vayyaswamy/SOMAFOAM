@@ -8,6 +8,11 @@ boundary conditions and dictionary entries are described in the reference manual
 [`doc/manual/somafoam_manual.pdf`](manual/somafoam_manual.pdf), and the ion distribution
 workflow in [`doc/manual/ion_distribution_workflow.pdf`](manual/ion_distribution_workflow.pdf).
 
+
+New to plasma modelling? Start with the slides `doc/tutorial/somafoam_ccp_tutorial.pdf`:
+the fluid equations, the layout of a case, a first CCP run step by step, and how to change the
+pressure, the gap, the voltage and the frequency.
+
 ## Contents
 
 1. [Quick start](#1-quick-start)
