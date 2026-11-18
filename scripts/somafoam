@@ -64,6 +64,12 @@ def site_value(key, default):
     return default
 
 
+def setting(key):
+    """A path from the environment, else from the site file, with $USER expanded."""
+    v = os.environ.get(key) or os.path.expandvars(site_value(key, ""))
+    return v or None
+
+
 def env_prefix(with_foam=True):
     """Shell commands that load the site modules and the SOMAFOAM environment."""
     p = "source %s >/dev/null 2>&1; " % shlex.quote(site_file())
@@ -227,7 +233,7 @@ def cmd_list(a):
 
 
 def run_dir_for(case, a):
-    base = a.dir or os.environ.get("SOMAFOAM_RUN_DIR") or os.path.join(os.getcwd(), "runs")
+    base = a.dir or setting("SOMAFOAM_RUN_DIR") or os.path.join(os.getcwd(), "runs")
     name = os.path.relpath(case, EXAMPLES).replace(os.sep, "_") if case.startswith(EXAMPLES) else os.path.basename(case)
     return os.path.join(os.path.abspath(base), name + (("_" + a.tag) if a.tag else ""))
 
@@ -296,7 +302,7 @@ def cmd_test(a):
         if getattr(a, flag):
             args.append("--" + flag)
     args += ["--jobs", str(a.jobs), "--timeout", str(a.timeout)]
-    scratch = a.scratch or os.environ.get("SOMAFOAM_SCRATCH")
+    scratch = a.scratch or setting("SOMAFOAM_SCRATCH")
     if scratch:
         args += ["--scratch", shlex.quote(os.path.abspath(scratch))]
     return 1 if sh("python3 test/runExamples.py " + " ".join(args), ROOT, echo=False) else 0
@@ -322,8 +328,8 @@ def cmd_clean(a):
 def cmd_env(a):
     print("SOMAFOAM root  %s" % ROOT)
     print("site           %s  (%s)" % (site_name(), os.path.relpath(site_file(), ROOT)))
-    print("run dir        %s" % (os.environ.get("SOMAFOAM_RUN_DIR") or os.path.join(os.getcwd(), "runs")))
-    print("test scratch   %s" % (os.environ.get("SOMAFOAM_SCRATCH") or "system temporary directory"))
+    print("run dir        %s" % (setting("SOMAFOAM_RUN_DIR") or os.path.join(os.getcwd(), "runs")))
+    print("test scratch   %s" % (setting("SOMAFOAM_SCRATCH") or "system temporary directory"))
     print("SLURM defaults partition=%s time=%s" % (site_value("SLURM_PARTITION", "?"), site_value("SLURM_TIME", "?")), flush=True)
     sh('echo "somaFoam       $(command -v somaFoam || echo not built)"; '
        'echo "mpirun         $(command -v mpirun || echo not found)"; echo "python3        $(python3 --version 2>&1)"',

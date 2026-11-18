@@ -107,8 +107,9 @@ somafoam run zeroD/ArgonGlobal --tag pulse2               # second copy, runs/ze
 
 The case can be named by its path under `examples/`, by any part of the path that is
 unique, or by the path of any case directory on disk. The run directory is
-`./runs/<group>_<case>` by default. `--dir` or the variable `SOMAFOAM_RUN_DIR` sets another
-parent directory, which on a cluster should be on the scratch file system.
+`./runs/<group>_<case>` by default. `--dir`, the variable `SOMAFOAM_RUN_DIR` or the same variable in the
+site file sets another parent directory, which on a cluster should be on a large project or
+scratch file system.
 
 A case with an `Allrun` script is run by that script. Any other case is run with the
 standard steps, which are `Allmesh` or `prepareCase` if the case has one, otherwise
@@ -136,11 +137,12 @@ somafoam test flow icp              # tests whose path contains flow or icp
 somafoam test --list                # names only
 somafoam test --short               # shortened runs, if the Allrun supports them
 somafoam test --jobs 4 --keep       # four at a time, keep the run directories
-somafoam test --scratch /scratch/$USER/tests
+somafoam test --scratch /mnt/borgstore/$USER/somafoam_tests
 ```
 
 Each test runs in a copy under the scratch directory, which is `--scratch`,
-`SOMAFOAM_SCRATCH` or the system temporary directory, in that order. On a cluster the
+`SOMAFOAM_SCRATCH` in the environment or in the site file, or the system temporary directory,
+in that order. On a cluster the
 temporary directory is local to the compute node and disappears with the job, so use
 `--scratch` together with `--keep` when the run directories are needed afterwards. The
 summary lists each test as PASS, FAIL, RAN or ERROR. RAN means that the case finished but
@@ -159,8 +161,8 @@ in [`examples/README.md`](../examples/README.md).
 
 ```
 somafoam submit build
-somafoam submit run plasma/2DCurvedElectrodeReactor --np 28 --dir /scratch/$USER/runs
-somafoam submit test --jobs 4 --scratch /scratch/$USER/tests --keep
+somafoam submit run plasma/2DCurvedElectrodeReactor --np 28 --dir /mnt/borgstore/$USER/somafoam_runs
+somafoam submit test --jobs 4 --scratch /mnt/borgstore/$USER/somafoam_tests --keep
 somafoam submit run zeroD/CF4O2 --partition test --time 00:30:00
 somafoam submit run plasma/100TorrArgonPlasma --sbatch=--mem=64G
 somafoam submit build --print       # show the job script without submitting
@@ -203,8 +205,10 @@ which the site file guarantees.
 ### Notes for Pinnacles
 
 The `/data` file system has a quota of 500 GB with a hard limit of 512 GB per user, and
-`/scratch` is large but purged. Builds and source trees fit on `/data`, whereas runs and
-test directories belong on `/scratch/$USER`. Each login node has its own `/tmp`, so a file
+`/scratch` is large but purged. Runs and tests therefore go to the BeeGFS project storage,
+`/mnt/borgstore/$USER/somafoam_runs` and `/mnt/borgstore/$USER/somafoam_tests`, which the
+site file `scripts/sites/pinnacles.sh` sets as the defaults, and the source tree and build
+can live there as well. Each login node has its own `/tmp`, so a file
 written to `/tmp` in one session may not be visible in the next. In a large source tree
 `git status -uno` is much faster than `git status`, which scans every untracked file.
 

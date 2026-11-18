@@ -8,3 +8,8 @@ module load openmpi/4.1.8-gcc-11.5.0
 SLURM_PARTITION=short
 SLURM_TIME=06:00:00
 SLURM_CPUS=28
+
+# Runs and tests on the BeeGFS project storage, which is not purged like
+# /scratch and not limited like /data
+SOMAFOAM_RUN_DIR=/mnt/borgstore/$USER/somafoam_runs
+SOMAFOAM_SCRATCH=/mnt/borgstore/$USER/somafoam_tests
