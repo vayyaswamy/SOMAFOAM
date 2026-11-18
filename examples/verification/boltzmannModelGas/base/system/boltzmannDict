@@ -1,0 +1,31 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | SOMAFOAM                                        |
+|   \\  /    A nd           |                                                 |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      boltzmannDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Model gas of exact.py (Allrun writes the file and sets the gas and the grid)
+file            "constant/modelGases.txt";
+
+gases           ((constantSigma 1.0));
+gasTemperature  300;
+
+reducedField    (0.5 1 2 4);                // [Td]
+
+nEnergyCells    400;
+outputDir       "constant/boltzmann";
+
+method          twoTerm;
+
+// ************************************************************************* //

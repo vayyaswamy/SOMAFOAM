@@ -1,0 +1,22 @@
+#!/bin/sh
+# Two-term Boltzmann solver against the exact distributions of model gases
+# (paper case V15): elastic collisions only with a constant cross section
+# (Davydov, Druyvesteyn at T = 0) and with a constant collision frequency
+# (Maxwellian), at 0.5 to 4 Td on 200, 400 and 800 energy cells (verify.py).
+cd ${0%/*} || exit 1    # run from this directory
+
+python3 exact.py write base/constant/modelGases.txt || exit 1
+for gas in constantSigma constantNu
+do
+    for n in 200 400 800
+    do
+        dir=runs/${gas}_$n
+        rm -rf $dir
+        mkdir -p runs
+        cp -r base $dir
+        sed -i "s/^gases .*/gases           (($gas 1.0));/; s/^nEnergyCells .*/nEnergyCells    $n;/" $dir/system/boltzmannDict
+        ( cd $dir && electronBoltzmann > log.electronBoltzmann 2>&1 ) || exit 1
+    done
+done
+
+python3 verify.py runs
