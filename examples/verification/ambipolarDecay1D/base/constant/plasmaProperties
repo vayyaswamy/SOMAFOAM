@@ -36,8 +36,8 @@ electron
 Arp1
 {
 	diffusionModel einsteinRelation;
-	//D 0.0007376;
-	mobilityModel EON;
+	mobilityModel constant;
+	mu 1.44;
 	charge 1;
 	speciesSolution true;
 	transportModel driftDiffusion;
