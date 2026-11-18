@@ -32,7 +32,7 @@ Release tag `v2.0.0`. Entries marked *planned* are being added for the release.
 | External circuit, RC charging of an empty gap | `verification/externalCircuitRC` | backward Euler and exact RC solutions; 2e-5 of the source |
 | Gas flow: advection-diffusion, channel start-up, transient Poiseuille profile | `flow/advectionDiffusion`, `flow/channelStartup`, `flow/channelStartupProfile` | analytic |
 | Flowing afterglow | `flow/flowingAfterglow` (planned) | eigenfunction series |
-| Inductive field in a uniform plasma | `icp/skinEffectCylinder`, `icp/skinEffectSlab` (planned) | Bessel and skin-depth solutions |
+| Inductive field in a uniform plasma | `verification/icpSkinEffect` | Bessel solution; second order, power to 3e-5 on a 0.25 degree wedge |
 | Serial and parallel adaptive runs | `plasma/2DAdaptiveMeshArgon` | serial run; round-off on a fixed mesh, 1e-4 in current with refinement |
 | Argon global model, steady and pulsed | `zeroD/ArgonGlobal`, `zeroD/ArgonPulsed` (planned) | published global models |
 | CF4/O2 chemistry | `zeroD/CF4O2` | Cantera |
