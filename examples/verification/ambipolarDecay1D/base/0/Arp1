@@ -17,19 +17,19 @@ FoamFile
 
 dimensions      [ 0 0 0 1 0 0 0 ];
 
-internalField   uniform 0;
+internalField   uniform 1e4;
 
 boundaryField
 {
     electrode
     {
         type            fixedValue;
-        value           uniform 0;
+        value           uniform 1e4;
     }
     ground
     {
         type            fixedValue;
-        value           uniform 0;
+        value           uniform 1e4;
     }
     otherfaces
     {

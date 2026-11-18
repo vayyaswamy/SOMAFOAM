@@ -18,7 +18,7 @@ variables
 {
     n0          1e16;       // [1/m3]
     L           0.02;       // [m]
-    mode        "n0*sin(3.14159265358979*x/L)";
+    mode        "1e4 + n0*sin(3.14159265358979*x/L)";
 }
 
 fields

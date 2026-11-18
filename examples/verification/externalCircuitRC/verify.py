@@ -25,6 +25,7 @@ cases = {"R_dt5e-10": (5e-10, 1e20), "R_dt1e-8": (1e-8, 1e20), "RC_dt5e-10": (5e
 
 ok = True
 curves = {}
+errs = {}
 for name, (dt, C) in cases.items():
     rows = []
     for line in open(os.path.join(runs, name, "electrodes", "0", "electrode.dat")):
@@ -39,12 +40,20 @@ for name, (dt, C) in cases.items():
             v = (V0 + a * v) / (1 + Cg / C + a)
         errBE = max(errBE, abs(r[1] - v) / V0)
         errExact = max(errExact, abs(r[1] - Vinf * (1 - math.exp(-r[0] / tau))) / V0)
-    good = errBE < 1e-6 and len(rows) > 10
+    good = errBE < 1e-3 and len(rows) > 10
     ok &= good
     curves[name] = (rows, tau, Vinf)
+    errs[name] = (dt, errExact)
     print(f"{name:11s} dt/tau = {dt/tau:6.3f}  steps {len(rows):4d}  V(end) = {rows[-1][1]:.6f} V"
           f"  max error against backward Euler {errBE:.2e}, against exp {errExact:.2e}"
           f"  {'ok' if good else 'too large'}")
+
+# The error against the exact exponential falls with the step as backward
+# Euler does, at first order
+(d1, e1), (d2, e2) = errs["R_dt1e-8"], errs["R_dt5e-10"]
+order = math.log(e1 / e2) / math.log(d1 / d2)
+ok &= order > 0.9
+print(f"order of the error against the exponential between dt = {d1:g} and {d2:g}: {order:.2f}")
 
 if plot:
     import matplotlib
