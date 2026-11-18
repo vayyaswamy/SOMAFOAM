@@ -1,0 +1,45 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      reactions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+species
+(
+	electron
+	Arp1
+	Arm
+	Ar
+);
+
+reactions
+(
+    // Elastic collisions, ionization and excitation of the ground state, as in
+    // the global model of Lieberman and Lichtenberg; the excitation is an
+    // energy loss only (no metastables), so that the ground-state density
+    // stays at the gas density
+        electronImpactElasticTabularReaction
+        electron + Ar = electron + Ar
+        ("$FOAM_CASE/constant/reaction_1")
+
+        electronImpactInelasticTabularReaction
+        electron + Ar = electron + electron + Arp1
+        ("$FOAM_CASE/constant/reaction_2")
+        (2.5248E-18)
+
+        electronImpactInelasticTabularReaction
+        electron + Ar = electron + Ar
+        ("$FOAM_CASE/constant/reaction_3")
+        (1.851912e-18)
+);

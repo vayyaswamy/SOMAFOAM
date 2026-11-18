@@ -1,0 +1,27 @@
+#!/bin/sh
+# Argon global model at set power (paper case B1): the steady electron
+# density and temperature of the zero-dimensional model with wall losses
+# against the global model of Lieberman and Lichtenberg with the same rate
+# coefficients (compare.py), for absorbed powers of 100, 300 and 1000 W at
+# 10 mTorr and pressures of 3, 10 and 30 mTorr at 300 W, in a cylinder of
+# radius 0.15 m and length 0.3 m.
+cd ${0%/*} || exit 1    # run from this directory
+
+# power [W], pressure [mTorr]
+set -- 100 10  300 10  1000 10  300 3  300 30
+while [ $# -ge 2 ]
+do
+    P=$1; mT=$2; shift 2
+    dir=runs/P${P}_p$mT
+    rm -rf $dir
+    mkdir -p runs
+    cp -r base $dir
+    N=$(python3 -c "print('%.6e' % ($mT*1e-3*133.3224/(1.380649e-23*300)))")
+    p=$(python3 -c "print('%.6e' % ($mT*1e-3*133.3224))")
+    sed -i "s/^internalField .*/internalField   uniform $N;/" $dir/0/Ar
+    sed -i "s/^internalField .*/internalField   uniform $p;/" $dir/0/p
+    sed -i "s/^\(\s*value\s*\)[0-9.e+-]*;/\1$P;/" $dir/constant/plasmaProperties
+    ( cd $dir && blockMesh > log.blockMesh 2>&1 && somaFoam > log.somaFoam 2>&1 ) || exit 1
+done
+
+python3 compare.py runs
