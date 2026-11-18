@@ -25,21 +25,22 @@ species
 
 reactions
 (
-    // Elastic collisions, ionization and excitation of the ground state, as in
-    // the global model of Lieberman and Lichtenberg; the excitation is an
+    // Elastic collisions, ionization and excitation of the ground state, with
+    // the Maxwellian rate coefficients of the global model of Lieberman and
+    // Lichtenberg (makeRates.py writes the tables); the excitation is an
     // energy loss only (no metastables), so that the ground-state density
     // stays at the gas density
         electronImpactElasticTabularReaction
         electron + Ar = electron + Ar
-        ("$FOAM_CASE/constant/reaction_1")
+        ("$FOAM_CASE/constant/reaction_el")
 
         electronImpactInelasticTabularReaction
         electron + Ar = electron + electron + Arp1
-        ("$FOAM_CASE/constant/reaction_2")
+        ("$FOAM_CASE/constant/reaction_iz")
         (2.5248E-18)
 
         electronImpactInelasticTabularReaction
         electron + Ar = electron + Ar
-        ("$FOAM_CASE/constant/reaction_3")
+        ("$FOAM_CASE/constant/reaction_ex")
         (1.851912e-18)
 );

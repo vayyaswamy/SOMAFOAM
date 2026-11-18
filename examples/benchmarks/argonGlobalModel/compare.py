@@ -14,8 +14,9 @@ electropositive argon discharge in a cylinder of radius R and length L:
                                   + (u_B A_eff/V) 2 kB Te],
 
 i.e. the electron power with the collisional losses and the kinetic energy
-2 kB Te of each electron lost to the walls. The rate coefficients are those
-of the case (constant/reaction_*, ln k against Te, in m3/(kmol s)). The
+2 kB Te of each electron lost to the walls. The rate coefficients are the Maxwellian fits of
+Lieberman and Lichtenberg (makeRates.py), evaluated directly here and as
+tables of 600 points in the case. The
 particle balance gives Te alone, and the power balance then gives n_e.
 The steady state of the runs is the last probe value.
 """
@@ -34,29 +35,13 @@ EIZ, EEX = 2.5248e-18, 1.851912e-18
 here = os.path.dirname(os.path.abspath(__file__))
 
 
-def table(name):
-    rows = re.findall(r"\(\s*([0-9.eE+-]+)\s+([0-9.eE+-]+)\s*\)", open(os.path.join(here, "base", "constant", name)).read())
-    return [float(a) for a, _ in rows], [float(b) for _, b in rows]
-
-
-TAB = {k: table(f) for k, f in (("el", "reaction_1"), ("iz", "reaction_2"), ("ex", "reaction_3"))}
+sys.path.insert(0, here)
+from makeRates import Kiz, Kex, Kel
 
 
 def K(kind, Te):
-    """Rate coefficient [m3/s]: ln k interpolated linearly in Te, as TabularReactionRate."""
-    x, y = TAB[kind]
-    if Te <= x[0]:
-        return math.exp(y[0]) / AV
-    if Te >= x[-1]:
-        return math.exp(y[-1]) / AV
-    lo, hi = 0, len(x) - 1
-    while hi - lo > 1:
-        mid = (lo + hi) // 2
-        if x[mid] <= Te:
-            lo = mid
-        else:
-            hi = mid
-    return math.exp(y[lo] + (y[hi] - y[lo]) * (Te - x[lo]) / (x[hi] - x[lo])) / AV
+    """Rate coefficient [m3/s] of the Maxwellian fits, Te in K."""
+    return {"iz": Kiz, "ex": Kex, "el": Kel}[kind](Te / 11604.518)
 
 
 def global_model(P, N):
