@@ -50,12 +50,15 @@ solvers
         minIter          1;
     };
     // Used by somaFoam, which solves the regions in one matrix
-    Phi_Phi_Phi
+    // coupled potential of the plasma and the one dielectric region
+    Phi_Phi
     {
         solver           BiCGStab;
         preconditioner   Cholesky;
+        tolerance        1e-13;
         relTol           0;
-        minIter		 1;
+        minIter          1;
+        maxIter          5000;
     };
 }
 
