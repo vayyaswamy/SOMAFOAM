@@ -5,9 +5,9 @@
 cd ${0%/*} || exit 1    # run from this directory
 
 # radial cells and wedge angle [deg]; with these numbers of cells the edges of
-# the plasma and of the winding are faces. The 5 degree run shows the error of a
+# the plasma and of the winding are faces. The 1 and 5 degree runs show the error of a
 # flat-faced wedge, of the order of the square of the angle
-set -- 160 1  320 1  640 1  640 5
+set -- 160 0.25  320 0.25  640 0.25  640 1  640 5
 while [ $# -ge 2 ]
 do
     nr=$1; ang=$2; shift 2
