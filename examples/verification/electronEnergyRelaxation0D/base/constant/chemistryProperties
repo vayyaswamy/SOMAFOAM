@@ -19,7 +19,7 @@ plasmaChemistryModel temporal;
 
 psiChemistryModel  ODEChemistryModel<constGasThermoPhysics>;
 
-chemistry           off;
+chemistry           on;
 
 chemistrySolver     ode;//EulerImplicit/ode/sequential
 
