@@ -36,7 +36,8 @@ Foam::externalCircuitPotential::externalCircuitPotential
     Qe_(0),
     I_(0),
     timeIndex_(-1),
-    QeSet_(false)
+    QeSet_(false),
+    lastPhiP_(GREAT)
 {}
 
 
@@ -60,7 +61,8 @@ Foam::externalCircuitPotential::externalCircuitPotential
     Qe_(dict.lookupOrDefault<scalar>("Qe", 0)),
     I_(dict.lookupOrDefault<scalar>("I", 0)),
     timeIndex_(-1),
-    QeSet_(dict.found("Qe"))
+    QeSet_(dict.found("Qe")),
+    lastPhiP_(GREAT)
 {
     if
     (
@@ -107,7 +109,8 @@ Foam::externalCircuitPotential::externalCircuitPotential
     Qe_(ptf.Qe_),
     I_(ptf.I_),
     timeIndex_(ptf.timeIndex_),
-    QeSet_(ptf.QeSet_)
+    QeSet_(ptf.QeSet_),
+    lastPhiP_(ptf.lastPhiP_)
 {}
 
 
@@ -129,7 +132,8 @@ Foam::externalCircuitPotential::externalCircuitPotential
     Qe_(ptf.Qe_),
     I_(ptf.I_),
     timeIndex_(ptf.timeIndex_),
-    QeSet_(ptf.QeSet_)
+    QeSet_(ptf.QeSet_),
+    lastPhiP_(ptf.lastPhiP_)
 {}
 
 
@@ -152,7 +156,8 @@ Foam::externalCircuitPotential::externalCircuitPotential
     Qe_(ptf.Qe_),
     I_(ptf.I_),
     timeIndex_(ptf.timeIndex_),
-    QeSet_(ptf.QeSet_)
+    QeSet_(ptf.QeSet_),
+    lastPhiP_(ptf.lastPhiP_)
 {}
 
 
@@ -263,6 +268,19 @@ void Foam::externalCircuitPotential::updateCoeffs()
         fixedValueFvPatchScalarField::updateCoeffs();
         return;
     }
+
+    // Solve the circuit once per Poisson solve: if the field next to the
+    // electrode has not changed since the last evaluation in this step, the
+    // charge would mix the new patch potential with the old field
+    const scalar PhiP = gSum(patchInternalField());
+
+    if (runTime.timeIndex() == timeIndex_ && PhiP == lastPhiP_)
+    {
+        fixedValueFvPatchScalarField::updateCoeffs();
+        return;
+    }
+
+    lastPhiP_ = PhiP;
 
     // Present iterate: potential and charge of the electrode
     const scalar Vstar = gAverage(*this);

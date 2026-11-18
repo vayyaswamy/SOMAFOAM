@@ -37,7 +37,9 @@ Description
         V (1 + Reff Cg/dt) = Vs - Q_C^n/C
                            - Reff [(Q* - Cg V* - Q^n)/dt + Ic],
 
-    Reff = R + dt/C. The iterations of the Poisson equation within a step
+    Reff = R + dt/C. The circuit is solved again only when the potential
+    next to the electrode has changed since the last evaluation, so once
+    per Poisson solve. The iterations of the Poisson equation within a step
     converge to the implicit solution, which is stable for any R C/dt; with
     one Poisson solve per step on a vacuum gap it is exactly the backward
     Euler step of the RC circuit. Cg only sets the convergence of the
@@ -117,6 +119,13 @@ class externalCircuitPotential
 
         //- Has Qe_ been set (from the dictionary or a step)?
         bool QeSet_;
+
+        //- Sum of the potentials of the cells next to the patch at the
+        //  last evaluation; the circuit is solved again only after the
+        //  Poisson equation has changed them, since the charge of the
+        //  electrode is consistent with the potential of the patch only
+        //  for the field solved with that potential
+        scalar lastPhiP_;
 
 
     // Private member functions

@@ -35,7 +35,8 @@ for name, (dt, C) in cases.items():
     Vinf = V0 * C / (C + Cg)
     v, errBE, errExact = 0.0, 0.0, 0.0
     for k, r in enumerate(rows):
-        v = (V0 + a * v) / (1 + Cg / C + a)
+        if r[0] > 0:
+            v = (V0 + a * v) / (1 + Cg / C + a)
         errBE = max(errBE, abs(r[1] - v) / V0)
         errExact = max(errExact, abs(r[1] - Vinf * (1 - math.exp(-r[0] / tau))) / V0)
     good = errBE < 1e-6 and len(rows) > 10
