@@ -184,6 +184,9 @@ def set_end_time(case, t):
     s, n = re.subn(r"^(\s*endTime\s+)[^;]+;", r"\g<1>%s;" % t, s, flags=re.M)
     if not n:
         sys.exit("no endTime entry in " + p)
+    # write the fields at the new end time, whatever the write interval was
+    s = re.sub(r"^(\s*writeControl\s+)[^;]+;", r"\g<1>runTime;", s, flags=re.M)
+    s = re.sub(r"^(\s*writeInterval\s+)[^;]+;", r"\g<1>%s;" % t, s, flags=re.M)
     open(p, "w").write(s)
 
 
@@ -397,7 +400,7 @@ def main():
     p.add_argument("--dir", help="parent of the run directory (default $SOMAFOAM_RUN_DIR or ./runs)")
     p.add_argument("--tag", help="suffix for the run directory, to keep several runs of one case")
     p.add_argument("--np", type=int, default=1, help="run in parallel on N processes")
-    p.add_argument("--end-time", help="override endTime in the copy (quick checks)")
+    p.add_argument("--end-time", help="override endTime in the copy and write the fields at it (quick checks)")
     p.add_argument("--short", action="store_true", help="SOMAFOAM_TEST_SHORT=1 for an Allrun")
     p.add_argument("--steps", action="store_true", help="ignore Allrun and run the standard steps")
     p.add_argument("--in-place", action="store_true", help="run in the case directory itself")

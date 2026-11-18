@@ -1,0 +1,22 @@
+#!/bin/sh
+# Regression test: the first 2e-8 s of this example, run in runs/r by the
+# standard steps of somafoam, against the fields stored in reference/ (Phi,
+# the electron density and Te, and the potential of the dielectric regions).
+# ./Allrun store writes the reference instead.
+cd ${0%/*} || exit 1    # run from this directory
+
+rm -rf runs
+mkdir -p runs/r
+for f in *
+do
+    case $f in runs|reference|Allrun|caseClean|processor*|*.foam|*.setSet) ;; *) cp -r $f runs/r/ ;; esac
+done
+( cd runs/r && $WM_PROJECT_DIR/scripts/somafoam run . --in-place --steps --end-time 2e-8 > log.run 2>&1 ) || exit 1
+
+if [ "$1" = store ]
+then
+    rm -rf reference
+    python3 $WM_PROJECT_DIR/test/regression.py store runs/r reference Phi electron Te --regions dielectric_1 dielectric_2
+else
+    python3 $WM_PROJECT_DIR/test/regression.py compare runs/r reference --rtol 1e-6
+fi
