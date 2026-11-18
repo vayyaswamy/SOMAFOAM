@@ -8,6 +8,7 @@ cd ${0%/*} || exit 1
 if [ -n "$SOMAFOAM_TEST_SHORT" ]
 then
     sed -i "s/^endTime .*/endTime         3.6873156342e-06;    \/\/ 50 periods (short test)/" system/controlDict
+    sed -i "s/^writeInterval .*/writeInterval   12500;/" system/controlDict
 fi
 
 blockMesh > log.blockMesh 2>&1 || exit 1

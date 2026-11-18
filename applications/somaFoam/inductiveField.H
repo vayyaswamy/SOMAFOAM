@@ -166,7 +166,8 @@ inline List<vector2> coilTurns(const dictionary& dict)
 
     forAll(coilR, c)
     {
-        turns[c] = vector2(coilR[c], coilZ);
+        turns[c][0] = coilR[c];
+        turns[c][1] = coilZ;
     }
 
     return turns;

@@ -9,6 +9,7 @@ zero-gradient ends, so that the solenoid of 20 contiguous square turns of
 2.5 mm at r = 0.07 m is infinitely long.
 """
 import math
+import os
 import sys
 
 case, nr = sys.argv[1], int(sys.argv[2])
@@ -27,6 +28,7 @@ for z in (0, H):
 # z = 0: 0 1 2 (-y), 3 4 5 (+y); z = H: 6 7 8 (-y), 9 10 11 (+y)
 
 hdr = open(f"{case}/system/controlDict").read().split("FoamFile")[0]
+os.makedirs(f"{case}/constant/polyMesh", exist_ok=True)
 with open(f"{case}/constant/polyMesh/blockMeshDict", "w") as f:
     f.write(hdr + "FoamFile\n{\n    version     2.0;\n    format      ascii;\n    class       dictionary;\n    object      blockMeshDict;\n}\n\n")
     f.write("convertToMeters 1;\n\nvertices\n(\n")
