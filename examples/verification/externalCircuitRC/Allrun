@@ -19,8 +19,8 @@ do
     cp -r base $dir
     sed -i "s/^deltaT .*/deltaT          $dt;/; s/^deltaTMax.*/deltaTMax       $dt;/; s/^deltaTMin.*/deltaTMin       $dt;/" $dir/system/controlDict
     sed -i "s/^\(\s*rampTime .*\)$/\1\n        C               $C;/" $dir/0/Phi
-    blockMesh -case $dir > $dir/log.blockMesh 2>&1 || exit 1
-    somaFoam -case $dir > $dir/log.somaFoam 2>&1 || exit 1
+    # somaFoam reads its tables from constant/ of the working directory
+    ( cd $dir && blockMesh > log.blockMesh 2>&1 && somaFoam > log.somaFoam 2>&1 ) || exit 1
 done
 
 python3 verify.py runs
