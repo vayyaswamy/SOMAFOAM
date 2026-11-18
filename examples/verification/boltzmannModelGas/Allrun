@@ -5,6 +5,7 @@
 # (Maxwellian), at 0.5 to 4 Td on 200, 400 and 800 energy cells (verify.py).
 cd ${0%/*} || exit 1    # run from this directory
 
+mkdir -p base/constant
 python3 exact.py write base/constant/modelGases.txt || exit 1
 for gas in constantSigma constantNu
 do
