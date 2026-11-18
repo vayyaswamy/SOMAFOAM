@@ -85,7 +85,10 @@ for d in sorted(glob.glob(os.path.join(runs, "nr_*")), key=lambda p: int(p.split
     num = []
     zs = []
     for i in range(nr):
-        col = [complex(AR[k * nr + i], AI[k * nr + i]) for k in range(nz)]
+        # blockMesh numbers the cells block by block, radius fastest
+        h = nr // 2
+        idx = [(k * h + i) if i < h else (h * nz + k * h + i - h) for k in range(nz)]
+        col = [complex(AR[m], AI[m]) for m in idx]
         num.append(sum(col) / nz)
         zs.append(max(abs(c - num[-1]) for c in col))
     ex = [Aexact(r) for r in rcell]
